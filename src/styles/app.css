@@ -18,16 +18,19 @@
 .card-title { margin-block: .9rem .5rem; font-size: 1.25rem; line-height: 1.25; }
 .card-title a { color: var(--ink); text-decoration: none; }
 .card-title a::after { content: ""; position: absolute; inset: 0; }
-.card a:focus-visible { outline: none; }
+@supports selector(:has(*)) { .card a:focus-visible { outline: none; } }
 .card:has(a:focus-visible) { outline: 3px solid var(--series-1); outline-offset: 2px; }
-.card-dek { display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; margin-block: 0 .75rem; font-size: .9375rem; line-height: 1.5; color: var(--ink-2); }
-.card-source { align-self: flex-start; margin-block: auto 1rem; padding: .1rem .6rem; border: 1px solid var(--rule); border-radius: var(--radius-pill); font: .8125rem var(--font-mono); color: var(--ink-2); }
+.card-dek { margin-block: 0 .75rem; font-size: .9375rem; line-height: 1.5; color: var(--ink-2); }
+.card-source { align-self: flex-start; margin-block: auto 1rem; padding: .1rem .6rem; border: 1px solid var(--rule); border-radius: var(--radius-pill); max-width: calc(100% - 2.2rem); overflow-wrap: anywhere; font: .8125rem var(--font-mono); color: var(--ink-2); }
 @media (hover: hover) {
   .card:hover { transform: translateY(-2px); border-color: var(--ink-3); }
   .card:hover .card-title a { text-decoration: underline; }
 }
 @media (min-width: 640px) { .cards { grid-template-columns: repeat(2, 1fr); } }
-@media (min-width: 960px) { .cards { grid-template-columns: repeat(3, 1fr); } }
+@media (min-width: 960px) {
+  .cards { grid-template-columns: repeat(3, 1fr); }
+  .card-dek { display: -webkit-box; -webkit-line-clamp: 5; -webkit-box-orient: vertical; overflow: hidden; }
+}
 
 .not-found > svg { display: block; margin-top: var(--space-7); }
 .not-found h1 { margin: var(--space-4) 0 var(--space-3); font-size: clamp(2rem, 5vw, 2.75rem); line-height: 1.1; text-wrap: balance; }
@@ -35,6 +38,8 @@
 
 .essay-page { padding-inline: 1rem; }
 .essay-page > nav { max-width: var(--measure); margin: var(--space-5) auto var(--space-6); font: .9375rem/1.4 var(--font-ui); }
+.back { display: inline-block; line-height: 44px; }
+.back > [aria-hidden] { display: inline-block; margin-right: .3em; text-decoration: none; }
 
 @media (max-width: 639.98px) {
   .wordmark-home { font-size: 2.25rem; }
