@@ -15,10 +15,10 @@ describe('series palette under colour-vision deficiency', () => {
     expect(seriesFailures(SERIES)).toEqual([]);
   });
 
-  it('rejects a known bad pair (old cobalt vs teal under tritan is 7.98)', () => {
-    const fails = seriesFailures(['#2457C5', PALETTE['series-2']]);
-    expect(fails.map((f) => f.vision)).toEqual(['tritan']);
-    expect(fails[0]?.deltaE).toBeCloseTo(7.98, 1);
+  it('rejects a fourth hue that collides with cobalt (purple: protan 5.47, deutan 6.67)', () => {
+    const fails = seriesFailures([...SERIES, '#7B3FA0']).filter((f) => f.vision !== 'normal');
+    expect(fails.map((f) => [f.a, f.vision])).toEqual([[PALETTE['series-1'], 'protan'], [PALETTE['series-1'], 'deutan']]);
+    expect(fails[0]?.deltaE).toBeCloseTo(5.47, 1);
   });
 
   it('matches the reference numbers from the identity spec', () => {
