@@ -1,0 +1,44 @@
+/* Essay column and figure card. Uses the identity tokens (src/styles/tokens.css). */
+:root { --follow-tau: 90ms; --hint-delay: 1200ms; --hint-duration: 600ms; --hint-distance: 8px; }
+.essay { counter-reset: sec; }
+.essay-hero, .essay-section > :not(.xfig), .essay-takeaway { max-width: var(--measure); margin-inline: auto; }
+.essay-hero { margin-bottom: var(--space-7); }
+.essay-kicker { margin-block: 0 var(--space-2); }
+.essay h1 { margin-block: 0 var(--space-3); font-size: clamp(2rem, 5vw, 2.75rem); line-height: 1.1; text-wrap: balance; }
+.essay-dek { margin-block: 0 var(--space-4); font-size: 1.25rem; line-height: 1.45; }
+.essay-source { margin-block: 0 var(--space-2); font: .9375rem/1.4 var(--font-ui); color: var(--ink-2); }
+.essay-provenance { display: inline-block; margin-block: 0; padding: .1rem .6rem; border: 1px solid var(--ink-3); border-radius: var(--radius-pill); font: .8125rem var(--font-ui); color: var(--ink-2); }
+.essay-provenance[data-mode="ai"] { border-style: dashed; }
+.essay-provenance[data-mode="match"] { border-style: dotted; }
+.essay-section { counter-increment: sec; }
+.essay-section h2, .essay-takeaway h2 { position: relative; margin-block: var(--space-7) var(--space-3); font-size: 1.5rem; line-height: 1.25; }
+.essay-section h2::before { content: counter(sec) / ""; display: none; }
+.essay-takeaway { margin-block: var(--space-7) 0; padding-top: var(--space-6); border-top: 1px solid var(--rule); }
+.essay-takeaway h2 { margin-top: 0; }
+.essay-original a { display: inline-flex; align-items: center; min-height: 44px; min-width: 44px; padding-inline: .25rem; margin-inline: -.25rem; font: .9375rem var(--font-ui); }
+
+.xfig { max-width: var(--wide); margin: var(--space-6) auto; }
+.xfig-card { padding: var(--space-4); background: var(--well); border: 1px solid var(--rule); border-radius: var(--radius); }
+.xfig-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: .5rem; }
+.essay-kicker, .xfig-num { font: 500 .8125rem var(--font-ui); font-variant-caps: all-small-caps; letter-spacing: .06em; color: var(--ink-2); }
+.xfig-title { font: 600 .9375rem var(--font-ui); color: var(--ink); }
+.xfig-alt { margin: var(--space-3) 0 0; font-size: 1rem; color: var(--ink-2); }
+.xfig-drawing { aspect-ratio: 16 / 9; }
+.xfig-controls { display: flex; flex-wrap: wrap; gap: var(--space-4); }
+.xfig-foot { display: flex; justify-content: space-between; gap: var(--space-4); }
+.xfig-readout { margin-left: auto; font-family: var(--font-mono); font-variant-numeric: tabular-nums; color: var(--ink); }
+.xfig figcaption { max-width: var(--measure); margin: var(--space-3) 0 0; font-size: .9375rem; font-style: italic; line-height: 1.5; color: var(--ink-2); }
+
+@media (min-width: 1100px) {
+  .essay-section h2::before {
+    display: block; position: absolute; right: calc(100% + .5rem); top: 0; padding-right: 2rem;
+    font: 400 1.5rem/1.25 var(--font-display); color: var(--ink-2);
+    background: linear-gradient(var(--rule), var(--rule)) right center / 1.5rem 1px no-repeat;
+  }
+}
+@media (max-width: 639.98px) {
+  .essay-hero, .essay-section > :not(.xfig), .essay-takeaway { padding-inline: .25rem; }
+  .essay-source { line-height: 2.75; }
+  .xfig-card { padding: var(--space-3); }
+  .xfig-drawing { aspect-ratio: 4 / 3; }
+}

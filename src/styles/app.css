@@ -1,0 +1,50 @@
+.shell { width: min(var(--shell), 100% - 2.5rem); margin-inline: auto; }
+.site-header { padding: var(--space-5) 0 var(--space-4); border-bottom: 1px solid var(--rule); }
+.site-header a { color: var(--ink); text-decoration: none; }
+.wordmark { display: inline-flex; align-items: baseline; gap: .18em; font: 650 1.25rem/1 var(--font-display); letter-spacing: -.01em; color: var(--ink); }
+.wordmark svg { flex: none; width: 1.25em; height: 1.25em; position: relative; top: .195em; }
+.wordmark-home { font-size: 2.75rem; }
+.site-footer { margin-top: var(--space-7); padding: var(--space-5) 0 var(--space-7); border-top: 1px solid var(--rule); font: .875rem/1.4 var(--font-ui); color: var(--ink-2); }
+.site-footer ul { display: flex; flex-wrap: wrap; align-items: center; gap: 0 .5rem; margin: 0; padding: 0; list-style: none; }
+.site-footer li { display: flex; align-items: center; gap: .5rem; min-height: 44px; }
+
+.gallery h1 { margin: var(--space-7) 0 var(--space-2); line-height: 1; }
+.pitch { max-width: 34ch; margin: 0; font-size: 1.25rem; line-height: 1.45; color: var(--ink-2); }
+.gallery .kicker { margin: var(--space-7) 0 var(--space-4); }
+.cards { display: grid; gap: 1.25rem; margin: 0; padding: 0; list-style: none; }
+.card { position: relative; display: flex; flex-direction: column; overflow: hidden; background: var(--paper); border: 1px solid var(--rule); border-radius: var(--radius); transition: transform var(--dur-ui) var(--ease), border-color var(--dur-ui) var(--ease); }
+.card img { display: block; width: 100%; height: auto; background: var(--well); border-bottom: 1px solid var(--rule); }
+.card > :not(img) { margin-inline: 1.1rem; }
+.card-title { margin-block: .9rem .5rem; font-size: 1.25rem; line-height: 1.25; }
+.card-title a { color: var(--ink); text-decoration: none; }
+.card-title a::after { content: ""; position: absolute; inset: 0; }
+.card a:focus-visible { outline: none; }
+.card:has(a:focus-visible) { outline: 3px solid var(--series-1); outline-offset: 2px; }
+.card-dek { display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; margin-block: 0 .75rem; font-size: .9375rem; line-height: 1.5; color: var(--ink-2); }
+.card-source { align-self: flex-start; margin-block: auto 1rem; padding: .1rem .6rem; border: 1px solid var(--rule); border-radius: var(--radius-pill); font: .8125rem var(--font-mono); color: var(--ink-2); }
+@media (hover: hover) {
+  .card:hover { transform: translateY(-2px); border-color: var(--ink-3); }
+  .card:hover .card-title a { text-decoration: underline; }
+}
+@media (min-width: 640px) { .cards { grid-template-columns: repeat(2, 1fr); } }
+@media (min-width: 960px) { .cards { grid-template-columns: repeat(3, 1fr); } }
+
+.not-found > svg { display: block; margin-top: var(--space-7); }
+.not-found h1 { margin: var(--space-4) 0 var(--space-3); font-size: clamp(2rem, 5vw, 2.75rem); line-height: 1.1; text-wrap: balance; }
+.not-found > p { margin: 0 0 var(--space-6); color: var(--ink-2); }
+
+.essay-page { padding-inline: 1rem; }
+.essay-page > nav { max-width: var(--measure); margin: var(--space-5) auto var(--space-6); font: .9375rem/1.4 var(--font-ui); }
+
+@media (max-width: 639.98px) {
+  .wordmark-home { font-size: 2.25rem; }
+  .gallery h1, .not-found > svg { margin-top: var(--space-6); }
+  .essay-page > nav { padding-inline: .25rem; }
+  .site-footer ul { flex-direction: column; align-items: flex-start; }
+  .site-footer li > [aria-hidden] { display: none; }
+}
+@media (prefers-reduced-motion: reduce) { .card:hover { transform: none; } }
+@media (forced-colors: active) {
+  .card { border-color: CanvasText; }
+  .card:has(a:focus-visible) { outline-color: Highlight; }
+}
