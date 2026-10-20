@@ -26,13 +26,13 @@ export type Handle = ReturnType<typeof createHandle>;
 
 export function createHandle(parent: SVGElement, { def, onChange }: HandleOptions) {
   const root = svgEl(parent, 'g', { class: 'xfig-handle' });
-  const band = svgEl(root, 'rect', { class: 'xfig-track-hit', height: 44 });
+  const band = svgEl(root, 'rect', { class: 'xfig-track-hit', height: 46 });
   const knob = svgEl(root, 'g', {
     class: 'xfig-knob', role: 'slider', tabindex: 0, 'aria-label': `${def.label} (drag on chart)`,
     'aria-valuemin': def.min, 'aria-valuemax': def.max, 'aria-orientation': 'horizontal',
   });
   const move = svgEl(knob, 'g');
-  svgEl(move, 'circle', { class: 'xfig-knob-hit', r: 22 });
+  svgEl(move, 'circle', { class: 'xfig-knob-hit', r: 23 });
   svgEl(move, 'circle', { class: 'xfig-knob-hint', r: 15 });
   svgEl(move, 'text', { class: 'xfig-knob-hint', y: -21, 'text-anchor': 'middle', 'aria-hidden': 'true' }).textContent = 'drag';
   svgEl(move, 'circle', { class: 'xfig-knob-focus', r: 14 });
@@ -54,6 +54,7 @@ export function createHandle(parent: SVGElement, { def, onChange }: HandleOption
     e.preventDefault();
     dragging = e.pointerId;
     root.setPointerCapture?.(e.pointerId);
+    knob.classList.add('is-pointer'); // focus ring only for keyboard focus
     knob.focus({ preventScroll: true });
     onChange(snap(def, fromPos(def, posAt(e.clientX))), true);
   };
@@ -66,6 +67,7 @@ export function createHandle(parent: SVGElement, { def, onChange }: HandleOption
     root.releasePointerCapture?.(e.pointerId);
   };
   const onKey = (e: KeyboardEvent) => {
+    knob.classList.remove('is-pointer');
     const next = keyValue(def, value, e.key);
     if (next === undefined) return;
     e.preventDefault();
@@ -76,13 +78,14 @@ export function createHandle(parent: SVGElement, { def, onChange }: HandleOption
   root.addEventListener('pointerup', onUp);
   root.addEventListener('pointercancel', onUp);
   knob.addEventListener('keydown', onKey);
+  knob.addEventListener('blur', () => knob.classList.remove('is-pointer'));
 
   return {
     knob,
     /** Track from x0 to x1 at height y, in SVG user units (CSS px). */
     layout(nx0: number, nx1: number, ny: number) {
       [x0, x1, y] = [nx0, nx1, ny];
-      for (const [k, v] of Object.entries({ x: x0 - 22, y: y - 22, width: x1 - x0 + 44 })) band.setAttribute(k, String(v));
+      for (const [k, v] of Object.entries({ x: x0 - 23, y: y - 23, width: x1 - x0 + 46 })) band.setAttribute(k, String(v));
     },
     /** Draw the knob at track position `pos` in [0, 1]. */
     place(pos: number) {

@@ -98,8 +98,8 @@ describe('hydrateFigures: fig-temperature', () => {
     expect(k.getAttribute('tabindex')).toBe('0');
     expect([k.getAttribute('aria-valuemin'), k.getAttribute('aria-valuemax'), k.getAttribute('aria-valuenow')]).toEqual(['0.05', '5', '1']);
     expect(k.getAttribute('aria-valuetext')).toBe('1.00');
-    expect(Number(k.querySelector('.xfig-knob-hit')?.getAttribute('r'))).toBeGreaterThanOrEqual(22);
-    expect(Number($('.xfig-track-hit').getAttribute('height'))).toBeGreaterThanOrEqual(44);
+    expect(Number(k.querySelector('.xfig-knob-hit')?.getAttribute('r'))).toBeGreaterThanOrEqual(23);
+    expect(Number($('.xfig-track-hit').getAttribute('height'))).toBeGreaterThanOrEqual(46);
   });
 
   it('Home, End, arrows and PageUp/Down change T, readout and native slider together', () => {
@@ -153,12 +153,15 @@ describe('hydrateFigures: fig-temperature', () => {
     handle.releasePointerCapture = vi.fn<(id: number) => void>();
     handle.dispatchEvent(ev('pointerdown', xFor(1)));
     expect(capture).toHaveBeenCalledWith(7);
+    expect(knob().classList.contains('is-pointer')).toBe(true);
     handle.dispatchEvent(ev('pointermove', xFor(0.1)));
     expect(knob().getAttribute('aria-valuenow')).toBe('0.1');
     expect(Number(readout()?.match(/top weight ([\d.]+)/)?.[1])).toBeGreaterThan(0.9);
     handle.dispatchEvent(ev('pointerup', xFor(0.1)));
     handle.dispatchEvent(ev('pointermove', xFor(5)));
     expect(knob().getAttribute('aria-valuenow')).toBe('0.1');
+    key(knob(), 'ArrowRight');
+    expect(knob().classList.contains('is-pointer')).toBe(false);
   });
 
   it('"Show data" toggles a real table of tokens and weights', () => {

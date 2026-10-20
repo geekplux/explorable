@@ -21,6 +21,26 @@ const state = (page) =>
   }, FIG);
 const topWeight = (readout) => Number(/top weight ([\d.]+)/.exec(readout)?.[1]);
 
+/** Wait until eased keyboard motion has finished: the top bar's label matches the readout and the knob stops moving. */
+async function settled(page) {
+  await page.waitForFunction((fig) => {
+    const root = document.querySelector(fig);
+    const top = root.querySelector('.xfig-bar-value.is-top')?.textContent;
+    const move = root.querySelector('.xfig-knob g')?.getAttribute('transform');
+    const ok = top && root.querySelector('.xfig-readout').textContent.includes(`top weight ${top}`) && move === root.dataset.lastKnob;
+    root.dataset.lastKnob = move ?? "";
+    return ok;
+  }, FIG, { polling: 100, timeout: 5000 });
+}
+
+/** Hit areas of every control in Fig 1 are ≥ 44 × 44 CSS px. */
+async function assertHitAreas(page, assert, width) {
+  for (const sel of ['.xfig-knob-hit', '.xfig-track-hit', 'input[type=range]', '.xfig-data-toggle']) {
+    const box = await page.locator(`${FIG} ${sel}`).boundingBox();
+    assert.ok(box.width >= 44 && box.height >= 44, `${sel} hit area ${box.width}×${box.height} ≥ 44 px at ${width} px`);
+  }
+}
+
 /** Client x of temperature T on the track. */
 async function trackX(page, T) {
   const box = await page.locator(`${FIG} .xfig-track-line`).boundingBox();
@@ -91,12 +111,13 @@ export default async function attention({ page, baseURL, shot, assert, cvd, axe 
   assert.equal(flat.value, T_MAX, 'End sets T to max');
   assert.equal(flat.valuetext, '5.00');
   assert.equal(flat.readout, 'top weight 0.22 · entropy 2.57 bits');
-  await page.waitForTimeout(600);
+  await settled(page);
   await shot('attention-fig1-flat');
   await page.keyboard.press('Home');
   assert.equal((await state(page)).readout, 'top weight 1.00 · entropy 0.00 bits');
   await page.keyboard.press('ArrowRight');
   assert.ok((await state(page)).value > T_MIN, 'ArrowRight steps up');
+  await settled(page);
 
   for (const vision of ['deutan', 'protan', 'tritan']) {
     await cvd(vision);
@@ -104,15 +125,19 @@ export default async function attention({ page, baseURL, shot, assert, cvd, axe 
   }
   await cvd(null);
 
+  // Hit areas at other widths (sub-pixel layout must not shrink them).
+  for (const width of [1280, 480]) {
+    await page.setViewportSize({ width, height: 844 });
+    await page.waitForTimeout(100);
+    await assertHitAreas(page, assert, width);
+  }
+
   // 390 px with touch: hit areas ≥ 44 px, no horizontal scroll, touch drag via pointer capture.
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto(`${baseURL}/s/attention`, { waitUntil: 'networkidle' });
   await fig.locator('.xfig-knob').waitFor();
   await fig.scrollIntoViewIfNeeded();
-  for (const sel of ['.xfig-knob-hit', '.xfig-track-hit', 'input[type=range]', '.xfig-data-toggle']) {
-    const box = await fig.locator(sel).boundingBox();
-    assert.ok(box.width >= 44 && box.height >= 44, `${sel} hit area ${box.width}×${box.height} ≥ 44 px`);
-  }
+  await assertHitAreas(page, assert, 390);
   assert.equal(await page.evaluate(() => document.documentElement.scrollWidth - innerWidth), 0, 'no horizontal scroll at 390 px');
   await page.evaluate(() => {
     document.body.dataset.pointerTypes = '';

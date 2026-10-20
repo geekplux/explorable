@@ -48,8 +48,10 @@ export const mountBars: FigureMount = (el, { spec, model, setParam }) => {
   let last: [Params, Outputs] | undefined;
 
   function layout() {
-    const w = Math.round(el.clientWidth) || 640;
-    const h = Math.round(el.clientHeight) || 360;
+    // Unrounded size: one SVG unit is exactly one CSS px, so 44-unit hit areas are ≥ 44 px.
+    const box = el.getBoundingClientRect();
+    const w = box.width || 640;
+    const h = box.height || 360;
     g = { w, h, L: 44, R: w - 12, top: 44, bottom: h - 78, trackY: h - 34 };
     ATTR(svg, { viewBox: `0 0 ${w} ${h}`, width: '100%', height: '100%' });
     axis.replaceChildren();
