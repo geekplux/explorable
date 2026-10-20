@@ -44,7 +44,8 @@ export interface ModelDef<
   params: { [K in keyof P]: ParamDef };
   outputs: Partial<Record<keyof O, OutputDef>>;
   compute(p: P): O;
-  describe(p: P, o: O): string;
+  /** One-sentence live description; `labels` are the figure's item labels, if any. */
+  describe(p: P, o: O, labels?: readonly string[]): string;
   /** Slug of the curated sample used in match mode. */
   template?: string;
 }
