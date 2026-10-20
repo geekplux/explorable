@@ -20,5 +20,5 @@
     "skipLibCheck": true,
     "paths": { "@kit/*": ["./skills/explorable/kit/src/*"] }
   },
-  "include": ["src", "skills/explorable/kit/src"]
+  "include": ["src", "skills/explorable/kit/src", "skills/explorable/kit/react"]
 }

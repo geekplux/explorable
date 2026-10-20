@@ -10,7 +10,7 @@ export default defineConfig({
     alias: { '@kit': fileURLToPath(new URL('./skills/explorable/kit/src', import.meta.url)) },
   },
   test: {
-    include: ['src/**/*.test.{ts,tsx}', 'skills/explorable/kit/src/**/*.test.ts'],
+    include: ['src/**/*.test.{ts,tsx}', 'skills/explorable/kit/{src,react}/**/*.test.{ts,tsx}'],
     // Shared, RAM-tight machine: few forked workers. DOM tests opt in per file
     // with `// @vitest-environment happy-dom`.
     pool: 'forks',

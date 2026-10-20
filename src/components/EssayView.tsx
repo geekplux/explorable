@@ -1,13 +1,7 @@
-import { useMemo } from 'react';
-import { essayHtml } from '@kit/doc/essay.ts';
+import { Explorable } from '../../skills/explorable/kit/react/Explorable.tsx';
 import type { ExplorableDoc } from '@kit/doc/schema.ts';
 
-/**
- * Thin shell around the kit renderer. `essayHtml` escapes every piece of doc
- * text and emits only its own markup, so injecting it is safe. Live figures
- * hydrate into the shells from Phase 4 on.
- */
+/** The essay with live figures, rendered by the kit's React wrapper. */
 export function EssayView({ doc }: { doc: ExplorableDoc }) {
-  const html = useMemo(() => essayHtml(doc), [doc]);
-  return <div className="essay-host" dangerouslySetInnerHTML={{ __html: html }} />;
+  return <Explorable doc={doc} className="essay-host" />;
 }

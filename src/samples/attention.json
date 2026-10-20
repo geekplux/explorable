@@ -67,7 +67,15 @@
             "mat"
           ],
           "query": "sat",
-          "handle": "T"
+          "handle": "T",
+          "itemName": "token",
+          "ticks": [
+            "0.1",
+            "0.5",
+            "1",
+            "2",
+            "5"
+          ]
         }
       }
     },
