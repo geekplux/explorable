@@ -40,7 +40,7 @@ Outputs: `weights` (number[n]), `top` (label "top weight", fixed2), `entropy` (l
 
 **Doc params (fixed, hand-chosen and illustrative):** query token "sat" over the six tokens of "the cat sat on the mat", with scores `s = [0.3, 2.5, 1.2, 0.4, 0.3, 1.4]`. "cat" is the most relevant, "mat" second and "sat" itself third. The two "the" tokens share a score on purpose: their bars stay equal at every T, which is a quiet check that the weights depend only on the score.
 
-**Controls.** `T`, on a log track under the bars with the ring knob. Ticks are labelled 0.1, 0.5, 1, 2 and 5. The track position is `log(T)`. The same `T` is on a native range in the controls row, with an `<output>` showing `T = 1.00`. Keyboard follows the log rule in samples.md §5 (Arrow ≈ ×1.047, PageUp ≈ ×1.585). `aria-valuetext`: "temperature 1.00".
+**Controls.** `T`, on a log track under the bars with the ring knob. Ticks are labelled 0.1, 0.5, 1, 2 and 5. The track position is `log(T)`. The same `T` is on a native range in the controls row, with an `<output>` showing `T = 1.00`. Keyboard follows the log rule in samples.md §5 (Arrow ≈ ×1.047, PageUp ≈ ×1.585). `aria-valuetext`: "temperature 1.00" on the native range; the knob (named "temperature (drag on chart)") uses the value only, "1.00" (see DECISIONS.md).
 
 **Drawing.**
 - Six vertical bars in token order. The x labels are the tokens.

@@ -87,7 +87,7 @@ The readout strip shows each readout as `<label> <value>[ <unit>]`, joined by ` 
 | `sig3` *(invented)* | 3 significant digits in plain notation when \|v\| ≥ 0.001, else `sci` | `1.00`, `0.897`, `0.0786`, `0.00335`, `4.04 × 10⁻⁵` |
 | any | `Infinity` → `∞`, `-Infinity` → `−∞` | `∞ dB` |
 
-`aria-valuetext` on a control is `<label> <value> <unit>` with words, never symbols that a screen reader mangles: "temperature 0.50", "key width d k 64", "step t 260", "hashes per word 3".
+`aria-valuetext` on a control is `<label> <value> <unit>` with words, never symbols that a screen reader mangles: "temperature 0.50", "key width d k 64", "step t 260", "hashes per word 3". Exception: the on-chart knob already carries the label in its accessible name ("<label> (drag on chart)"), so its valuetext is `<value> <unit>` only, to avoid reading the label twice.
 
 ## 5. Controls and keyboard (all figures)
 
