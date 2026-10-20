@@ -1,5 +1,6 @@
 // Attention Fig 1 is live: mouse drag, keyboard-only End, "Show data", CVD,
-// axe, and a touch drag at 390 px with ≥ 44 px hit areas.
+// axe, and a touch drag at 390 px with ≥ 44 px hit areas. Fig 2: drag d_k
+// unscaled, then flip the √d_k switch by keyboard and drag again.
 import { blocking } from '../lib/axe.mjs';
 
 const FIG = '#fig-temperature';
@@ -56,7 +57,6 @@ export default async function attention({ page, baseURL, shot, assert, cvd, axe 
   assert.deepEqual(labels, ['the', 'cat', 'sat', 'on', 'the', 'mat'], 'six token-labelled bars');
   assert.equal((await state(page)).readout, 'top weight 0.51 · entropy 2.05 bits');
   assert.equal(await fig.locator('.xfig-top text').textContent(), 'top', 'top bar carries ▼ + "top"');
-  assert.equal(await page.locator('#fig-scaling .xfig-drawing').count(), 0, 'Fig 2 stays a static shell until P5');
   const describedBy = await fig.getAttribute('aria-describedby');
   assert.ok((await page.locator(`#${describedBy}`).textContent()).startsWith('Bar chart'), 'alt text kept via aria-describedby');
   const live = await page.evaluate((sel) => {
@@ -156,4 +156,65 @@ export default async function attention({ page, baseURL, shot, assert, cvd, axe 
   assert.ok(Math.abs(touched.value - 0.1) <= 0.011 && topWeight(touched.readout) > 0.9, `touch drag reaches T ≈ 0.1: ${JSON.stringify(touched)}`);
   await cdp.detach();
   await shot('attention-mobile');
+
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await page.goto(`${baseURL}/s/attention`, { waitUntil: 'networkidle' });
+  await fig2(page, { shot, assert, axe });
+}
+
+const FIG2 = '#fig-scaling';
+const sd = (text) => Number(/score SD ([\d.]+)/.exec(text)?.[1]);
+
+/** Drag the d_k knob along its log track to each width in `widths`; returns the readout at each. */
+async function dragDk(page, widths) {
+  const track = await page.locator(`${FIG2} .xfig-track-line`).boundingBox();
+  const ring = await page.locator(`${FIG2} .xfig-knob-ring`).boundingBox();
+  const x = (d) => track.x + (Math.log(d) / Math.log(512)) * track.width;
+  const y = ring.y + ring.height / 2;
+  await page.mouse.move(ring.x + ring.width / 2, y);
+  await page.mouse.down();
+  const seen = [];
+  for (const d of widths) {
+    await page.mouse.move(x(d), y, { steps: 3 });
+    seen.push(await page.locator(`${FIG2} .xfig-readout`).textContent());
+  }
+  await page.mouse.up();
+  return seen;
+}
+
+async function fig2(page, { shot, assert, axe }) {
+  const fig = page.locator(FIG2);
+  await fig.locator('.xfig-knob').waitFor();
+  await fig.scrollIntoViewIfNeeded();
+  const sw = fig.locator('[role="switch"]');
+  assert.equal(await fig.locator('.xfig-readout').textContent(), 'score SD 2.02 · top weight 0.57 · entropy 1.85 bits');
+  assert.equal(await sw.getAttribute('aria-checked'), 'false');
+  assert.equal(await sw.getAttribute('aria-label'), 'divide scores by square root of d k');
+
+  // Unscaled: d_k 1 → 512 drives the top weight to 1 and the SD toward √d_k.
+  const unscaled = await dragDk(page, [1, 64, 512]);
+  assert.equal(await fig.locator('.xfig-knob').getAttribute('aria-valuenow'), '512');
+  assert.ok(sd(unscaled[0]) < 1.5 && topWeight(unscaled[0]) < 0.5, `d_k = 1 is soft: ${unscaled[0]}`);
+  assert.ok(sd(unscaled[1]) > 6 && sd(unscaled[1]) < 10, `SD ≈ √64 = 8: ${unscaled[1]}`);
+  assert.equal(unscaled[2], 'score SD 23.95 · top weight 1.00 · entropy 0.00 bits', 'SD ≈ √512 and one-hot at 512');
+  assert.deepEqual(await fig.locator('.xfig-legend text').allTextContents(), ['this setting', 'with ÷√d_k']);
+  await page.waitForTimeout(200);
+  await shot('attention-fig2-unscaled');
+
+  // The switch by keyboard: Space and Enter both toggle.
+  await sw.focus();
+  await page.keyboard.press('Space');
+  assert.equal(await sw.getAttribute('aria-checked'), 'true', 'Space turns the switch on');
+  await page.keyboard.press('Enter');
+  assert.equal(await sw.getAttribute('aria-checked'), 'false', 'Enter turns it off');
+  await page.keyboard.press('Space');
+  assert.equal(await fig.locator('.xfig-readout').textContent(), 'score SD 1.06 · top weight 0.61 · entropy 2.00 bits');
+  assert.deepEqual(await fig.locator('.xfig-legend text').allTextContents(), ['this setting', 'without ÷√d_k']);
+
+  // Scaled: the SD stays near 1 across the whole drag.
+  const scaled = await dragDk(page, [1, 8, 64, 512]);
+  for (const r of scaled) assert.ok(Math.abs(sd(r) - 1) <= 0.3, `scaled SD ≈ 1: ${r}`);
+  assert.deepEqual(blocking(await axe()).map((v) => `${v.id}: ${v.help}`), [], 'axe clean with Fig 2 live');
+  await page.waitForTimeout(200);
+  await shot('attention-fig2-scaled');
 }
