@@ -91,11 +91,11 @@ The idea: a careful lab notebook on warm paper, written in near-black ink. **Exa
 | `--live` | `#C4451C` | **draggable things**: knobs, slider thumbs, the controlled item (series 3) | 4.7:1 on paper, 4.3:1 on well (graphics) |
 | `--live-ink` | `#A93A12` | vermilion text (error headings, active labels) | 6.0:1 on paper, 5.2:1 on `--live-wash` |
 | `--live-wash` | `#FBE3D8` | error panel and selected-row tint (always with icon or text) | ink on it: 14.0:1 |
-| `--series-1` | `#2457C5` | cobalt: primary data series, links, **focus ring** | 6.1:1 on paper |
+| `--series-1` | `#2851C0` | cobalt: primary data series, links, **focus ring** | 6.1:1 on paper |
 | `--series-2` | `#0F8A6E` | teal: secondary series (graphics only, never body text) | 4.1:1 on paper, 3.7:1 on well |
 | `--note-wash` | `#F6E7B8` | ochre highlight behind "current value" chips (decorative) | ink on it: 14.0:1 |
 
-**Validated** with the dataviz palette validator (`--pairs all`) on both `--paper` and `--well`, using `#2457C5, #C4451C, #0F8A6E`. Lightness band, chroma floor, CVD separation (worst: teal↔vermilion ΔE 10.6 deutan, tritan 8.0), normal-vision floor (worst 22.5) and contrast ≥ 3:1 all pass. A fourth hue (purple, ochre, pink) failed CVD separation or contrast in every variant tried. **Rule:** a figure uses at most 3 hue-coded series; anything beyond that uses ink with line style or pattern. Phase 2 puts this check into the kit as a unit test (`kit/src/color/cvd.ts`), so a palette change cannot regress silently.
+**Validated** with the dataviz palette validator (`--pairs all`) on both `--paper` and `--well`, using `#2851C0, #C4451C, #0F8A6E`. Lightness band, chroma floor, CVD separation (worst: teal↔vermilion ΔE 10.6 deutan, tritan 8.0), normal-vision floor (worst 22.5) and contrast ≥ 3:1 all pass. A fourth hue (purple, ochre, pink) failed CVD separation or contrast in every variant tried. **Rule:** a figure uses at most 3 hue-coded series; anything beyond that uses ink with line style or pattern. Phase 2 puts this check into the kit as a unit test (`kit/src/color/cvd.ts`), so a palette change cannot regress silently.
 
 **Never colour alone** (each figure kind must follow this):
 - series-1 is a solid 2 px line with circle markers; series-2 is a dashed (6 3) line with square markers; the live or controlled item is a hollow ring knob, 2.5 px vermilion stroke on paper fill, with a 3-line grip.
