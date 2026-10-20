@@ -47,7 +47,7 @@ export const mountBars: FigureMount = (el, { spec, model, setParam }) => {
 
   const legend = compare ? svgEl(svg, 'g', { class: 'xfig-legend', 'aria-hidden': 'true' }) : undefined;
   let otherText: SVGTextElement | undefined;
-  let bars: { rect: SVGRectElement; other?: SVGRectElement; value: SVGTextElement; name: SVGTextElement }[] = [];
+  let bars: { rect: SVGRectElement; other?: SVGRectElement[]; value: SVGTextElement; name: SVGTextElement }[] = [];
   const marker = svgEl(plot, 'g', { class: 'xfig-top', 'aria-hidden': 'true' });
   svgEl(marker, 'path', { d: 'M-17 0h10l-5 7z' });
   svgEl(marker, 'text', { x: -4, y: 7 }).textContent = 'top';
@@ -59,7 +59,9 @@ export const mountBars: FigureMount = (el, { spec, model, setParam }) => {
     const box = el.getBoundingClientRect();
     const w = box.width || 640;
     const h = box.height || 360;
-    g = { w, h, L: 44, R: w - 12, top: compare ? 64 : 44, bottom: h - 78, trackY: h - 34 };
+    // A narrow plot stacks the two legend entries, so the plot starts lower.
+    const stack = w - 56 < 260;
+    g = { w, h, L: 44, R: w - 12, top: compare ? (stack ? 80 : 64) : 44, bottom: h - 78, trackY: h - 34 };
     ATTR(svg, { viewBox: `0 0 ${w} ${h}`, width: '100%', height: '100%' });
     axis.replaceChildren();
     for (const y of [0, 0.25, 0.5, 0.75, 1]) {
@@ -73,14 +75,16 @@ export const mountBars: FigureMount = (el, { spec, model, setParam }) => {
       const x = Math.max(g.L + 40, g.R - 300);
       svgEl(legend, 'rect', { class: 'xfig-bar', x, y: 14, width: 14, height: 10 });
       svgEl(legend, 'text', { x: x + 20, y: 23 }).textContent = 'this setting';
-      svgEl(legend, 'rect', { class: 'xfig-bar-other', x: x + 112, y: 14, width: 14, height: 10 });
-      otherText = svgEl(legend, 'text', { x: x + 132, y: 23 });
+      const [ox, oy] = stack ? [x, 16] : [x + 112, 0];
+      svgEl(legend, 'rect', { class: 'xfig-bar-other-halo', x: ox, y: 14 + oy, width: 14, height: 10 });
+      svgEl(legend, 'rect', { class: 'xfig-bar-other', x: ox, y: 14 + oy, width: 14, height: 10 });
+      otherText = svgEl(legend, 'text', { x: ox + 20, y: 23 + oy });
     }
     trackG.replaceChildren();
     if (knob && handleDef && handleName) {
       const [x0, x1, y] = [g.L + 12, g.R - 12, g.trackY];
       knob.layout(x0, x1, y);
-      svgEl(trackG, 'text', { x: g.L - 6, y: y + 4, 'text-anchor': 'end', class: 'xfig-track-label' }).textContent = handleName;
+      svgEl(trackG, 'text', { x: g.L - 6, y: y + 4, 'text-anchor': 'end', class: 'xfig-track-label' }).textContent = handleDef.symbol ?? handleName;
       svgEl(trackG, 'path', { class: 'xfig-track-line', d: `M${x0} ${y}H${x1}` });
       const ticks = Array.isArray(o.ticks) ? o.ticks.map(Number) : defaultTicks(handleDef);
       for (const t of ticks) {
@@ -106,7 +110,9 @@ export const mountBars: FigureMount = (el, { spec, model, setParam }) => {
         const name = svgEl(bg, 'text', { class: 'xfig-bar-label', 'text-anchor': 'middle' });
         name.textContent = label(i);
         const rect = svgEl(bg, 'rect', { class: 'xfig-bar' });
-        return { rect, other: compare ? svgEl(bg, 'rect', { class: 'xfig-bar-other' }) : undefined, value: svgEl(bg, 'text', { class: 'xfig-bar-value', 'text-anchor': 'middle' }), name };
+        // The dashed outline gets a paper halo so it stays ≥ 3:1 against the cobalt bar.
+        const other = compare ? [svgEl(bg, 'rect', { class: 'xfig-bar-other-halo' }), svgEl(bg, 'rect', { class: 'xfig-bar-other' })] : undefined;
+        return { rect, other, value: svgEl(bg, 'text', { class: 'xfig-bar-value', 'text-anchor': 'middle' }), name };
       });
       plot.append(marker);
     }
@@ -119,7 +125,7 @@ export const mountBars: FigureMount = (el, { spec, model, setParam }) => {
       let above = y;
       if (b.other) {
         const oy = g.bottom - Math.min(1, Math.max(0, nums(out.weightsOther)[i] ?? 0)) * (g.bottom - g.top);
-        ATTR(b.other, { x: cx - bw / 2, y: oy, width: bw, height: g.bottom - oy });
+        for (const r of b.other) ATTR(r, { x: cx - bw / 2, y: oy, width: bw, height: g.bottom - oy });
         above = Math.min(y, oy);
       }
       ATTR(b.value, { x: cx, y: above - 6, class: `xfig-bar-value${i === top ? ' is-top' : ''}` });

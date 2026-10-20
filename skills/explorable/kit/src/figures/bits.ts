@@ -17,6 +17,7 @@ const set = (el: Element, attrs: Record<string, string | number>) => {
 };
 const ICONS = ['M-4 -4L4 4M4 -4L-4 4', 'M-4.5 0l3 3.5l6-7', 'M0 -5v5.5M0 4v.5'];
 const NOTE = ["the filter can't tell this apart from a false positive;", 'the figure knows because it keeps the list'];
+const NOTE3 = ["the filter can't tell this apart from a", 'false positive; the figure knows because', 'it keeps the list'];
 
 export const mountBits: FigureMount = (el, { spec, model, setParam }) => {
   const defs = model.params as Record<string, ParamDef>;
@@ -35,6 +36,7 @@ export const mountBits: FigureMount = (el, { spec, model, setParam }) => {
   const chart = svgEl(svg, 'g', { role: 'img', 'aria-label': `${spec.title}: ${INSERT.length} words and a row of 32 bits` });
   const [words, track, arrows, cells, outlines, mark, query] = Array.from({ length: 7 }, () => svgEl(chart, 'g')) as [SVGGElement, SVGGElement, SVGGElement, SVGGElement, SVGGElement, SVGGElement, SVGGElement];
   track.setAttribute('aria-hidden', 'true');
+  words.setAttribute('class', 'xfig-words');
   const knob = handleDef ? createHandle(svg, { def: handleDef, onChange: (v, instant) => setParam(handleName, v, instant) }) : undefined;
 
   let g = { w: 640, h: 250, wide: true, cell: 24, pitch: 27, rowGap: 18, top: 124, chipTop: 192 };
@@ -57,17 +59,19 @@ export const mountBits: FigureMount = (el, { spec, model, setParam }) => {
     const rowGap = wide ? 18 : 40;
     const top = trackY + 68;
     const chipTop = top + (wide ? cell : 2 * cell + rowGap) + 44;
-    g = { w, h: chipTop + (wide ? 56 : 74), wide, cell, pitch, rowGap, top, chipTop };
+    g = { w, h: chipTop + (wide ? 56 : w < 330 ? 92 : 74), wide, cell, pitch, rowGap, top, chipTop };
     set(svg, { viewBox: `0 0 ${w} ${g.h}`, width: '100%', height: g.h });
 
     words.replaceChildren();
     const x0 = wide ? 76 : 8;
     const cp = (w - x0 - 8) / (wide ? 12 : 6);
+    words.classList.toggle('is-tight', cp < 44);
     svgEl(words, 'text', { x: 0, y: wide ? 22 : 14 }).textContent = 'inserted:';
     chips = INSERT.map((word, i) => {
-      const chip = svgEl(words, 'g', { class: 'xfig-word', transform: `translate(${x0 + (i % (wide ? 12 : 6)) * cp + 3} ${wide ? 4 : i < 6 ? 22 : 52})` });
-      svgEl(chip, 'rect', { width: cp - 6, height: 26, rx: 13 });
-      svgEl(chip, 'text', { x: (cp - 6) / 2, y: 17.5, 'text-anchor': 'middle' }).textContent = word;
+      const chip = svgEl(words, 'g', { class: 'xfig-word', transform: `translate(${x0 + (i % (wide ? 12 : 6)) * cp + (cp < 44 ? 1.5 : 3)} ${wide ? 4 : i < 6 ? 22 : 52})` });
+      const cw = cp - (cp < 44 ? 3 : 6);
+      svgEl(chip, 'rect', { width: cw, height: 26, rx: 13 });
+      svgEl(chip, 'text', { x: cw / 2, y: 17.5, 'text-anchor': 'middle' }).textContent = word;
       return chip;
     });
 
@@ -127,7 +131,9 @@ export const mountBits: FigureMount = (el, { spec, model, setParam }) => {
     }
     for (const i of probes) {
       const { x, y } = cellXY(i);
-      svgEl(arrows, 'path', { class: 'xfig-arrow', d: `M${qx + chipW / 2} ${g.chipTop}L${x + g.cell / 2} ${y + g.cell + 7}`, 'marker-end': `url(#${arrow})` });
+      const d = `M${qx + chipW / 2} ${g.chipTop}L${x + g.cell / 2} ${y + g.cell + 7}`;
+      svgEl(arrows, 'path', { class: 'xfig-arrow-halo', d });
+      svgEl(arrows, 'path', { class: 'xfig-arrow', d, 'marker-end': `url(#${arrow})` });
     }
     if (state === 0 && typeof out.firstZero === 'number' && out.firstZero >= 0) {
       const { x, y } = cellXY(out.firstZero);
@@ -143,7 +149,7 @@ export const mountBits: FigureMount = (el, { spec, model, setParam }) => {
     svgEl(query, 'path', { class: 'xfig-verdict-icon', d: ICONS[state] ?? '', transform: `translate(${bx + 14} ${g.chipTop + 13})` });
     svgEl(query, 'text', { class: 'xfig-verdict-text', x: bx + 26, y: g.chipTop + 17.5 }).textContent = verdict;
     if (state === 1) {
-      const lines = g.wide ? [NOTE.join(' ')] : NOTE;
+      const lines = g.wide ? [NOTE.join(' ')] : g.w < 330 ? NOTE3 : NOTE;
       lines.forEach((line, i) => {
         svgEl(query, 'text', { class: 'xfig-note', x: 0, y: g.chipTop + 46 + i * 18 }).textContent = line;
       });
@@ -163,7 +169,7 @@ export const mountBits: FigureMount = (el, { spec, model, setParam }) => {
     note: (p, out) => `“${queries[Math.round(p.q ?? 0)] ?? ''}”: ${VERDICTS[Number(out.queryState)] ?? ''}`,
     rows: (_p, out) => {
       const probes = nums(out.probes);
-      return nums(out.bits).map((b, i) => [String(i), String(b), probes.includes(i) ? 'yes' : '']);
+      return nums(out.bits).map((b, i) => [String(i), String(b), probes.includes(i) ? 'yes' : 'no']);
     },
     destroy() {
       ro?.disconnect();

@@ -125,7 +125,7 @@ Outputs: `scores` (number[8]), `weights` (number[8]), `weightsOther` (number[8])
 
 **Controls.**
 - `dk` as a log track with the ring knob, ticks at 1, 8, 64 and 512, plus a native range. `aria-valuetext`: "key width d k 64 dimensions".
-- `scaled` as a labelled switch, "divide by √d_k", in the controls row. Its accessible name is "divide scores by square root of d k".
+- `scaled` as a labelled switch, "divide by √d_k", in the controls row. Its accessible name is "divide by square root of d k" (it starts with the visible words "divide by", WCAG 2.5.3). The `dk` track label and slider readout show "d_k"; the knob's name is "key width d k (d_k, drag on chart)" and the native range is named "key width d k".
 - Keyboard: log rule for `dk`; Space or Enter toggles the switch.
 
 **Drawing.**

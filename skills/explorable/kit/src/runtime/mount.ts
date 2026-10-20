@@ -92,7 +92,7 @@ export function mountFigure(stage: HTMLElement, spec: FigureSpec, opts: MountOpt
   const CONTROLS: Record<string, Make> = { range: createRange, toggle: createToggle, choice: createChoice };
   const ranges = controls.map((name) => {
     const make = CONTROLS[defs[name]!.control ?? 'range']!;
-    return [name, make(`${spec.id}-${name}`, defs[name]!, (v, i) => setParam(name, v, i), name)] as const;
+    return [name, make(`${spec.id}-${name}`, defs[name]!, (v, i) => setParam(name, v, i), defs[name]!.symbol ?? name)] as const;
   });
   // Only sliders ease; a switch or a choice jumps.
   const eased = controls.filter((c) => (defs[c]!.control ?? 'range') === 'range');

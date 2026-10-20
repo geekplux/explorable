@@ -50,7 +50,7 @@ export const valueText = (def: ParamDef, v: number) => `${spoken(def)} ${valueOn
 const RANGE_STEPS = 1000;
 
 /** A labelled native `<input type=range>` with an `<output>`, driven in track positions. */
-export function createRange(id: string, def: ParamDef, onChange: (v: number, instant: boolean) => void, name = def.label) {
+export function createRange(id: string, def: ParamDef, onChange: (v: number, instant: boolean) => void, name = def.symbol ?? def.label) {
   const el = document.createElement('div');
   el.className = 'xfig-control';
   const [label, input, output] = [document.createElement('label'), document.createElement('input'), document.createElement('output')];
@@ -60,6 +60,8 @@ export function createRange(id: string, def: ParamDef, onChange: (v: number, ins
   // <output> is an implicit live region; the throttled description speaks instead.
   output.setAttribute('aria-live', 'off');
   Object.assign(input, { type: 'range', min: '0', max: String(RANGE_STEPS), step: '1' });
+  // Symbols such as "d_k" are read out badly ("d underscore k"); name the slider in words.
+  if (def.spoken) input.setAttribute('aria-label', def.spoken);
   el.append(label, input, output);
   let value = def.default;
   input.addEventListener('input', () => onChange(snap(def, fromPos(def, Number(input.value) / RANGE_STEPS)), true));

@@ -28,7 +28,7 @@ export function createHandle(parent: SVGElement, { def, onChange }: HandleOption
   const root = svgEl(parent, 'g', { class: 'xfig-handle' });
   const band = svgEl(root, 'rect', { class: 'xfig-track-hit', height: 46 });
   const knob = svgEl(root, 'g', {
-    class: 'xfig-knob', role: 'slider', tabindex: 0, 'aria-label': `${spoken(def)} (drag on chart)`,
+    class: 'xfig-knob', role: 'slider', tabindex: 0, 'aria-label': `${spoken(def)} (${def.symbol ? `${def.symbol}, ` : ''}drag on chart)`,
     'aria-valuemin': def.min, 'aria-valuemax': def.max, 'aria-orientation': 'horizontal',
   });
   const move = svgEl(knob, 'g');

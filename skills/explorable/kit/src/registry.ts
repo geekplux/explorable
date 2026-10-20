@@ -12,6 +12,8 @@ export interface ParamDef {
   label: string;
   /** The label in words for assistive tech ("key width d k"), when `label` has symbols. Default `label`. */
   spoken?: string;
+  /** Short display name for the track label and the slider readout ("d_k"). Default: the param id. */
+  symbol?: string;
   min: number;
   max: number;
   step: number;

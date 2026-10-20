@@ -52,6 +52,7 @@ circle.xfig-knob-hint { fill: none; stroke: var(--ink-2); stroke-width: 1.5; str
 .xfig-knob-hint { visibility: hidden; }
 .xfig-knob.is-hinting .xfig-knob-hint { visibility: visible; }
 .xfig-controls { margin-top: var(--space-2); }
+.xfig-bar-other-halo { fill: none; stroke: var(--paper); stroke-width: 3.5; }
 .xfig-bar-other { fill: none; stroke: var(--ink); stroke-width: 1.5; stroke-dasharray: 5 3; }
 .xfig-drawing:has(> .xfig-bits) { aspect-ratio: auto; }
 .xfig-word rect { fill: var(--paper); stroke: var(--ink-3); stroke-dasharray: 3 3; }
@@ -61,10 +62,12 @@ circle.xfig-knob-hint { fill: none; stroke: var(--ink-2); stroke-width: 1.5; str
 .xfig-bit.is-set rect { fill: var(--ink); stroke: var(--paper); }
 .xfig-svg .xfig-bit text { font: .8125rem var(--font-mono); fill: var(--ink-2); }
 .xfig-svg .xfig-bit.is-set text { fill: var(--paper); }
-.xfig-svg .xfig-bit-index { font: .6875rem var(--font-mono); }
+.xfig-svg .xfig-bit-index { font: .6875rem var(--font-mono); paint-order: stroke; stroke: var(--well); stroke-width: 3px; }
 @media (prefers-reduced-motion: no-preference) { .xfig-bit rect, .xfig-svg .xfig-bit text { transition: fill 150ms; } }
 .xfig-probe-halo { fill: none; stroke: var(--paper); stroke-width: 7; }
 .xfig-probe { fill: none; stroke: var(--series-1); stroke-width: 3; }
+.xfig-arrow-halo { fill: none; stroke: var(--paper); stroke-width: 4.5; }
+.xfig-svg .xfig-words.is-tight text { font-size: .6875rem; }
 .xfig-arrow { fill: none; stroke: var(--ink); stroke-width: 1.5; }
 .xfig-arrowhead { fill: var(--ink); }
 .xfig-hatch { stroke: var(--ink-2); stroke-width: 1; }
