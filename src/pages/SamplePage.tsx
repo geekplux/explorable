@@ -15,7 +15,7 @@ export function SamplePage({ slug }: { slug: string }) {
   return (
     <main className="page essay-page">
       <nav aria-label="Back">
-        <a href="/" className="back">
+        <a href="/" className="back hit">
           <span aria-hidden="true">← </span>All explorables
         </a>
       </nav>

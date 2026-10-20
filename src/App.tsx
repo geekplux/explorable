@@ -1,4 +1,6 @@
 import { useEffect, useRef } from 'react';
+import { Footer } from './components/Footer.tsx';
+import { Header } from './components/Header.tsx';
 import { GalleryPage } from './pages/GalleryPage.tsx';
 import { NotFoundPage } from './pages/NotFoundPage.tsx';
 import { SamplePage } from './pages/SamplePage.tsx';
@@ -17,7 +19,11 @@ export function App() {
     document.querySelector<HTMLElement>('main h1')?.focus();
   }, [key]);
 
-  if (route.name === 'gallery') return <GalleryPage />;
-  if (route.name === 'sample') return <SamplePage slug={route.slug} />;
-  return <NotFoundPage />;
+  return (
+    <>
+      {route.name !== 'gallery' && <Header />}
+      {route.name === 'gallery' ? <GalleryPage /> : route.name === 'sample' ? <SamplePage slug={route.slug} /> : <NotFoundPage />}
+      <Footer />
+    </>
+  );
 }

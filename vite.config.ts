@@ -4,6 +4,8 @@ import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
   plugins: [react()],
+  // Keep SVG thumbnails as files (<img src="/assets/…svg">), never data: URIs.
+  build: { assetsInlineLimit: (file) => (file.endsWith('.svg') ? false : undefined) },
   resolve: {
     alias: { '@kit': fileURLToPath(new URL('./skills/explorable/kit/src', import.meta.url)) },
   },
