@@ -11,10 +11,3 @@ export function mulberry32(seed: number): Rng {
     return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
   };
 }
-
-/** One standard normal per two uniforms (Box–Muller, cosine branch only). */
-export function gaussian(rng: Rng): number {
-  const u1 = 1 - rng();
-  const u2 = rng();
-  return Math.sqrt(-2 * Math.log(u1)) * Math.cos(2 * Math.PI * u2);
-}

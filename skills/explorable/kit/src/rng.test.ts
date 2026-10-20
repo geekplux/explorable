@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { gaussian, mulberry32 } from './rng.ts';
+import { mulberry32 } from './rng.ts';
 
 describe('mulberry32', () => {
   it('gives the documented stable sequence for seed 42', () => {
@@ -14,17 +14,5 @@ describe('mulberry32', () => {
     const values = Array.from({ length: 1000 }, rng);
     expect(values.every((x) => x >= 0 && x < 1)).toBe(true);
     expect(mulberry32(8)()).not.toBe(mulberry32(7)());
-  });
-});
-
-describe('gaussian', () => {
-  it('has mean ≈ 0 and SD ≈ 1 over 20,000 draws', () => {
-    const rng = mulberry32(1);
-    const z = Array.from({ length: 20_000 }, () => gaussian(rng));
-    const mean = z.reduce((s, x) => s + x, 0) / z.length;
-    const sd = Math.sqrt(z.reduce((s, x) => s + (x - mean) ** 2, 0) / z.length);
-    expect(Math.abs(mean)).toBeLessThan(0.03);
-    expect(Math.abs(sd - 1)).toBeLessThan(0.03);
-    expect(z.every(Number.isFinite)).toBe(true);
   });
 });

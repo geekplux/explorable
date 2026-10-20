@@ -26,7 +26,7 @@ export { escapeHtml, formatInline, safeHttpUrl } from './doc/inline.ts';
 /** Model registry: register, look up and search models. */
 export { getModel, registerModel, searchModels, type ModelDef, type OutputDef, type ParamDef } from './registry.ts';
 /** Seeded randomness and readout formats. */
-export { gaussian, mulberry32, type Rng } from './rng.ts';
+export { mulberry32, type Rng } from './rng.ts';
 export { format, type Format } from './format.ts';
 /** Palette tokens and colour-vision checks. */
 export { PALETTE, SERIES, type Token } from './color/palette.ts';
