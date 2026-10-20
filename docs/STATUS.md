@@ -2,7 +2,7 @@ STATE: IN-PROGRESS
 
 # Status
 
-- Current phase: Phase 4 (`phase-4-runtime-attention`), starting
+- Current phase: Phase 4 (`phase-4-runtime-attention`), implementing (resumed after weekly usage limit reset)
 - Plan: docs/PLAN.md (15 phases, committed on main)
 - Blockers: none
 
@@ -29,4 +29,4 @@ STATE: IN-PROGRESS
 - Move `ci/github-workflow.yml` to `.github/workflows/` (needs `workflow` token scope).
 - Upload the social preview image in GitHub repo settings (manual).
 
-Last updated: 2026-10-20 05:32 UTC
+Last updated: 2026-10-20 17:10 UTC
