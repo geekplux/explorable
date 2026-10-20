@@ -53,7 +53,12 @@ circle.xfig-knob-hint { fill: none; stroke: var(--ink-2); stroke-width: 1.5; str
 .xfig-knob.is-hinting .xfig-knob-hint { visibility: visible; }
 .xfig-controls { margin-top: var(--space-2); }
 .xfig-control { display: flex; flex: 1 1 18rem; align-items: center; gap: var(--space-3); font: .875rem var(--font-ui); }
-.xfig-control input { flex: 1; height: 44px; margin: 0; accent-color: var(--live); }
+.xfig-control input { flex: 1; height: 44px; margin: 0; appearance: none; background: transparent; cursor: pointer; }
+.xfig-control input::-webkit-slider-runnable-track { height: 4px; border-radius: 2px; background: var(--ink-3); }
+.xfig-control input::-moz-range-track { height: 4px; border-radius: 2px; background: var(--ink-3); }
+.xfig-control input::-webkit-slider-thumb { appearance: none; width: 20px; height: 20px; margin-top: -8px; border: 2.5px solid var(--live); border-radius: 50%; background: var(--paper); }
+.xfig-control input::-moz-range-thumb { width: 15px; height: 15px; border: 2.5px solid var(--live); border-radius: 50%; background: var(--paper); }
+.xfig-control input:focus-visible, .xfig-data-toggle:focus-visible { outline: 3px solid var(--series-1); outline-offset: 2px; }
 .xfig-control output, .xfig-table td { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
 .xfig-foot { flex-wrap: wrap; align-items: center; margin-top: var(--space-2); }
 .xfig-readout { margin: 0; font-size: .875rem; }
@@ -62,7 +67,10 @@ circle.xfig-knob-hint { fill: none; stroke: var(--ink-2); stroke-width: 1.5; str
 .xfig-table caption { padding-bottom: var(--space-1); text-align: left; color: var(--ink-2); }
 .xfig-table th, .xfig-table td { padding: .25rem .75rem; border-bottom: 1px solid var(--rule); text-align: left; }
 .xfig-table td { text-align: right; }
-@media (forced-colors: active) { .xfig-knob-focus { stroke: Highlight; } }
+@media (forced-colors: active) {
+  .xfig-knob-focus { stroke: Highlight; }
+  .xfig-control input:focus-visible, .xfig-data-toggle:focus-visible { outline-color: Highlight; }
+}
 .xfig figcaption { max-width: var(--measure); margin: var(--space-3) 0 0; font-size: .9375rem; font-style: italic; line-height: 1.5; color: var(--ink-2); }
 
 @media (min-width: 1100px) {
@@ -78,3 +86,4 @@ circle.xfig-knob-hint { fill: none; stroke: var(--ink-2); stroke-width: 1.5; str
   .xfig-card { padding: var(--space-3); }
   .xfig-drawing { aspect-ratio: 4 / 3; }
 }
+@media (max-width: 340px) { .xfig-drawing { aspect-ratio: 1; } }

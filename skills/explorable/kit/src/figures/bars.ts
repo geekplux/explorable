@@ -25,7 +25,7 @@ function defaultTicks(def: ParamDef): number[] {
   return out;
 }
 
-export const mountBars: FigureMount = (el, { spec, model, descId, setParam }) => {
+export const mountBars: FigureMount = (el, { spec, model, setParam }) => {
   const o = spec.options ?? {};
   const labels = Array.isArray(o.labels) ? o.labels : [];
   const label = (i: number) => labels[i] ?? `item ${i + 1}`;
@@ -36,7 +36,7 @@ export const mountBars: FigureMount = (el, { spec, model, descId, setParam }) =>
   if (chip) el.before(chip);
   const svg = svgEl(el, 'svg', { class: 'xfig-svg' });
   const axis = svgEl(svg, 'g', { class: 'xfig-axis', 'aria-hidden': 'true' });
-  const plot = svgEl(svg, 'g', { role: 'img', 'aria-labelledby': descId });
+  const plot = svgEl(svg, 'g', { role: 'img', 'aria-label': `${spec.title}: bar chart` });
   const trackG = svgEl(svg, 'g', { class: 'xfig-track', 'aria-hidden': 'true' });
   const knob = handleDef ? createHandle(svg, { def: handleDef, onChange: (v, instant) => setParam(handleName!, v, instant) }) : undefined;
 
@@ -112,6 +112,7 @@ export const mountBars: FigureMount = (el, { spec, model, descId, setParam }) =>
   const view: FigureView = {
     draw,
     handle: knob && handleName ? { name: handleName, knob } : undefined,
+    rowHeader: 1,
     columns: ['#', typeof o.itemName === 'string' ? o.itemName : 'item', 'score', 'weight'],
     rows: (_p, out) =>
       nums(out.weights).map((w, i) => [String(i + 1), label(i), format(nums(out.scores)[i] ?? NaN, 'fixed2'), format(w, 'fixed3')]),

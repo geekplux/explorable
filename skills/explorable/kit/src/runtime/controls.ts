@@ -40,8 +40,10 @@ export function keyValue(def: ParamDef, v: number, key: string): number | undefi
 
 /** "1.00": the value at the precision of its step. */
 export const showValue = (def: ParamDef, v: number) => v.toFixed(decimals(def.step));
+/** "1.00" plus the unit in words, if any: aria-valuetext where the name already says the label. */
+export const valueOnly = (def: ParamDef, v: number) => `${showValue(def, v)}${def.unit ? ` ${def.unit}` : ''}`;
 /** "temperature 1.00" (plus the unit in words, if any) for aria-valuetext. */
-export const valueText = (def: ParamDef, v: number) => `${def.label} ${showValue(def, v)}${def.unit ? ` ${def.unit}` : ''}`;
+export const valueText = (def: ParamDef, v: number) => `${def.label} ${valueOnly(def, v)}`;
 
 const RANGE_STEPS = 1000;
 
@@ -53,6 +55,8 @@ export function createRange(id: string, name: string, def: ParamDef, onChange: (
   label.htmlFor = input.id = id;
   label.textContent = def.label;
   output.setAttribute('for', id);
+  // <output> is an implicit live region; the throttled description speaks instead.
+  output.setAttribute('aria-live', 'off');
   Object.assign(input, { type: 'range', min: '0', max: String(RANGE_STEPS), step: '1' });
   el.append(label, input, output);
   let value = def.default;

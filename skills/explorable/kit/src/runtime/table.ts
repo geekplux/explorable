@@ -1,5 +1,5 @@
 /** "Show data": a toggle button and a real `<table>` of the current values (A3). */
-export function createDataTable(id: string, caption: string, columns: readonly string[]) {
+export function createDataTable(id: string, caption: string, columns: readonly string[], rowHeader = 0) {
   const button = document.createElement('button');
   button.type = 'button';
   button.className = 'xfig-data-toggle';
@@ -30,14 +30,14 @@ export function createDataTable(id: string, caption: string, columns: readonly s
   return {
     button,
     table,
-    /** Replace the body rows; the first cell of each row is a row header. */
+    /** Replace the body rows; the `rowHeader` cell of each row is a row header. */
     setRows(rows: readonly (readonly string[])[]) {
       body.replaceChildren(
         ...rows.map((cells) => {
           const tr = document.createElement('tr');
           cells.forEach((text, i) => {
-            const cell = document.createElement(i === 0 ? 'th' : 'td');
-            if (i === 0) cell.setAttribute('scope', 'row');
+            const cell = document.createElement(i === rowHeader ? 'th' : 'td');
+            if (i === rowHeader) cell.setAttribute('scope', 'row');
             cell.textContent = text;
             tr.append(cell);
           });

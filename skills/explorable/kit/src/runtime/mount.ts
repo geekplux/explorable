@@ -21,8 +21,6 @@ export type Outputs = Record<string, number | number[]>;
 export interface FigureCtx {
   spec: FigureSpec;
   model: ModelDef;
-  /** Id of the live description; the drawing is labelled by it. */
-  descId: string;
   setParam(name: string, value: number, instant: boolean): void;
 }
 
@@ -33,6 +31,8 @@ export interface FigureView {
   /** The ring knob on the figure, if any, and the param it controls. */
   handle?: { name: string; knob: Handle };
   columns: string[];
+  /** Index of the column that names each row (a row header). */
+  rowHeader?: number;
   rows(p: Params, o: Outputs): string[][];
   destroy(): void;
 }
@@ -84,8 +84,8 @@ export function mountFigure(stage: HTMLElement, spec: FigureSpec, opts: MountOpt
   const announcer = createAnnouncer(desc);
   const ranges = controls.map((name) => [name, createRange(`${spec.id}-${name}`, name, defs[name]!, (v, i) => setParam(name, v, i))] as const);
   row.append(...ranges.map(([, r]) => r.el));
-  const view = kind(drawing, { spec, model, descId: desc.id, setParam: (n, v, i) => setParam(n, v, i) });
-  const data = createDataTable(`${spec.id}-data`, `Data for: ${spec.title}`, view.columns);
+  const view = kind(drawing, { spec, model, setParam: (n, v, i) => setParam(n, v, i) });
+  const data = createDataTable(`${spec.id}-data`, `Data for: ${spec.title}`, view.columns, view.rowHeader);
   foot.append(data.button, readout);
   stage.append(data.table);
 

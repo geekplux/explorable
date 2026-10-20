@@ -39,6 +39,15 @@ export default async function attention({ page, baseURL, shot, assert, cvd, axe 
   assert.equal(await page.locator('#fig-scaling .xfig-drawing').count(), 0, 'Fig 2 stays a static shell until P5');
   const describedBy = await fig.getAttribute('aria-describedby');
   assert.ok((await page.locator(`#${describedBy}`).textContent()).startsWith('Bar chart'), 'alt text kept via aria-describedby');
+  const live = await page.evaluate((sel) => {
+    const root = document.querySelector(sel);
+    return {
+      speaking: [...root.querySelectorAll('[aria-live]')].filter((e) => e.getAttribute('aria-live') !== 'off').map((e) => e.id),
+      outputs: [...root.querySelectorAll('output')].map((e) => e.getAttribute('aria-live')),
+      status: root.querySelectorAll('[role="status"]').length,
+    };
+  }, FIG);
+  assert.deepEqual(live, { speaking: ['fig-temperature-desc'], outputs: ['off'], status: 0 }, 'only the throttled description is live');
   assert.deepEqual(blocking(await axe()).map((v) => `${v.id}: ${v.help}`), [], 'axe: no serious/critical violations');
   await shot('attention-fig1-default');
 
@@ -80,7 +89,7 @@ export default async function attention({ page, baseURL, shot, assert, cvd, axe 
   await page.keyboard.press('End');
   const flat = await state(page);
   assert.equal(flat.value, T_MAX, 'End sets T to max');
-  assert.equal(flat.valuetext, 'temperature 5.00');
+  assert.equal(flat.valuetext, '5.00');
   assert.equal(flat.readout, 'top weight 0.22 · entropy 2.57 bits');
   await page.waitForTimeout(600);
   await shot('attention-fig1-flat');

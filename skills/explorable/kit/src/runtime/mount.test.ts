@@ -86,17 +86,18 @@ describe('hydrateFigures: fig-temperature', () => {
     const alt = root.querySelector(`#${figure.getAttribute('aria-describedby')}`);
     expect(alt?.textContent).toBe(ALT);
     expect(alt?.classList.contains('xfig-sr')).toBe(true);
-    expect($('[role="img"]').getAttribute('aria-labelledby')).toBe('fig-temperature-desc');
+    expect($('[role="img"]').getAttribute('aria-label')).toBe('Temperature sets how sharp the softmax is: bar chart');
+    expect($('[role="img"]').hasAttribute('aria-labelledby')).toBe(false);
   });
 
   it('knob is an accessible slider with a ≥ 44 px hit area', () => {
     mount();
     const k = knob();
     expect(k.getAttribute('role')).toBe('slider');
-    expect(k.getAttribute('aria-label')).toBe('temperature');
+    expect(k.getAttribute('aria-label')).toBe('temperature (drag on chart)');
     expect(k.getAttribute('tabindex')).toBe('0');
     expect([k.getAttribute('aria-valuemin'), k.getAttribute('aria-valuemax'), k.getAttribute('aria-valuenow')]).toEqual(['0.05', '5', '1']);
-    expect(k.getAttribute('aria-valuetext')).toBe('temperature 1.00');
+    expect(k.getAttribute('aria-valuetext')).toBe('1.00');
     expect(Number(k.querySelector('.xfig-knob-hit')?.getAttribute('r'))).toBeGreaterThanOrEqual(22);
     expect(Number($('.xfig-track-hit').getAttribute('height'))).toBeGreaterThanOrEqual(44);
   });
@@ -104,7 +105,7 @@ describe('hydrateFigures: fig-temperature', () => {
   it('Home, End, arrows and PageUp/Down change T, readout and native slider together', () => {
     mount();
     key(knob(), 'Home');
-    expect(knob().getAttribute('aria-valuetext')).toBe('temperature 0.05');
+    expect(knob().getAttribute('aria-valuetext')).toBe('0.05');
     expect(readout()).toBe('top weight 1.00 · entropy 0.00 bits');
     key(knob(), 'End');
     expect(knob().getAttribute('aria-valuenow')).toBe('5');
@@ -172,6 +173,8 @@ describe('hydrateFigures: fig-temperature', () => {
     expect([...table.querySelectorAll('thead th')].map((t) => t.textContent)).toEqual(['#', 'token', 'score', 'weight']);
     const rows = [...table.querySelectorAll('tbody tr')].map((tr) => [...tr.children].map((c) => c.textContent));
     expect(rows[1]).toEqual(['2', 'cat', '2.50', '0.513']);
+    expect([...table.querySelectorAll('tbody th[scope="row"]')].map((th) => th.textContent)).toEqual(['the', 'cat', 'sat', 'on', 'the', 'mat']);
+    expect(table.querySelector('tbody tr')?.firstElementChild?.tagName).toBe('TD');
     expect(rows).toHaveLength(6);
     button.click();
     expect(table.hidden).toBe(true);

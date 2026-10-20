@@ -1,6 +1,7 @@
+// @vitest-environment happy-dom
 import { describe, expect, it } from 'vitest';
 import type { ParamDef } from '../registry.ts';
-import { fromPos, keyValue, snap, toPos, valueText } from './controls.ts';
+import { createRange, fromPos, keyValue, snap, toPos, valueOnly, valueText } from './controls.ts';
 
 const T: ParamDef = { label: 'temperature', min: 0.05, max: 5, step: 0.01, default: 1, scale: 'log' };
 const K: ParamDef = { label: 'hashes per word', min: 1, max: 6, step: 1, default: 3 };
@@ -42,5 +43,18 @@ describe('control value rules', () => {
   it('writes aria-valuetext with words', () => {
     expect(valueText(T, 0.5)).toBe('temperature 0.50');
     expect(valueText({ ...K, unit: 'dimensions' }, 4)).toBe('hashes per word 4 dimensions');
+    expect(valueOnly(T, 0.5)).toBe('0.50');
+    expect(valueOnly({ ...K, unit: 'dimensions' }, 4)).toBe('4 dimensions');
+  });
+
+  it('native range: labelled, and its <output> is not a live region', () => {
+    const r = createRange('fig-T', 'T', T, () => {});
+    r.set(0.5);
+    const output = r.el.querySelector('output')!;
+    expect(output.getAttribute('aria-live')).toBe('off');
+    expect(output.getAttribute('for')).toBe('fig-T');
+    expect(output.textContent).toBe('T = 0.50');
+    expect(r.el.querySelector('label')?.htmlFor).toBe('fig-T');
+    expect(r.el.querySelector('input')?.getAttribute('aria-valuetext')).toBe('temperature 0.50');
   });
 });

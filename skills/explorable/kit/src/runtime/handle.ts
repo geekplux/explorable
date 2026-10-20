@@ -4,7 +4,7 @@
  * The whole track band is a ≥ 44 px pointer target; so is the knob.
  */
 import type { ParamDef } from '../registry.ts';
-import { keyValue, snap, fromPos, valueText } from './controls.ts';
+import { keyValue, snap, fromPos, valueOnly } from './controls.ts';
 
 const NS = 'http://www.w3.org/2000/svg';
 
@@ -28,7 +28,7 @@ export function createHandle(parent: SVGElement, { def, onChange }: HandleOption
   const root = svgEl(parent, 'g', { class: 'xfig-handle' });
   const band = svgEl(root, 'rect', { class: 'xfig-track-hit', height: 44 });
   const knob = svgEl(root, 'g', {
-    class: 'xfig-knob', role: 'slider', tabindex: 0, 'aria-label': def.label,
+    class: 'xfig-knob', role: 'slider', tabindex: 0, 'aria-label': `${def.label} (drag on chart)`,
     'aria-valuemin': def.min, 'aria-valuemax': def.max, 'aria-orientation': 'horizontal',
   });
   const move = svgEl(knob, 'g');
@@ -93,7 +93,7 @@ export function createHandle(parent: SVGElement, { def, onChange }: HandleOption
     set(v: number) {
       value = v;
       knob.setAttribute('aria-valuenow', String(v));
-      knob.setAttribute('aria-valuetext', valueText(def, v));
+      knob.setAttribute('aria-valuetext', valueOnly(def, v));
     },
     /** Hint offset in px (the nudge), and the static reduced-motion hint. */
     nudge(px: number) {
