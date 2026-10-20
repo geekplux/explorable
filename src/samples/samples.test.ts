@@ -1,6 +1,7 @@
 // @vitest-environment happy-dom
 import { describe, expect, it } from 'vitest';
 import { essayHtml } from '@kit/doc/essay.ts';
+import { parseDoc } from '@kit/doc/schema.ts';
 import { getSample, samples, sourceChip } from './index.ts';
 
 describe('built-in samples', () => {
@@ -8,6 +9,11 @@ describe('built-in samples', () => {
     expect(samples.map((s) => s.id)).toEqual(['attention', 'bloom-filter', 'diffusion']);
     expect(getSample('bloom-filter')?.title).toContain('Bloom filter');
     expect(getSample('nope')).toBeUndefined();
+  });
+
+  it.each(samples.map((s) => [s.id, s] as const))('%s passes parseDoc', (_id, doc) => {
+    const result = parseDoc(doc);
+    expect(result.ok ? [] : result.errors).toEqual([]);
   });
 
   it.each(samples.map((s) => [s.id, s] as const))('%s renders sections and figure shells', (_id, doc) => {

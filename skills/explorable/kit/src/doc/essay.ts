@@ -1,5 +1,5 @@
 import { escapeHtml, formatInline, safeHttpUrl } from './inline.ts';
-import type { DocSource, ExplorableDoc, FigureSpec, Provenance } from './types.ts';
+import type { DocSource, ExplorableDoc, FigureSpec, Provenance } from './schema.ts';
 
 const KICKERS: Record<DocSource['kind'], string> = {
   arxiv: 'arXiv paper',

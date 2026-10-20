@@ -1,4 +1,4 @@
-import type { DocSource, ExplorableDoc } from '@kit/doc/types.ts';
+import type { DocSource, ExplorableDoc } from '@kit/doc/schema.ts';
 import attention from './attention.json';
 import bloomFilter from './bloom-filter.json';
 import diffusion from './diffusion.json';

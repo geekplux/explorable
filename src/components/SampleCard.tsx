@@ -1,4 +1,4 @@
-import type { ExplorableDoc } from '@kit/doc/types.ts';
+import type { ExplorableDoc } from '@kit/doc/schema.ts';
 import { samples, sourceChip } from '../samples/index.ts';
 
 const thumbs = import.meta.glob<string>('../samples/thumbs/*.svg', { eager: true, query: '?url', import: 'default' });

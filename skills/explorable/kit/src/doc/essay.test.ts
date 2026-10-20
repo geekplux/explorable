@@ -1,7 +1,7 @@
 // @vitest-environment happy-dom
 import { describe, expect, it } from 'vitest';
 import { authorLine, essayHtml } from './essay.ts';
-import type { ExplorableDoc, FigureSpec } from './types.ts';
+import type { ExplorableDoc, FigureSpec } from './schema.ts';
 
 function figure(id: string, title: string): FigureSpec {
   return {

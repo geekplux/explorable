@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { essayHtml } from '@kit/doc/essay.ts';
-import type { ExplorableDoc } from '@kit/doc/types.ts';
+import type { ExplorableDoc } from '@kit/doc/schema.ts';
 
 /**
  * Thin shell around the kit renderer. `essayHtml` escapes every piece of doc
