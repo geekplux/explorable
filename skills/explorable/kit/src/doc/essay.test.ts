@@ -48,6 +48,7 @@ describe('essayHtml', () => {
     expect(link?.getAttribute('href')).toBe('https://arxiv.org/abs/1706.03762');
     expect(dom.querySelector('.essay-source')?.textContent).toBe('Based on A Paper ↗, Lovelace et al., 2017');
     expect(dom.querySelector('.essay-provenance')?.textContent).toBe('Curated');
+    expect(dom.querySelector('.essay-provenance')?.getAttribute('data-mode')).toBe('curated');
   });
 
   it('renders one section per doc section plus the takeaway', () => {
@@ -70,6 +71,8 @@ describe('essayHtml', () => {
     expect(second?.getAttribute('aria-labelledby')).toBe('fig-b-title');
     expect(second?.querySelector('figcaption')?.innerHTML).toBe('Caption for fig-b with <em>emphasis</em>.');
     expect(second?.querySelector('.xfig-alt')?.textContent).toContain('static description of fig-b');
+    expect([...(second?.children ?? [])].map((el) => el.className || el.tagName)).toEqual(['xfig-card', 'FIGCAPTION']);
+    expect([...(second?.querySelector('.xfig-card')?.children ?? [])].map((el) => el.className)).toEqual(['xfig-head', 'xfig-stage']);
     expect(second?.closest('section')?.querySelector('h2')?.id).toBe('s3');
   });
 

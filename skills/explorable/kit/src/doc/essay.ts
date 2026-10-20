@@ -40,9 +40,9 @@ function figureShell(fig: FigureSpec, n: number): string {
   return (
     `<figure class="xfig" id="${id}" data-kind="${escapeHtml(fig.kind)}" ` +
     `data-model="${escapeHtml(fig.model.id)}" aria-labelledby="${id}-title">` +
-    `<div class="xfig-head"><span class="xfig-num">Fig. ${n}</span> ` +
+    `<div class="xfig-card"><div class="xfig-head"><span class="xfig-num">Fig. ${n}</span> ` +
     `<span class="xfig-title" id="${id}-title">${escapeHtml(fig.title)}</span></div>` +
-    `<div class="xfig-stage" data-figure-stage><p class="xfig-alt">${escapeHtml(fig.alt)}</p></div>` +
+    `<div class="xfig-stage" data-figure-stage><p class="xfig-alt">${escapeHtml(fig.alt)}</p></div></div>` +
     `<figcaption>${formatInline(fig.caption)}</figcaption>` +
     `</figure>`
   );
@@ -62,7 +62,7 @@ export function essayHtml(doc: ExplorableDoc): string {
     `<h1 tabindex="-1">${escapeHtml(doc.title)}</h1>` +
     `<p class="essay-dek">${formatInline(doc.dek)}</p>` +
     `<p class="essay-source">${sourceLine(doc.source)}</p>` +
-    `<p class="essay-provenance">${PROVENANCE[doc.provenance.mode]}</p>` +
+    `<p class="essay-provenance" data-mode="${escapeHtml(doc.provenance.mode)}">${PROVENANCE[doc.provenance.mode]}</p>` +
     `</header>`;
   const sections = doc.sections
     .map((section) => {
