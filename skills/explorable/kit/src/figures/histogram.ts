@@ -43,7 +43,8 @@ export const mountHistogram: FigureMount = (el, { spec, model, setParam }) => {
   const knob = handleDef ? createHandle(svg, { def: handleDef, onChange: (v, instant) => setParam(handleName!, v, instant) }) : undefined;
 
   let g = { L: 40, R: 628, top: 30, bottom: 252 };
-  const px = (x: number) => g.L + ((x - X_MIN) / (X_MAX - X_MIN)) * (g.R - g.L);
+  // The x domain starts 12 px right of the y axis, so the "0" density label and the "−4" tick label never meet.
+  const px = (x: number) => g.L + 12 + ((x - X_MIN) / (X_MAX - X_MIN)) * (g.R - g.L - 12);
   const py = (d: number) => g.bottom - Math.min(1, Math.max(0, d)) * (g.bottom - g.top);
   let last: [Params, Outputs] | undefined;
 
@@ -72,8 +73,10 @@ export const mountHistogram: FigureMount = (el, { spec, model, setParam }) => {
     }
     const curve = Array.from({ length: 161 }, (_, i) => X_MIN + i * 0.05).map((x) => `${px(x).toFixed(1)} ${py(normalPdf(x)).toFixed(1)}`);
     ATTR(ref, { d: `M${curve.join('L')}` });
-    ATTR(refText, { x: px(0.45), y: py(0.42) });
-    const bw = (g.R - g.L) / BINS;
+    // Just right of the peak; on a narrow plot that is over the +1.5 clump, so centre it above the peak instead (no bar tops 0.46 there).
+    const narrow = g.R - g.L < 400;
+    ATTR(refText, narrow ? { x: px(0), y: py(0.5), 'text-anchor': 'middle' } : { x: px(0.45), y: py(0.42), 'text-anchor': 'start' });
+    const bw = (g.R - g.L - 12) / BINS;
     bars.forEach((b, j) => ATTR(b, { x: px(edge(j)), width: bw }));
 
     trackG.replaceChildren();
