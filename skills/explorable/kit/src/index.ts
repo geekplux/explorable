@@ -21,7 +21,10 @@ export {
   type RegistryModelRef,
 } from './doc/schema.ts';
 /** Static, escaped essay HTML and the inline formatter it uses. */
-export { authorLine, essayHtml } from './doc/essay.ts';
+export { authorLine, essayHtml, hydrateFigures } from './doc/essay.ts';
+/** Live figure runtime: mount one figure into a shell, and the built-in models. */
+export { mountFigure, type FigureCtx, type FigureMount, type FigureView, type MountOptions } from './runtime/mount.ts';
+export { entropyBits, softmax, softmaxTemperature } from './models/softmax-temperature.ts';
 export { escapeHtml, formatInline, safeHttpUrl } from './doc/inline.ts';
 /** Model registry: register, look up and search models. */
 export { getModel, registerModel, searchModels, type ModelDef, type OutputDef, type ParamDef } from './registry.ts';

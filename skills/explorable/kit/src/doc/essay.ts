@@ -1,4 +1,5 @@
 import { escapeHtml, formatInline, safeHttpUrl } from './inline.ts';
+import { mountFigure, type MountOptions } from '../runtime/mount.ts';
 import type { DocSource, ExplorableDoc, FigureSpec, Provenance } from './schema.ts';
 
 const KICKERS: Record<DocSource['kind'], string> = {
@@ -79,4 +80,26 @@ export function essayHtml(doc: ExplorableDoc): string {
     `<section class="essay-takeaway" aria-labelledby="essay-takeaway"><h2 id="essay-takeaway">Takeaway</h2>` +
     `<p>${formatInline(doc.takeaway)}</p>${original}</section>`;
   return `<article class="essay" data-doc="${escapeHtml(doc.id)}">${hero}${sections}${takeaway}</article>`;
+}
+
+/**
+ * Mount live figures into the shells that `essayHtml` rendered inside `root`.
+ * Figures whose kind or model is not available keep their static shell.
+ */
+export function hydrateFigures(root: ParentNode, doc: ExplorableDoc, opts: MountOptions = {}): { destroy(): void } {
+  const mounted = doc.sections.flatMap((section) => {
+    const fig = section.figure;
+    const stage = fig && [...root.querySelectorAll<HTMLElement>('figure.xfig')].find((f) => f.id === fig.id)?.querySelector<HTMLElement>('[data-figure-stage]');
+    const live = fig && stage ? mountFigure(stage, fig, opts) : undefined;
+    if (live) stage?.closest('figure')?.setAttribute('data-live', '');
+    return live ? [{ live, stage }] : [];
+  });
+  return {
+    destroy() {
+      for (const { live, stage } of mounted) {
+        live.destroy();
+        stage?.closest('figure')?.removeAttribute('data-live');
+      }
+    },
+  };
 }

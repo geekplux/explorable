@@ -27,6 +27,42 @@
 .xfig-controls { display: flex; flex-wrap: wrap; gap: var(--space-4); }
 .xfig-foot { display: flex; justify-content: space-between; gap: var(--space-4); }
 .xfig-readout { margin-left: auto; font-family: var(--font-mono); font-variant-numeric: tabular-nums; color: var(--ink); }
+.xfig-sr { position: absolute; width: 1px; height: 1px; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+.xfig-chip { display: inline-block; margin: var(--space-3) 0 0; padding: .1rem .6rem; background: var(--note-wash); border-radius: var(--radius-pill); font: .8125rem var(--font-mono); color: var(--ink); }
+.xfig-svg { display: block; overflow: visible; touch-action: pan-y; font: .8125rem var(--font-ui); user-select: none; }
+.xfig-svg text { fill: var(--ink-2); }
+.xfig-svg .xfig-bar-label { fill: var(--ink); font-size: .875rem; }
+.xfig-svg .xfig-bar-value { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+.xfig-svg .is-top, .xfig-svg .xfig-top text { fill: var(--ink); font-weight: 700; }
+.xfig-bar { fill: var(--series-1); stroke: var(--ink); stroke-width: 1; }
+.xfig-top path { fill: var(--ink); }
+.xfig-grid { stroke: var(--rule); }
+.xfig-baseline { stroke: var(--ink); }
+.xfig-track-line { stroke: var(--ink-3); stroke-width: 2; stroke-linecap: round; }
+.xfig-tick { stroke: var(--ink-3); }
+.xfig-handle { cursor: pointer; touch-action: none; }
+.xfig-track-hit, .xfig-knob-hit { fill: transparent; }
+.xfig-knob { outline: none; cursor: grab; }
+.xfig-knob-ring { fill: var(--paper); stroke: var(--live); stroke-width: 2.5; }
+.xfig-knob-grip { fill: none; stroke: var(--live); stroke-width: 1.25; stroke-linecap: round; }
+.xfig-knob-focus { fill: none; stroke: var(--series-1); stroke-width: 3; visibility: hidden; }
+.xfig-knob:focus-visible .xfig-knob-focus { visibility: visible; }
+circle.xfig-knob-hint { fill: none; stroke: var(--ink-2); stroke-width: 1.5; stroke-dasharray: 3 3; }
+.xfig-svg text.xfig-knob-hint { font-size: .75rem; }
+.xfig-knob-hint { visibility: hidden; }
+.xfig-knob.is-hinting .xfig-knob-hint { visibility: visible; }
+.xfig-controls { margin-top: var(--space-2); }
+.xfig-control { display: flex; flex: 1 1 18rem; align-items: center; gap: var(--space-3); font: .875rem var(--font-ui); }
+.xfig-control input { flex: 1; height: 44px; margin: 0; accent-color: var(--live); }
+.xfig-control output, .xfig-table td { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+.xfig-foot { flex-wrap: wrap; align-items: center; margin-top: var(--space-2); }
+.xfig-readout { margin: 0; font-size: .875rem; }
+.xfig-data-toggle { min-height: 44px; min-width: 44px; padding: 0 .9rem; font: .875rem var(--font-ui); color: var(--ink); background: var(--paper); border: 1px solid var(--ink-3); border-radius: var(--radius-pill); cursor: pointer; }
+.xfig-table { margin-top: var(--space-3); border-collapse: collapse; font: .875rem var(--font-ui); }
+.xfig-table caption { padding-bottom: var(--space-1); text-align: left; color: var(--ink-2); }
+.xfig-table th, .xfig-table td { padding: .25rem .75rem; border-bottom: 1px solid var(--rule); text-align: left; }
+.xfig-table td { text-align: right; }
+@media (forced-colors: active) { .xfig-knob-focus { stroke: Highlight; } }
 .xfig figcaption { max-width: var(--measure); margin: var(--space-3) 0 0; font-size: .9375rem; font-style: italic; line-height: 1.5; color: var(--ink-2); }
 
 @media (min-width: 1100px) {
