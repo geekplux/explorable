@@ -70,6 +70,10 @@ describe('parseDoc', () => {
     ['non-numeric param', (d) => (d.sections[0].figure.model.params.T = '1'), 'sections[0].figure.model.params.T: Invalid type'],
     ['bad option value', (d) => (d.sections[0].figure.options.handle = { a: 1 }), 'sections[0].figure.options.handle: Invalid type'],
     ['empty takeaway', (d) => (d.takeaway = ''), 'takeaway: must not be empty'],
+    ['zero step', (d) => (d.sections[1].figure.model.params[0].step = 0), 'sections[1].figure.model.params[0].step: must be greater than 0'],
+    ['unknown figure key', (d) => (d.sections[0].figure.optons = {}), 'sections[0].figure: unknown key "optons"'],
+    ['unknown doc key', (d) => (d.titel = 'x'), '(doc): unknown key "titel"'],
+    ['javascript: source url', (d) => (d.source.url = 'javascript:alert(1)'), 'source.url: must be an http(s) URL'],
     ['sections not an array', (d) => (d.sections = 'none'), 'sections: Invalid type'],
   ];
 

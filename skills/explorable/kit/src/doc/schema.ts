@@ -20,22 +20,22 @@ const list = <T extends v.GenericSchema>(item: T, min: number, max: number) =>
 const range = <T extends { min: number; max: number }>(input: T) => input.min < input.max;
 
 const ExprParamSchema = v.pipe(
-  v.object({
+  v.strictObject({
     name: v.pipe(v.string(), v.regex(/^[A-Za-z_]\w*$/, 'must be an identifier')),
     label: text(60),
     min: v.number(),
     max: v.number(),
     default: v.number(),
-    step: v.optional(v.pipe(v.number(), v.minValue(0, 'must be positive'))),
+    step: v.optional(v.pipe(v.number(), v.gtValue(0, 'must be greater than 0'))),
   }),
   v.check((p) => range(p) && p.default >= p.min && p.default <= p.max, 'needs min < max and min ≤ default ≤ max'),
 );
 
-const ExprCurveModelSchema = v.object({
+const ExprCurveModelSchema = v.strictObject({
   id: v.literal('expr-curve'),
   expr: text(200),
   x: v.pipe(
-    v.object({
+    v.strictObject({
       name: v.literal('x', 'must be "x"'),
       label: text(60),
       min: v.number(),
@@ -44,11 +44,11 @@ const ExprCurveModelSchema = v.object({
     }),
     v.check(range, 'needs min < max'),
   ),
-  y: v.object({ label: text(60), min: v.optional(v.number()), max: v.optional(v.number()) }),
+  y: v.strictObject({ label: text(60), min: v.optional(v.number()), max: v.optional(v.number()) }),
   params: v.pipe(v.array(ExprParamSchema), v.maxLength(6, 'at most 6 params')),
 });
 
-const RegistryModelSchema = v.object({
+const RegistryModelSchema = v.strictObject({
   id: slug('model id'),
   params: v.record(v.string(), v.number()),
 });
@@ -57,7 +57,7 @@ const RegistryModelSchema = v.object({
 const OptionValue = v.union([v.string(), v.number(), v.boolean(), v.array(v.string())]);
 
 const FigureSchema = v.pipe(
-  v.object({
+  v.strictObject({
     id: slug('figure id'),
     kind: v.picklist(FIGURE_KINDS, `must be one of ${FIGURE_KINDS.join(', ')}`),
     title: text(120),
@@ -79,7 +79,7 @@ const FigureSchema = v.pipe(
   ),
 );
 
-const SectionSchema = v.object({
+const SectionSchema = v.strictObject({
   id: slug('section id'),
   heading: text(90),
   paragraphs: list(text(700), 1, 4),
@@ -88,19 +88,19 @@ const SectionSchema = v.object({
 
 /** The valibot schema for ExplorableDoc v1. */
 export const ExplorableDocSchema = v.pipe(
-  v.object({
+  v.strictObject({
     schema: v.literal(1, 'must be 1 (ExplorableDoc v1)'),
     id: slug('doc id'),
     title: text(90),
     dek: text(220),
-    source: v.object({
+    source: v.strictObject({
       kind: v.picklist(['arxiv', 'blog', 'concept']),
-      url: v.optional(v.pipe(v.string(), v.url('must be a URL'))),
+      url: v.optional(v.pipe(v.string(), v.url('must be a URL'), v.regex(/^https?:\/\//i, 'must be an http(s) URL'))),
       title: text(300),
       authors: v.optional(v.array(text(120))),
       year: v.optional(v.pipe(v.number(), v.integer())),
     }),
-    provenance: v.object({
+    provenance: v.strictObject({
       mode: v.picklist(['curated', 'ai', 'match']),
       model: v.optional(v.string()),
       generatedAt: v.pipe(v.string(), v.isoTimestamp('must be an ISO 8601 timestamp')),
@@ -129,9 +129,13 @@ export type RegistryModelRef = v.InferOutput<typeof RegistryModelSchema>;
 
 export type ParseResult = { ok: true; doc: ExplorableDoc } | { ok: false; errors: string[] };
 
-/** "sections[1].figure.alt" for an issue, or "(doc)" at the root. */
+/** strictObject reports an unknown key with `expected: "never"`. */
+const isUnknownKey = (issue: v.BaseIssue<unknown>) => issue.type === 'strict_object' && issue.expected === 'never';
+
+/** "sections[1].figure.alt" for an issue, or "(doc)" at the root. Unknown keys point at their parent. */
 function issuePath(issue: v.BaseIssue<unknown>): string {
   const keys = issue.path?.map((item) => item.key) ?? [];
+  if (isUnknownKey(issue)) keys.pop();
   return keys.map((k, i) => (typeof k === 'number' ? `[${k}]` : `${i ? '.' : ''}${String(k)}`)).join('') || '(doc)';
 }
 
@@ -143,7 +147,8 @@ export function parseDoc(input: unknown): ParseResult {
     ok: false,
     errors: result.issues.map((issue) => {
       const missing = issue.kind === 'schema' && issue.input === undefined;
-      return `${issuePath(issue)}: ${missing ? 'is required' : issue.message}`;
+      const message = isUnknownKey(issue) ? `unknown key ${issue.received}` : missing ? 'is required' : issue.message;
+      return `${issuePath(issue)}: ${message}`;
     }),
   };
 }
