@@ -1,0 +1,53 @@
+/* Minimal Phase 1 styles. Tokens, fonts and the full identity land in Phase 2. */
+:root {
+  --paper: #fbf8f1;
+  --well: #f3eee2;
+  --rule: #d8d0bf;
+  --ink: #1d1b17;
+  --ink-2: #5a554b;
+  --series-1: #2457c5;
+  color: var(--ink);
+  background: var(--paper);
+  font: 1.0625rem/1.6 Georgia, 'Times New Roman', serif;
+}
+*, *::before, *::after { box-sizing: border-box; }
+body { margin: 0; }
+a { color: var(--series-1); }
+:focus-visible { outline: 3px solid var(--series-1); outline-offset: 2px; }
+h1:focus { outline: none; }
+code { font: 0.9em ui-monospace, 'SF Mono', Menlo, Consolas, monospace; overflow-wrap: anywhere; }
+.page { width: min(38rem, 100% - 2.5rem); margin: 0 auto; padding: 2rem 0 4rem; overflow-wrap: break-word; }
+.gallery { width: min(60rem, 100% - 2.5rem); }
+.gallery-head h1 { font-size: 2.5rem; margin: 0; }
+.pitch { color: var(--ink-2); font-size: 1.25rem; margin: 0.25rem 0 2rem; }
+.gallery-kicker, .essay-kicker, .xfig-num {
+  font: 0.8125rem system-ui, sans-serif;
+  font-variant-caps: all-small-caps;
+  letter-spacing: 0.06em;
+  color: var(--ink-2);
+}
+.cards { list-style: none; margin: 0; padding: 0; display: grid; gap: 1rem; grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr)); }
+.card { position: relative; background: var(--well); border: 1px solid var(--rule); border-radius: 10px; padding: 1rem 1.25rem; }
+.card-title { margin: 0 0 0.5rem; font-size: 1.25rem; line-height: 1.25; }
+.card-title a { color: var(--ink); text-decoration: none; }
+.card-title a::after { content: ''; position: absolute; inset: 0; border-radius: 10px; }
+.card-title a:focus-visible { outline: none; }
+.card:focus-within { outline: 3px solid var(--series-1); outline-offset: 2px; }
+.card:hover .card-title a { text-decoration: underline; }
+.card-dek { margin: 0 0 0.75rem; color: var(--ink-2); font-size: 0.9375rem; }
+.card-source { margin: 0; font: 0.8125rem ui-monospace, Menlo, Consolas, monospace; }
+.back { font: 0.9375rem system-ui, sans-serif; }
+.essay h1 { font-size: clamp(2rem, 5vw, 2.75rem); line-height: 1.1; margin: 0.25rem 0 0.75rem; }
+.essay-dek { font-size: 1.25rem; margin: 0 0 0.75rem; }
+.essay-source, .essay-provenance { font: 0.9375rem system-ui, sans-serif; color: var(--ink-2); margin: 0.25rem 0; }
+.essay-section h2, .essay-takeaway h2 { font-size: 1.5rem; margin: 2.5rem 0 0.5rem; }
+.xfig { margin: 2rem 0; }
+.xfig-head, .xfig-stage { background: var(--well); border: 1px solid var(--rule); }
+.xfig-head { border-bottom: 0; border-radius: 10px 10px 0 0; padding: 0.75rem 1rem 0; font: 0.9375rem system-ui, sans-serif; }
+.xfig-title { font-weight: 600; }
+.xfig-stage { border-top: 0; border-radius: 0 0 10px 10px; padding: 0.5rem 1rem 1rem; }
+.xfig-alt { margin: 0; color: var(--ink-2); }
+.xfig figcaption { margin-top: 0.5rem; font-size: 0.9375rem; font-style: italic; color: var(--ink-2); }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition: none !important; animation: none !important; scroll-behavior: auto !important; }
+}
