@@ -17,6 +17,8 @@
     "build": "vite build",
     "preview": "vite preview",
     "smoke": "node scripts/smoke.mjs",
+    "e2e": "node scripts/e2e.mjs",
+    "check:size": "node scripts/check-size.mjs",
     "check": "pnpm lint && pnpm typecheck && pnpm test"
   },
   "dependencies": {

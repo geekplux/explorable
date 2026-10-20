@@ -3,6 +3,7 @@
 // SIGINT/SIGTERM. Chrome runs sandboxed unless EXPLORABLE_CHROME_NO_SANDBOX=1.
 import { execFileSync, spawn } from 'node:child_process';
 import { mkdirSync } from 'node:fs';
+import { createServer } from 'node:net';
 import { join } from 'node:path';
 import { chromium } from 'playwright-core';
 
@@ -76,8 +77,25 @@ async function waitForHttp(url, child, timeoutMs) {
   throw new Error(`preview did not answer 200 at ${url} within ${timeoutMs} ms`);
 }
 
-/** Build (optionally), start `vite preview` in its own process group, run fn({ baseURL }). */
-export async function withPreview(fn, { build = true, port = 4173 } = {}) {
+/** Listen on 127.0.0.1:`port` (0 = any), then release it; resolves the port. */
+const probePort = (port) =>
+  new Promise((resolve, reject) => {
+    const server = createServer().once('error', reject);
+    server.listen(port, '127.0.0.1', () => {
+      const { port: got } = /** @type {import('node:net').AddressInfo} */ (server.address());
+      server.close(() => resolve(got));
+    });
+  });
+
+/** `preferred` if it is free, else any free port. */
+const freePort = (preferred) => probePort(preferred).catch(() => probePort(0));
+
+/**
+ * Build (optionally), start `vite preview` in its own process group, run
+ * fn({ baseURL }). Uses port 4173 when free, otherwise any free port.
+ */
+export async function withPreview(fn, { build = true, port: preferred = 4173 } = {}) {
+  const port = await freePort(preferred);
   if (build) execFileSync(process.execPath, [VITE, 'build', '--logLevel', 'warn'], { stdio: 'inherit' });
   const child = spawn(
     process.execPath,
