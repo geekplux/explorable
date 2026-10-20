@@ -11,8 +11,8 @@ const fig1: FigureSpec = {
   options: { labels: ['the', 'cat', 'sat', 'on', 'the', 'mat'], query: 'sat', handle: 'T', itemName: 'token', ticks: ['0.1', '0.5', '1', '2', '5'] },
 };
 const fig2: FigureSpec = {
-  id: 'fig-scaling', kind: 'bars', title: 'Not live until P5', caption: 'Later.', alt: 'A static description of the scaling figure, long enough.',
-  model: { id: 'attention-scaling', params: { dk: 4 } }, controls: ['dk'], readouts: ['sd'],
+  id: 'fig-later', kind: 'curve', title: 'Not live yet', caption: 'Later.', alt: 'A static description of a later figure, long enough.',
+  model: { id: 'not-registered', params: { x: 1 } }, controls: ['x'], readouts: ['y'],
 };
 const doc: ExplorableDoc = {
   schema: 1, id: 'attention', title: 'Why attention divides by √d', dek: 'Scale.', source: { kind: 'concept', title: 'Softmax' },
@@ -253,10 +253,10 @@ describe('hydrateFigures: fig-temperature', () => {
     expect(bar()).toBeGreaterThan(h1);
   });
 
-  it('leaves Fig 2 (model not yet registered) as a static shell, and destroy restores Fig 1', () => {
+  it('leaves a figure whose kind/model is not available as a static shell, and destroy restores Fig 1', () => {
     mount();
-    expect(root.querySelector('#fig-scaling .xfig-drawing')).toBeNull();
-    expect(root.querySelector('#fig-scaling .xfig-alt')?.classList.contains('xfig-sr')).toBe(false);
+    expect(root.querySelector('#fig-later .xfig-drawing')).toBeNull();
+    expect(root.querySelector('#fig-later .xfig-alt')?.classList.contains('xfig-sr')).toBe(false);
     destroy();
     expect(root.querySelector('#fig-temperature .xfig-drawing')).toBeNull();
     expect(root.querySelector('#fig-temperature .xfig-alt')?.classList.contains('xfig-sr')).toBe(false);

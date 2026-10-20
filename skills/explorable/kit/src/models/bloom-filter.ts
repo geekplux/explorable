@@ -73,7 +73,7 @@ export const bloomFilter = registerModel<BloomParams, BloomOutputs>({
   compute(p) {
     const m = 32;
     const [k, n, q] = [whole(p.k, 1, 6), whole(p.n, 0, INSERT.length), whole(p.q, 0, QUERIES.length - 1)];
-    const bits = new Array<number>(m).fill(0);
+    const bits = Array.from({ length: m }, () => 0);
     for (const w of INSERT.slice(0, n)) for (const i of probesFor(w, k, m)) bits[i] = 1;
     const allSet = (w: string) => probesFor(w, k, m).every((i) => bits[i]);
     const word = QUERIES[q]!;

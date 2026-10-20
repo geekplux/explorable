@@ -5,6 +5,9 @@ import { bloomFilter, fmix32, fnv1a32, INSERT, PROBES, predictedFpr, probesFor, 
 const run = (k: number, n: number, q = 0) => bloomFilter.compute({ m: 32, k, n, q });
 const qi = (w: string) => (QUERIES as readonly string[]).indexOf(w);
 const STATE = { NO: 0, TP: 1, FP: 2 } as const;
+const times = (count: number, v: number) => Array.from({ length: count }, () => v);
+/** Query state of word w at k = 3 for n = 0 … 12. */
+const states = (w: string) => Array.from({ length: 13 }, (_, n) => run(3, n, qi(w)).queryState);
 
 describe('bloom-filter hashing', () => {
   it('FNV-1a matches known vectors', () => {
@@ -24,10 +27,10 @@ describe('bloom-filter hashing', () => {
       ['cherry', 0x497ae878, 0xf89ae55a, [24, 19, 14, 9, 4, 31]],
     ];
     for (const [w, h1, h2, probes] of table) {
-      expect(fnv1a32(w), w).toBe(h1);
-      expect(fmix32(h1), w).toBe(h2);
-      expect(probesFor(w, 6), w).toEqual(probes);
-      expect(probesFor(w, 3), w).toEqual(probes.slice(0, 3));
+      expect(fnv1a32(w)).toBe(h1);
+      expect(fmix32(h1)).toBe(h2);
+      expect(probesFor(w, 6)).toEqual(probes);
+      expect(probesFor(w, 3)).toEqual(probes.slice(0, 3));
     }
     expect(probesFor('banana', 6)).toEqual([16, 29, 10, 23, 4, 17]);
   });
@@ -38,7 +41,7 @@ describe('bloom-filter hashing', () => {
       Array.from({ length: 3 + Math.floor(rng() * 5) }, () => String.fromCharCode(97 + Math.floor(rng() * 26))).join(''),
     );
     for (let k = 1; k <= 6; k++) {
-      const bits = new Array(32).fill(0);
+      const bits = times(32, 0);
       for (const w of words) {
         const probes = probesFor(w, k);
         expect(new Set(probes).size).toBe(k);
@@ -68,7 +71,7 @@ describe('bloom-filter model', () => {
     ];
     for (const [k, n, bits, set] of cases) {
       const o = run(k, n);
-      expect(o.bits.join(''), `k=${k} n=${n}`).toBe(bits);
+      expect(o.bits.join('')).toBe(bits);
       expect(o.bitsSet).toBe(set);
     }
   });
@@ -76,8 +79,8 @@ describe('bloom-filter model', () => {
   it('reproduces the query states at n = 8', () => {
     const expected = ['TP TP NO NO NO NO', 'TP TP NO NO FP NO', 'TP TP NO FP FP NO', 'TP TP NO FP FP NO', 'TP TP FP FP FP NO', 'TP TP NO FP FP NO'];
     for (let k = 1; k <= 6; k++) {
-      const states = QUERIES.map((_, q) => (['NO', 'TP', 'FP'] as const)[run(k, 8, q).queryState]).join(' ');
-      expect(states, `k=${k}`).toBe(expected[k - 1]);
+      const row = QUERIES.map((_, q) => (['NO', 'TP', 'FP'] as const)[run(k, 8, q).queryState]).join(' ');
+      expect(row).toBe(expected[k - 1]);
     }
     expect(run(3, 8, qi('plum')).firstZero).toBe(11);
     expect(run(3, 8, qi('hen')).firstZero).toBe(15);
@@ -85,15 +88,14 @@ describe('bloom-filter model', () => {
   });
 
   it('walks hen NO → FP → TP and cherry / banana into false positives as n grows (k = 3)', () => {
-    const states = (w: string) => Array.from({ length: 13 }, (_, n) => run(3, n, qi(w)).queryState);
-    expect(states('hen')).toEqual([...new Array(11).fill(STATE.NO), STATE.FP, STATE.TP]);
-    expect(states('cherry')).toEqual([...new Array(4).fill(STATE.NO), ...new Array(9).fill(STATE.FP)]);
-    expect(states('banana')).toEqual([...new Array(6).fill(STATE.NO), ...new Array(7).fill(STATE.FP)]);
+    expect(states('hen')).toEqual([...times(11, STATE.NO), STATE.FP, STATE.TP]);
+    expect(states('cherry')).toEqual([...times(4, STATE.NO), ...times(9, STATE.FP)]);
+    expect(states('banana')).toEqual([...times(6, STATE.NO), ...times(7, STATE.FP)]);
     expect(QUERIES.every((_, q) => run(3, 0, q).queryState === STATE.NO)).toBe(true);
   });
 
   it('observed false positives over the 50 fixed probes are deterministic', () => {
-    const grid = Array.from({ length: 13 }, (_, n) => Array.from({ length: 6 }, (_, k) => run(k + 1, n).fpObserved).join(' '));
+    const grid = Array.from({ length: 13 }, (_, n) => Array.from({ length: 6 }, (__, k) => run(k + 1, n).fpObserved).join(' '));
     expect(grid).toMatchSnapshot();
     expect(grid[8]).toBe('9 9 10 11 14 15');
     expect(grid[12]).toBe('14 17 19 19 23 27');

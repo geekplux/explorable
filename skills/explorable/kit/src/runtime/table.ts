@@ -11,15 +11,20 @@ export function createDataTable(id: string, caption: string, columns: readonly s
   table.id = id;
   table.className = 'xfig-table';
   table.hidden = true;
-  table.createCaption().textContent = caption;
+  const cap = table.createCaption();
+  cap.textContent = caption;
   const head = table.createTHead().insertRow();
-  for (const c of columns) {
-    const th = document.createElement('th');
-    th.scope = 'col';
-    th.textContent = c;
-    head.append(th);
-  }
   const body = table.createTBody();
+  let shown = '';
+  /** Set the column headers (skipped if unchanged). */
+  const setColumns = (cols: readonly string[]) => {
+    if (cols.join('\n') === shown) return;
+    shown = cols.join('\n');
+    head.replaceChildren(
+      ...cols.map((c) => Object.assign(document.createElement('th'), { scope: 'col', textContent: c })),
+    );
+  };
+  setColumns(columns);
 
   button.addEventListener('click', () => {
     table.hidden = !table.hidden;
@@ -30,6 +35,11 @@ export function createDataTable(id: string, caption: string, columns: readonly s
   return {
     button,
     table,
+    setColumns,
+    /** A one-line summary after the caption, e.g. the current verdict. */
+    setNote(note: string) {
+      cap.textContent = note ? `${caption}. ${note}` : caption;
+    },
     /** Replace the body rows; the `rowHeader` cell of each row is a row header. */
     setRows(rows: readonly (readonly string[])[]) {
       body.replaceChildren(

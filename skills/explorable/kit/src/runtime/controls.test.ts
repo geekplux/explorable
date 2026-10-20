@@ -48,7 +48,7 @@ describe('control value rules', () => {
   });
 
   it('native range: labelled, and its <output> is not a live region', () => {
-    const r = createRange('fig-T', 'T', T, () => {});
+    const r = createRange('fig-T', T, () => {}, 'T');
     r.set(0.5);
     const output = r.el.querySelector('output')!;
     expect(output.getAttribute('aria-live')).toBe('off');

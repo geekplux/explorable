@@ -30,7 +30,12 @@ export const mountBars: FigureMount = (el, { spec, model, setParam }) => {
   const labels = Array.isArray(o.labels) ? o.labels : [];
   const label = (i: number) => labels[i] ?? `item ${i + 1}`;
   const handleName = typeof o.handle === 'string' ? o.handle : spec.controls[0];
-  const handleDef = handleName ? (model.params as Record<string, ParamDef>)[handleName] : undefined;
+  const defs = model.params as Record<string, ParamDef>;
+  const handleDef = handleName ? defs[handleName] : undefined;
+  // `compare`: dashed outlines show `weightsOther`, the other state of the figure's switch.
+  const compare = o.compare === true;
+  const toggle = spec.controls.find((c) => defs[c]?.control === 'toggle');
+  const otherLabels = Array.isArray(o.compareLabels) ? o.compareLabels : [];
 
   const chip = typeof o.query === 'string' ? Object.assign(document.createElement('p'), { className: 'xfig-chip', textContent: `query: ${o.query}` }) : undefined;
   if (chip) el.before(chip);
@@ -40,7 +45,9 @@ export const mountBars: FigureMount = (el, { spec, model, setParam }) => {
   const trackG = svgEl(svg, 'g', { class: 'xfig-track', 'aria-hidden': 'true' });
   const knob = handleDef ? createHandle(svg, { def: handleDef, onChange: (v, instant) => setParam(handleName!, v, instant) }) : undefined;
 
-  let bars: { rect: SVGRectElement; value: SVGTextElement; name: SVGTextElement }[] = [];
+  const legend = compare ? svgEl(svg, 'g', { class: 'xfig-legend', 'aria-hidden': 'true' }) : undefined;
+  let otherText: SVGTextElement | undefined;
+  let bars: { rect: SVGRectElement; other?: SVGRectElement; value: SVGTextElement; name: SVGTextElement }[] = [];
   const marker = svgEl(plot, 'g', { class: 'xfig-top', 'aria-hidden': 'true' });
   svgEl(marker, 'path', { d: 'M-17 0h10l-5 7z' });
   svgEl(marker, 'text', { x: -4, y: 7 }).textContent = 'top';
@@ -52,7 +59,7 @@ export const mountBars: FigureMount = (el, { spec, model, setParam }) => {
     const box = el.getBoundingClientRect();
     const w = box.width || 640;
     const h = box.height || 360;
-    g = { w, h, L: 44, R: w - 12, top: 44, bottom: h - 78, trackY: h - 34 };
+    g = { w, h, L: 44, R: w - 12, top: compare ? 64 : 44, bottom: h - 78, trackY: h - 34 };
     ATTR(svg, { viewBox: `0 0 ${w} ${h}`, width: '100%', height: '100%' });
     axis.replaceChildren();
     for (const y of [0, 0.25, 0.5, 0.75, 1]) {
@@ -60,7 +67,15 @@ export const mountBars: FigureMount = (el, { spec, model, setParam }) => {
       svgEl(axis, 'path', { class: y ? 'xfig-grid' : 'xfig-baseline', d: `M${g.L} ${py}H${g.R}` });
       if (y * 2 === Math.round(y * 2)) svgEl(axis, 'text', { x: g.L - 6, y: py + 4, 'text-anchor': 'end' }).textContent = String(y);
     }
-    svgEl(axis, 'text', { x: 4, y: g.top - 24 }).textContent = 'weight';
+    svgEl(axis, 'text', { x: 4, y: compare ? 20 : g.top - 24 }).textContent = 'weight';
+    if (legend) {
+      legend.replaceChildren();
+      const x = Math.max(g.L + 40, g.R - 300);
+      svgEl(legend, 'rect', { class: 'xfig-bar', x, y: 14, width: 14, height: 10 });
+      svgEl(legend, 'text', { x: x + 20, y: 23 }).textContent = 'this setting';
+      svgEl(legend, 'rect', { class: 'xfig-bar-other', x: x + 112, y: 14, width: 14, height: 10 });
+      otherText = svgEl(legend, 'text', { x: x + 132, y: 23 });
+    }
     trackG.replaceChildren();
     if (knob && handleDef && handleName) {
       const [x0, x1, y] = [g.L + 12, g.R - 12, g.trackY];
@@ -90,7 +105,8 @@ export const mountBars: FigureMount = (el, { spec, model, setParam }) => {
         const bg = svgEl(plot, 'g', { class: 'xfig-bar-g' });
         const name = svgEl(bg, 'text', { class: 'xfig-bar-label', 'text-anchor': 'middle' });
         name.textContent = label(i);
-        return { rect: svgEl(bg, 'rect', { class: 'xfig-bar' }), value: svgEl(bg, 'text', { class: 'xfig-bar-value', 'text-anchor': 'middle' }), name };
+        const rect = svgEl(bg, 'rect', { class: 'xfig-bar' });
+        return { rect, other: compare ? svgEl(bg, 'rect', { class: 'xfig-bar-other' }) : undefined, value: svgEl(bg, 'text', { class: 'xfig-bar-value', 'text-anchor': 'middle' }), name };
       });
       plot.append(marker);
     }
@@ -99,11 +115,16 @@ export const mountBars: FigureMount = (el, { spec, model, setParam }) => {
       const cx = g.L + slot * (i + 0.5);
       const y = g.bottom - Math.min(1, Math.max(0, wt)) * (g.bottom - g.top);
       ATTR(b.rect, { x: cx - bw / 2, y, width: bw, height: g.bottom - y });
+      if (b.other) {
+        const oy = g.bottom - Math.min(1, Math.max(0, nums(out.weightsOther)[i] ?? 0)) * (g.bottom - g.top);
+        ATTR(b.other, { x: cx - bw / 2, y: oy, width: bw, height: g.bottom - oy });
+      }
       ATTR(b.value, { x: cx, y: y - 6, class: `xfig-bar-value${i === top ? ' is-top' : ''}` });
       b.value.textContent = format(wt, 'fixed2');
       ATTR(b.name, { x: cx, y: g.bottom + 18 });
       if (i === top) ATTR(marker, { transform: `translate(${cx} ${y - 30})` });
     });
+    if (otherText) otherText.textContent = otherLabels[toggle && p[toggle] ? 1 : 0] ?? 'other setting';
     if (knob && handleDef && handleName) knob.place(toPos(handleDef, p[handleName]!));
   }
 
@@ -115,9 +136,12 @@ export const mountBars: FigureMount = (el, { spec, model, setParam }) => {
     draw,
     handle: knob && handleName ? { name: handleName, knob } : undefined,
     rowHeader: 1,
-    columns: ['#', typeof o.itemName === 'string' ? o.itemName : 'item', 'score', 'weight'],
+    columns: ['#', typeof o.itemName === 'string' ? o.itemName : 'item', 'score', 'weight', ...(compare ? ['weight with other setting'] : [])],
     rows: (_p, out) =>
-      nums(out.weights).map((w, i) => [String(i + 1), label(i), format(nums(out.scores)[i] ?? NaN, 'fixed2'), format(w, 'fixed3')]),
+      nums(out.weights).map((w, i) => [
+        String(i + 1), label(i), format(nums(out.scores)[i] ?? NaN, compare ? 'fixed3' : 'fixed2'), format(w, 'fixed3'),
+        ...(compare ? [format(nums(out.weightsOther)[i] ?? NaN, 'fixed3')] : []),
+      ]),
     destroy() {
       ro?.disconnect();
       chip?.remove();
