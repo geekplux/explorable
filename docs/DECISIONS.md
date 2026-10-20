@@ -28,3 +28,9 @@ Record every non-trivial decision here: date, decision, alternatives considered,
 | 2026-10-19 | D20 API `GET /api/explain?url=`, result route `/x?url=` | POST | Idempotent, shareable, maps 1:1 to KV key. |
 | 2026-10-19 | D21 Line budget excludes lockfiles, fixtures, sample/spec JSON, generated kit/dist, built example HTML, binary assets, screenshots, designer specs | Count everything | Matches "reviewable in ~20 minutes" intent. |
 | 2026-10-19 | D22 Palette limited to 3 hue-coded series (cobalt, teal, vermilion=interactive); extra series use line style/pattern | 4+ hues | Every 4th hue tried failed CVD separation or contrast. |
+| 2026-10-19 | Bloom second hash = Murmur3 fmix32 of FNV-1a (`b = (fmix32(h1) mod 32) | 1`) | Second FNV over salted word | At m=32 the salted-FNV variant made probe patterns collide so k barely mattered (designer finding). |
+| 2026-10-19 | Attention sample seed 229; P5 AC4 tests the multi-seed mean of scaled SD, not every seed | Assert ±0.3 on every seed | 8-score SD is noisy (14/50 seeds outside ±0.3); figure shows expected beside measured. |
+| 2026-10-19 | Diffusion sample seed 2020 | Any seed | Meets P6 AC1 (t=1000: mean −0.013, SD 1.011). |
+| 2026-10-19 | Top attention bar marked with filled ▼ + "top" label instead of a ring | Ring marker (P4 AC6 wording) | Ring is reserved for "draggable" in the design language; overrides P4 AC6 wording. |
+| 2026-10-19 | Diffusion readouts split: Fig 1 signal/noise/spread, Fig 2 ᾱ_t and SNR dB | 5 readouts on Fig 1 | Doc shape allows at most 3 readouts per figure. |
+| 2026-10-19 | Designer-invented optional spec fields (see docs/figures/samples.md) adopted as the ExplorableDoc v1 extensions | Strict plan fields only | All optional; needed to express the figures. |
