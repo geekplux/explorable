@@ -160,6 +160,39 @@ export default async function attention({ page, baseURL, shot, assert, cvd, axe 
   await page.setViewportSize({ width: 1280, height: 800 });
   await page.goto(`${baseURL}/s/attention`, { waitUntil: 'networkidle' });
   await fig2(page, { shot, assert, axe });
+  await fig2Narrow(page, { baseURL, shot, assert });
+}
+
+/** Boxes of every visible, non-empty text in Fig 2's SVG; returns the overlapping pairs. */
+const textOverlaps = (page) =>
+  page.evaluate((fig) => {
+    const boxes = [...document.querySelectorAll(`${fig} svg text`)]
+      .filter((t) => t.textContent.trim() && getComputedStyle(t).visibility !== 'hidden')
+      .map((t) => ({ text: t.textContent, r: t.getBoundingClientRect() }));
+    const hits = [];
+    for (const [i, a] of boxes.entries()) {
+      for (const b of boxes.slice(i + 1)) {
+        if (a.r.left < b.r.right && b.r.left < a.r.right && a.r.top < b.r.bottom && b.r.top < a.r.bottom) hits.push(`${a.text} × ${b.text}`);
+      }
+    }
+    return hits;
+  }, FIG2);
+
+/** 320 px: eight value labels share a ~26 px pitch, so they shrink and drop the leading zero rather than collide. */
+async function fig2Narrow(page, { baseURL, shot, assert }) {
+  await page.setViewportSize({ width: 320, height: 720 });
+  await page.goto(`${baseURL}/s/attention`, { waitUntil: 'networkidle' });
+  const fig = page.locator(FIG2);
+  await fig.locator('.xfig-knob').waitFor();
+  await fig.scrollIntoViewIfNeeded();
+  assert.deepEqual(await textOverlaps(page), [], 'no Fig 2 text overlaps at 320 px (default)');
+  await fig.locator('.xfig-knob').focus();
+  await page.keyboard.press('End');
+  assert.equal(await fig.locator('.xfig-knob').getAttribute('aria-valuenow'), '512');
+  await page.waitForTimeout(600);
+  assert.deepEqual(await textOverlaps(page), [], 'no Fig 2 text overlaps at 320 px after End');
+  await shot('attention-fig2-320');
+  await page.setViewportSize({ width: 1280, height: 800 });
 }
 
 const FIG2 = '#fig-scaling';

@@ -55,7 +55,8 @@ export const mountBits: FigureMount = (el, { spec, model, setParam }) => {
     const pitch = (w - 4) / (wide ? 32 : 16);
     const cell = pitch - Math.min(4, Math.max(2, pitch * 0.1));
     const chipsBottom = wide ? 30 : 78;
-    const trackY = chipsBottom + 26;
+    // Room above the knob for its "drag" hint, clear of the chips.
+    const trackY = chipsBottom + 36;
     const rowGap = wide ? 18 : 40;
     const top = trackY + 68;
     const chipTop = top + (wide ? cell : 2 * cell + rowGap) + 44;
@@ -89,6 +90,8 @@ export const mountBits: FigureMount = (el, { spec, model, setParam }) => {
     }
 
     cells.replaceChildren();
+    // Two-digit indices nearly touch on a small pitch (2 × 16 at 320 px): use a smaller index face.
+    cells.classList.toggle('is-tight', pitch < 22);
     bits = Array.from({ length: 32 }, (_, i) => {
       const { x, y } = cellXY(i);
       svgEl(cells, 'text', { class: 'xfig-bit-index', x: x + g.cell / 2, y: y - 5, 'text-anchor': 'middle' }).textContent = String(i);

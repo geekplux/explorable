@@ -61,7 +61,7 @@ export const mountBars: FigureMount = (el, { spec, model, setParam }) => {
     const h = box.height || 360;
     // A narrow plot stacks the two legend entries, so the plot starts lower.
     const stack = w - 56 < 260;
-    g = { w, h, L: 44, R: w - 12, top: compare ? (stack ? 80 : 64) : 44, bottom: h - 78, trackY: h - 34 };
+    g = { w, h, L: 44, R: w - 12, top: compare ? (stack ? 84 : 64) : 44, bottom: h - 78, trackY: h - 34 };
     ATTR(svg, { viewBox: `0 0 ${w} ${h}`, width: '100%', height: '100%' });
     axis.replaceChildren();
     for (const y of [0, 0.25, 0.5, 0.75, 1]) {
@@ -75,7 +75,7 @@ export const mountBars: FigureMount = (el, { spec, model, setParam }) => {
       const x = Math.max(g.L + 40, g.R - 300);
       svgEl(legend, 'rect', { class: 'xfig-bar', x, y: 14, width: 14, height: 10 });
       svgEl(legend, 'text', { x: x + 20, y: 23 }).textContent = 'this setting';
-      const [ox, oy] = stack ? [x, 16] : [x + 112, 0];
+      const [ox, oy] = stack ? [x, 20] : [x + 112, 0];
       svgEl(legend, 'rect', { class: 'xfig-bar-other-halo', x: ox, y: 14 + oy, width: 14, height: 10 });
       svgEl(legend, 'rect', { class: 'xfig-bar-other', x: ox, y: 14 + oy, width: 14, height: 10 });
       otherText = svgEl(legend, 'text', { x: ox + 20, y: 23 + oy });
@@ -103,6 +103,8 @@ export const mountBars: FigureMount = (el, { spec, model, setParam }) => {
     const top = typeof out.topIndex === 'number' ? out.topIndex : -1;
     const slot = (g.R - g.L) / Math.max(1, weights.length);
     const bw = Math.min(56, slot * 0.6);
+    // Narrow pitch (e.g. 8 bars at 320 px): a smaller label without the leading zero (".57") so neighbours never collide.
+    const tight = slot < 34;
     if (bars.length !== weights.length) {
       plot.querySelectorAll('.xfig-bar-g').forEach((n) => n.remove());
       bars = weights.map((_, i) => {
@@ -128,8 +130,8 @@ export const mountBars: FigureMount = (el, { spec, model, setParam }) => {
         for (const r of b.other) ATTR(r, { x: cx - bw / 2, y: oy, width: bw, height: g.bottom - oy });
         above = Math.min(y, oy);
       }
-      ATTR(b.value, { x: cx, y: above - 6, class: `xfig-bar-value${i === top ? ' is-top' : ''}` });
-      b.value.textContent = format(wt, 'fixed2');
+      ATTR(b.value, { x: cx, y: above - 6, class: `xfig-bar-value${tight ? ' is-tight' : ''}${i === top ? ' is-top' : ''}` });
+      b.value.textContent = tight ? format(wt, 'fixed2').replace(/^0\./, '.') : format(wt, 'fixed2');
       ATTR(b.name, { x: cx, y: g.bottom + 18 });
       if (i === top) ATTR(marker, { transform: `translate(${cx} ${above - 30})` });
     });

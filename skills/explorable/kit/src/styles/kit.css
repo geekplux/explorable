@@ -33,6 +33,7 @@
 .xfig-svg text { fill: var(--ink-2); }
 .xfig-svg .xfig-bar-label { fill: var(--ink); font-size: .875rem; }
 .xfig-svg .xfig-bar-value { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+.xfig-svg .xfig-bar-value.is-tight { font-size: .6875rem; }
 .xfig-svg .is-top, .xfig-svg .xfig-top text { fill: var(--ink); font-weight: 700; }
 .xfig-bar { fill: var(--series-1); stroke: var(--ink); stroke-width: 1; }
 .xfig-top path { fill: var(--ink); }
@@ -63,6 +64,7 @@ circle.xfig-knob-hint { fill: none; stroke: var(--ink-2); stroke-width: 1.5; str
 .xfig-svg .xfig-bit text { font: .8125rem var(--font-mono); fill: var(--ink-2); }
 .xfig-svg .xfig-bit.is-set text { fill: var(--paper); }
 .xfig-svg .xfig-bit-index { font: .6875rem var(--font-mono); paint-order: stroke; stroke: var(--well); stroke-width: 3px; }
+.xfig-svg .is-tight > .xfig-bit-index { font-size: .625rem; stroke-width: 2px; }
 @media (prefers-reduced-motion: no-preference) { .xfig-bit rect, .xfig-svg .xfig-bit text { transition: fill 150ms; } }
 .xfig-probe-halo { fill: none; stroke: var(--paper); stroke-width: 7; }
 .xfig-probe { fill: none; stroke: var(--series-1); stroke-width: 3; }
