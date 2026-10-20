@@ -2,7 +2,7 @@ STATE: IN-PROGRESS
 
 # Status
 
-- Current phase: Phase 3 (`phase-3-kit-contracts`), starting
+- Current phase: Phase 4 (`phase-4-runtime-attention`), starting
 - Plan: docs/PLAN.md (15 phases, committed on main)
 - Blockers: none
 
@@ -10,8 +10,8 @@ STATE: IN-PROGRESS
 |---|---|---|---|---|
 | 1 | phase-1-toolchain-sample | https://github.com/geekplux/explorable/pull/1 | PR open (verified PASS) | 1 |
 | 2 | phase-2-design-system | https://github.com/geekplux/explorable/pull/2 | PR open (verified PASS) | 1 |
-| 3 | phase-3-kit-contracts | - | in progress | 0 |
-| 4 | phase-4-runtime-attention | - | pending | 0 |
+| 3 | phase-3-kit-contracts | https://github.com/geekplux/explorable/pull/4 | PR open (verified PASS) | 2 |
+| 4 | phase-4-runtime-attention | - | in progress | 0 |
 | 5 | phase-5-bloom-bits | - | pending | 0 |
 | 6 | phase-6-diffusion-histogram | - | pending | 0 |
 | 7 | phase-7-curve-expr | - | pending | 0 |
@@ -29,4 +29,4 @@ STATE: IN-PROGRESS
 - Move `ci/github-workflow.yml` to `.github/workflows/` (needs `workflow` token scope).
 - Upload the social preview image in GitHub repo settings (manual).
 
-Last updated: 2026-10-20 04:03 UTC
+Last updated: 2026-10-20 05:32 UTC
