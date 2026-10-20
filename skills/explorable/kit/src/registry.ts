@@ -10,6 +10,8 @@ export type { FigureKind };
 /** One numeric input of a model, with its range and how it is controlled. */
 export interface ParamDef {
   label: string;
+  /** The label in words for assistive tech ("key width d k"), when `label` has symbols. Default `label`. */
+  spoken?: string;
   min: number;
   max: number;
   step: number;
