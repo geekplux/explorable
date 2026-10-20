@@ -3,7 +3,7 @@
 import { readdirSync } from 'node:fs';
 import { parseArgs, problems, run, shot, withBrowser, withPreview } from './lib/harness.mjs';
 
-const VIEWPORTS = { desktop: { width: 1280, height: 800 }, mobile: { width: 390, height: 844 } };
+const VIEWPORTS = { desktop: { width: 1280, height: 800 }, '800': { width: 800, height: 800 }, mobile: { width: 390, height: 844 } };
 const args = parseArgs(process.argv.slice(2));
 const out = args.out?.[0] ?? 'test-results/smoke';
 const sampleRoutes = readdirSync('src/samples')
@@ -24,6 +24,8 @@ async function check(page, route, viewportName) {
     const takeaway = await page.locator('.essay-takeaway').count();
     if (figures < 1 || takeaway !== 1) problems.push(`${where}: essay incomplete (${figures} figures, ${takeaway} takeaway)`);
   }
+  const fontsOk = await page.evaluate(() => document.fonts.ready.then(() => document.fonts.check('16px Newsreader')));
+  if (!fontsOk) problems.push(`${where}: Newsreader did not load`);
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
   if (overflow > 0) problems.push(`${where}: horizontal scroll of ${overflow}px`);
 }
@@ -36,7 +38,7 @@ await run(
           async ({ newPage }) => {
             for (const [viewportName, viewport] of Object.entries(VIEWPORTS)) {
               const page = await newPage(viewport);
-              for (const route of routes) {
+              for (const route of viewportName === '800' ? routes.filter((r) => r === '/') : routes) {
                 await page.goto(baseURL + route, { waitUntil: 'networkidle' });
                 await check(page, route, viewportName);
                 console.log(`shot ${await shot(page, out, `${nameFor(route)}-${viewportName}`)}`);
