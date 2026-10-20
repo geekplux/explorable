@@ -115,14 +115,17 @@ export const mountBars: FigureMount = (el, { spec, model, setParam }) => {
       const cx = g.L + slot * (i + 0.5);
       const y = g.bottom - Math.min(1, Math.max(0, wt)) * (g.bottom - g.top);
       ATTR(b.rect, { x: cx - bw / 2, y, width: bw, height: g.bottom - y });
+      // Labels and the ▼ sit above the taller of the bar and its dashed outline.
+      let above = y;
       if (b.other) {
         const oy = g.bottom - Math.min(1, Math.max(0, nums(out.weightsOther)[i] ?? 0)) * (g.bottom - g.top);
         ATTR(b.other, { x: cx - bw / 2, y: oy, width: bw, height: g.bottom - oy });
+        above = Math.min(y, oy);
       }
-      ATTR(b.value, { x: cx, y: y - 6, class: `xfig-bar-value${i === top ? ' is-top' : ''}` });
+      ATTR(b.value, { x: cx, y: above - 6, class: `xfig-bar-value${i === top ? ' is-top' : ''}` });
       b.value.textContent = format(wt, 'fixed2');
       ATTR(b.name, { x: cx, y: g.bottom + 18 });
-      if (i === top) ATTR(marker, { transform: `translate(${cx} ${y - 30})` });
+      if (i === top) ATTR(marker, { transform: `translate(${cx} ${above - 30})` });
     });
     if (otherText) otherText.textContent = otherLabels[toggle && p[toggle] ? 1 : 0] ?? 'other setting';
     if (knob && handleDef && handleName) knob.place(toPos(handleDef, p[handleName]!));

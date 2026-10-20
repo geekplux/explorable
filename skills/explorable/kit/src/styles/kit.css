@@ -78,8 +78,8 @@ circle.xfig-knob-hint { fill: none; stroke: var(--ink-2); stroke-width: 1.5; str
 .xfig-choice legend { float: left; margin-right: var(--space-2); padding: 0; line-height: 44px; }
 .xfig-choice label { display: inline-flex; align-items: center; gap: .35rem; min-height: 44px; padding: 0 .75rem 0 .5rem; border: 1px solid var(--ink-3); border-radius: var(--radius-pill); background: var(--paper); cursor: pointer; }
 .xfig-choice label:has(:checked) { border: 2px solid var(--ink); font-weight: 700; }
-.xfig-choice input { width: 18px; height: 18px; margin: 0; accent-color: var(--ink); }
-.xfig-choice input:focus-visible, .xfig-switch:focus-visible { outline: 3px solid var(--series-1); outline-offset: 2px; }
+.xfig-choice input { width: 18px; height: 18px; margin: 0; accent-color: var(--ink); outline: none; }
+.xfig-choice label:has(:focus-visible), .xfig-switch:focus-visible { outline: 3px solid var(--series-1); outline-offset: 2px; }
 .xfig-switch { display: inline-flex; align-items: center; gap: .5rem; min-height: 44px; padding: 0 .9rem 0 .6rem; font: .875rem var(--font-ui); color: var(--ink); background: var(--paper); border: 1px solid var(--ink-3); border-radius: var(--radius-pill); cursor: pointer; }
 .xfig-switch-track { position: relative; width: 34px; height: 20px; border: 2px solid var(--ink-2); border-radius: 10px; }
 .xfig-switch-track::after { content: ""; position: absolute; top: 2px; left: 2px; width: 12px; height: 12px; border-radius: 50%; background: var(--ink-2); transition: transform var(--dur-ui) var(--ease); }
@@ -87,12 +87,12 @@ circle.xfig-knob-hint { fill: none; stroke: var(--ink-2); stroke-width: 1.5; str
 .xfig-switch[aria-checked="true"] .xfig-switch-track::after { transform: translateX(14px); background: var(--paper); }
 .xfig-switch-state { min-width: 1.6em; font-family: var(--font-mono); font-weight: 700; }
 .xfig-control { display: flex; flex: 1 1 18rem; align-items: center; gap: var(--space-3); font: .875rem var(--font-ui); }
-.xfig-control input { flex: 1; height: 44px; margin: 0; appearance: none; background: transparent; cursor: pointer; }
+.xfig-control input[type=range] { flex: 1; height: 44px; margin: 0; appearance: none; background: transparent; cursor: pointer; }
 .xfig-control input::-webkit-slider-runnable-track { height: 4px; border-radius: 2px; background: var(--ink-3); }
 .xfig-control input::-moz-range-track { height: 4px; border-radius: 2px; background: var(--ink-3); }
 .xfig-control input::-webkit-slider-thumb { appearance: none; width: 20px; height: 20px; margin-top: -8px; border: 2.5px solid var(--live); border-radius: 50%; background: var(--paper); }
 .xfig-control input::-moz-range-thumb { width: 15px; height: 15px; border: 2.5px solid var(--live); border-radius: 50%; background: var(--paper); }
-.xfig-control input:focus-visible, .xfig-data-toggle:focus-visible { outline: 3px solid var(--series-1); outline-offset: 2px; }
+.xfig-control input[type=range]:focus-visible, .xfig-data-toggle:focus-visible { outline: 3px solid var(--series-1); outline-offset: 2px; }
 .xfig-control output, .xfig-table td { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
 .xfig-foot { flex-wrap: wrap; align-items: center; margin-top: var(--space-2); }
 .xfig-readout { margin: 0; font-size: .875rem; }
@@ -103,7 +103,7 @@ circle.xfig-knob-hint { fill: none; stroke: var(--ink-2); stroke-width: 1.5; str
 .xfig-table td { text-align: right; }
 @media (forced-colors: active) {
   .xfig-knob-focus { stroke: Highlight; }
-  .xfig-control input:focus-visible, .xfig-data-toggle:focus-visible, .xfig-switch:focus-visible { outline-color: Highlight; }
+  .xfig-control input:focus-visible, .xfig-data-toggle:focus-visible, .xfig-switch:focus-visible, .xfig-choice label:has(:focus-visible) { outline-color: Highlight; }
   .xfig-probe { stroke: Highlight; }
 }
 .xfig figcaption { max-width: var(--measure); margin: var(--space-3) 0 0; font-size: .9375rem; font-style: italic; line-height: 1.5; color: var(--ink-2); }
