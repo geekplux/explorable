@@ -51,6 +51,8 @@ const KINDS: Partial<Record<FigureKind, FigureMount>> = { bars: mountBars, bits:
 export const BUILT_IN_MODELS = [softmaxTemperature, attentionScaling, bloomFilter, diffusionForward] as unknown as readonly ModelDef[];
 
 const noop = () => {};
+/** Quiet time (ms) after the last drag input before the live description speaks. */
+const DRAG_IDLE = 600;
 const el = (tag: string, cls: string) => Object.assign(document.createElement(tag), { className: cls });
 
 export interface MountOptions {
@@ -84,12 +86,20 @@ export function mountFigure(stage: HTMLElement, spec: FigureSpec, opts: MountOpt
   const drawing = el('div', 'xfig-drawing');
   const row = el('div', 'xfig-controls');
   const foot = el('div', 'xfig-foot');
+  // The visible readout keeps its symbols; screen readers get the same numbers in words (OutputDef.spoken).
   const readout = el('p', 'xfig-readout');
+  readout.setAttribute('aria-hidden', 'true');
+  const spokenReadout = el('p', 'xfig-sr');
   const desc = el('p', 'xfig-sr');
   desc.id = `${spec.id}-desc`;
   stage.append(drawing, row, foot, desc);
 
   const announcer = createAnnouncer(desc);
+  // While a pointer drags (knob or native slider), announce only once input has rested (keys keep the 500 ms throttle).
+  let dragging = false;
+  const endDrag = () => (dragging = false);
+  stage.addEventListener('pointerdown', () => (dragging = true), { capture: true });
+  for (const t of ['pointerup', 'pointercancel'] as const) window.addEventListener(t, endDrag, { capture: true });
   type Make = (id: string, def: ParamDef, cb: (v: number, instant: boolean) => void, name: string) => { el: HTMLElement; set(v: number): void };
   const CONTROLS: Record<string, Make> = { range: createRange, toggle: createToggle, choice: createChoice };
   const ranges = controls.map((name) => {
@@ -102,8 +112,8 @@ export function mountFigure(stage: HTMLElement, spec: FigureSpec, opts: MountOpt
   const view = kind(drawing, { spec, model, setParam: (n, v, i) => setParam(n, v, i) });
   const columns = (o: Outputs) => (typeof view.columns === 'function' ? view.columns(target, o) : view.columns);
   const data = createDataTable(`${spec.id}-data`, `Data for: ${spec.title}`, columns(model.compute(target)), view.rowHeader);
-  foot.append(data.button, readout);
-  stage.append(data.table);
+  foot.append(data.button, readout, spokenReadout);
+  stage.append(data.wrap);
 
   const labels = spec.options?.labels;
   const drawState = (p: Params) => {
@@ -126,14 +136,15 @@ export function mountFigure(stage: HTMLElement, spec: FigureSpec, opts: MountOpt
   function render(instant: boolean) {
     dirty = false;
     const out = model.compute(target);
-    readout.textContent = spec.readouts
+    const shownOuts = spec.readouts
       .map((id) => [model.outputs[id], out[id]] as const)
-      .flatMap(([def, v]) => (def && typeof v === 'number' ? [`${def.label} ${format(v, def.format)}${def.unit ? ` ${def.unit}` : ''}`] : []))
-      .join(' · ');
+      .flatMap(([def, v]) => (def && typeof v === 'number' ? [[def, `${format(v, def.format)}${def.unit ? ` ${def.unit}` : ''}`] as const] : []));
+    readout.textContent = shownOuts.map(([def, v]) => `${def.label} ${v}`).join(' · ');
+    spokenReadout.textContent = shownOuts.map(([def, v]) => `${def.spoken ?? def.label} ${v}`).join(', ');
     data.setColumns(columns(out));
     data.setRows(view.rows(target, out));
     data.setNote(view.note?.(target, out) ?? '');
-    announcer.say(model.describe(target, out, Array.isArray(labels) ? labels : undefined));
+    announcer.say(model.describe(target, out, Array.isArray(labels) ? labels : undefined), dragging ? DRAG_IDLE : undefined);
     stopFollow();
     if (instant || reduced) return drawState({ ...target });
     const goal = { ...target };
@@ -190,8 +201,9 @@ export function mountFigure(stage: HTMLElement, spec: FigureSpec, opts: MountOpt
       stopHint();
       clearTimeout(hintTimer);
       announcer.destroy();
+      for (const t of ['pointerup', 'pointercancel'] as const) window.removeEventListener(t, endDrag, { capture: true });
       view.destroy();
-      for (const node of [drawing, row, foot, desc, data.table]) node.remove();
+      for (const node of [drawing, row, foot, desc, data.wrap]) node.remove();
       alt?.classList.remove('xfig-sr');
       figure.removeAttribute('aria-describedby');
     },

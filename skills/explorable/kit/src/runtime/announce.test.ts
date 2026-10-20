@@ -30,4 +30,20 @@ describe('createAnnouncer', () => {
     expect(el.textContent).toBe('next');
     a.destroy();
   });
+
+  it('with an idle time, speaks only once input has rested that long', () => {
+    vi.useFakeTimers();
+    const el = document.createElement('p');
+    const a = createAnnouncer(el);
+    for (let i = 0; i < 10; i++) {
+      a.say(`drag ${i}`, 600);
+      vi.advanceTimersByTime(300);
+    }
+    expect(el.textContent).toBe('');
+    vi.advanceTimersByTime(299);
+    expect(el.textContent).toBe('');
+    vi.advanceTimersByTime(1);
+    expect(el.textContent).toBe('drag 9');
+    a.destroy();
+  });
 });

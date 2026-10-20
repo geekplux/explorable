@@ -69,13 +69,13 @@ export const diffusionForward = registerModel<DiffusionParams, DiffusionOutputs>
     seed: { label: 'seed', min: 0, max: 2 ** 32 - 1, step: 1, default: 2020 },
   },
   outputs: {
-    alphaBar: { label: 'ᾱ_t', format: 'sig3' },
-    signal: { label: 'signal √ᾱ_t', format: 'fixed3' },
-    noise: { label: 'noise √(1−ᾱ_t)', format: 'fixed3' },
-    snrDb: { label: 'SNR', unit: 'dB', format: 'fixed1' },
-    sd: { label: 'spread (SD)', format: 'fixed2' },
+    alphaBar: { label: 'ᾱ_t', spoken: 'alpha-bar', format: 'sig3' },
+    signal: { label: 'signal √ᾱ_t', spoken: 'signal', format: 'fixed3' },
+    noise: { label: 'noise √(1−ᾱ_t)', spoken: 'noise', format: 'fixed3' },
+    snrDb: { label: 'SNR', spoken: 'signal-to-noise ratio', unit: 'dB', format: 'fixed1' },
+    sd: { label: 'spread (SD)', spoken: 'spread', format: 'fixed2' },
     mean: { label: 'mean', format: 'fixed2' },
-    crossT: { label: 'signal = noise', format: 'int' },
+    crossT: { label: 'signal = noise', spoken: 'signal equals noise at step', format: 'int' },
   },
   compute(p) {
     // Eased in-between states pass a fractional t; the schedule is per whole step.

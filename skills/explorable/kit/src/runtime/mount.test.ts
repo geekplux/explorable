@@ -164,14 +164,19 @@ describe('hydrateFigures: fig-temperature', () => {
     expect(knob().classList.contains('is-pointer')).toBe(false);
   });
 
-  it('"Show data" toggles a real table of tokens and weights', () => {
+  it('"Show data" toggles a real table of tokens and weights in a labelled scroll region', () => {
     mount();
     const button = $<HTMLButtonElement>('.xfig-data-toggle');
+    const wrap = $<HTMLDivElement>('.xfig-table-wrap');
     const table = $<HTMLTableElement>('table.xfig-table');
-    expect(table.hidden).toBe(true);
-    expect(button.getAttribute('aria-controls')).toBe(table.id);
+    expect(table.parentElement).toBe(wrap);
+    expect(wrap.hidden).toBe(true);
+    expect(button.getAttribute('aria-controls')).toBe(wrap.id);
+    expect(wrap.getAttribute('role')).toBe('region');
+    expect(wrap.tabIndex).toBe(0);
+    expect(wrap.getAttribute('aria-labelledby')).toBe(table.caption?.id);
     button.click();
-    expect(table.hidden).toBe(false);
+    expect(wrap.hidden).toBe(false);
     expect(button.getAttribute('aria-expanded')).toBe('true');
     expect([...table.querySelectorAll('thead th')].map((t) => t.textContent)).toEqual(['#', 'token', 'score', 'weight']);
     const rows = [...table.querySelectorAll('tbody tr')].map((tr) => [...tr.children].map((c) => c.textContent));
@@ -180,7 +185,7 @@ describe('hydrateFigures: fig-temperature', () => {
     expect(table.querySelector('tbody tr')?.firstElementChild?.tagName).toBe('TD');
     expect(rows).toHaveLength(6);
     button.click();
-    expect(table.hidden).toBe(true);
+    expect(wrap.hidden).toBe(true);
   });
 
   it('updates the live description (throttled)', () => {
@@ -194,6 +199,25 @@ describe('hydrateFigures: fig-temperature', () => {
     input.dispatchEvent(new Event('input', { bubbles: true }));
     vi.advanceTimersByTime(500);
     expect(desc.textContent).toBe('Temperature 0.50: “cat” gets 82% of the attention; entropy 1.01 bits.');
+  });
+
+  it('during a pointer drag, speaks only after 600 ms of rest', () => {
+    vi.useFakeTimers();
+    mount();
+    const desc = $('#fig-temperature-desc');
+    const input = $<HTMLInputElement>('input[type=range]');
+    const before = desc.textContent;
+    input.dispatchEvent(new Event('pointerdown', { bubbles: true }));
+    for (const v of ['700', '600', '500']) {
+      vi.advanceTimersByTime(400);
+      input.value = v;
+      input.dispatchEvent(new Event('input', { bubbles: true }));
+    }
+    vi.advanceTimersByTime(599);
+    expect(desc.textContent).toBe(before);
+    vi.advanceTimersByTime(1);
+    expect(desc.textContent).toBe('Temperature 0.50: “cat” gets 82% of the attention; entropy 1.01 bits.');
+    window.dispatchEvent(new Event('pointerup'));
   });
 
   it('pauses drawing while off screen and catches up when visible', () => {

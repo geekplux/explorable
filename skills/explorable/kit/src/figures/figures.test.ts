@@ -191,7 +191,15 @@ describe('histogram: diffusion Fig 1', () => {
     expect(texts('.xfig-ref-label')).toEqual(['N(0, 1)']);
     expect(texts('.xfig-ghost-label')).toEqual(['data (t = 0)']);
     expect($('.xfig-ref').getAttribute('d')).toMatch(/^M[\d.]+ [\d.]+(L[\d.]+ [\d.]+){160}$/);
-    expect(texts('.xfig-sigma-label')).toEqual(['−2σ', 'of N(0, 1)', '+2σ']);
+    expect(texts('.xfig-sigma-label')).toEqual(['±2σ of N(0, 1)']);
+    // The hairlines are drawn after (over) the bars; the dotted and dashed lines sit on paper halos with the same path.
+    const sigma = [...root.querySelectorAll('.xfig-sigma')];
+    expect(sigma).toHaveLength(2);
+    expect(sigma.every((s) => s.closest('[aria-hidden="true"]') && s.compareDocumentPosition($('.xfig-bar')) & Node.DOCUMENT_POSITION_PRECEDING)).toBe(true);
+    expect(($('.xfig-ref').previousElementSibling as Element).getAttribute('d')).toBe($('.xfig-ref').getAttribute('d'));
+    expect(($('.xfig-ghost').previousElementSibling as Element).classList.contains('xfig-line-halo')).toBe(true);
+    expect(($('.xfig-ghost').previousElementSibling as Element).classList.contains('is-hidden')).toBe(true);
+    expect($('.xfig-foot .xfig-sr').textContent).toBe('signal 1.000, noise 0.000, spread 1.77');
     expect($('.xfig-ghost').classList.contains('is-hidden')).toBe(true);
     expect($('.xfig-chip').textContent).toBe('t = 0 · ᾱ_t = 1.00');
     expect(texts('.xfig-track text')).toEqual(['t', '0', '250', '500', '750', '1000']);
@@ -219,7 +227,7 @@ describe('histogram: diffusion Fig 1', () => {
   it('"Show data" lists 60 bins with the t = 0 and N(0, 1) columns', () => {
     key($('.xfig-knob'), 'End');
     const table = $<HTMLTableElement>('table.xfig-table');
-    expect(texts('thead th')).toEqual(['bin from', 'bin to', 'density now', 'density at t = 0', 'N(0, 1) density at bin centre']);
+    expect(texts('thead th')).toEqual(['bin from', 'bin to', 'density now', 'density at t = 0', 'N(0, 1) at bin centre']);
     expect(table.caption?.textContent).toContain('step t = 1000, alpha-bar 4.04 × 10⁻⁵');
     const rows = [...table.querySelectorAll('tbody tr')].map((r) => [...r.children].map((c) => c.textContent));
     expect(rows).toHaveLength(60);

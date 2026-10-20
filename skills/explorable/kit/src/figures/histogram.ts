@@ -33,7 +33,12 @@ export const mountHistogram: FigureMount = (el, { spec, model, setParam }) => {
   const plot = svgEl(svg, 'g', { role: 'img', 'aria-label': `${spec.title}: histogram with the ${refLabel} reference curve` });
   const barsG = svgEl(plot, 'g');
   const bars = Array.from({ length: BINS }, () => svgEl(barsG, 'rect', { class: 'xfig-bar' }));
+  // ±2σ hairlines sit above the bars so a tall bar never paints over them.
+  const guidesG = svgEl(plot, 'g', { 'aria-hidden': 'true' });
+  // Paper halos under the dashed ghost and the dotted reference keep them ≥ 3:1 where they cross bars.
+  const ghostHalo = o.ghost === true ? svgEl(plot, 'path', { class: 'xfig-line-halo' }) : undefined;
   const ghost = o.ghost === true ? svgEl(plot, 'path', { class: 'xfig-ghost' }) : undefined;
+  const refHalo = svgEl(plot, 'path', { class: 'xfig-line-halo' });
   const ref = svgEl(plot, 'path', { class: 'xfig-ref' });
   const ghostText = ghost ? svgEl(plot, 'text', { class: 'xfig-ghost-label', 'text-anchor': 'middle' }) : undefined;
   if (ghostText) ghostText.textContent = 'data (t = 0)';
@@ -66,13 +71,12 @@ export const mountHistogram: FigureMount = (el, { spec, model, setParam }) => {
       svgEl(axis, 'path', { class: 'xfig-tick', d: `M${px(x)} ${g.bottom}v4` });
       svgEl(axis, 'text', { x: px(x), y: g.bottom + 17, 'text-anchor': 'middle' }).textContent = format(x, 'int');
     }
-    // ±2σ guides: short hairlines on the axis, named in the row below the tick labels.
-    for (const [x, label] of [[-2, '−2σ'], [0, 'of N(0, 1)'], [2, '+2σ']] as const) {
-      if (x) svgEl(axis, 'path', { class: 'xfig-sigma', d: `M${px(x)} ${g.bottom}v-12` });
-      svgEl(axis, 'text', { class: 'xfig-sigma-label', x: px(x), y: g.bottom + 34, 'text-anchor': 'middle' }).textContent = label;
-    }
+    // ±2σ guides: short hairlines over the bars, named once in the row below the tick labels.
+    guidesG.replaceChildren();
+    for (const x of [-2, 2]) svgEl(guidesG, 'path', { class: 'xfig-sigma', d: `M${px(x)} ${g.bottom}v-12` });
+    svgEl(axis, 'text', { class: 'xfig-sigma-label', x: px(0), y: g.bottom + 34, 'text-anchor': 'middle' }).textContent = '±2σ of N(0, 1)';
     const curve = Array.from({ length: 161 }, (_, i) => X_MIN + i * 0.05).map((x) => `${px(x).toFixed(1)} ${py(normalPdf(x)).toFixed(1)}`);
-    ATTR(ref, { d: `M${curve.join('L')}` });
+    for (const path of [refHalo, ref]) ATTR(path, { d: `M${curve.join('L')}` });
     // Just right of the peak; on a narrow plot that is over the +1.5 clump, so centre it above the peak instead (no bar tops 0.46 there).
     const narrow = g.R - g.L < 400;
     ATTR(refText, narrow ? { x: px(0), y: py(0.5), 'text-anchor': 'middle' } : { x: px(0.45), y: py(0.42), 'text-anchor': 'start' });
@@ -103,13 +107,14 @@ export const mountHistogram: FigureMount = (el, { spec, model, setParam }) => {
       ATTR(b, { y, height: g.bottom - y });
     });
     const t = handleName ? Math.round(p[handleName] ?? 0) : 0;
-    if (ghost && ghostText) {
+    if (ghost && ghostHalo && ghostText) {
       const h0 = nums(out.hist0);
-      ATTR(ghost, { d: `M${px(X_MIN)} ${g.bottom}${h0.map((d, j) => `V${py(d).toFixed(1)}H${px(edge(j + 1)).toFixed(1)}`).join('')}V${g.bottom}` });
+      const d = `M${px(X_MIN)} ${g.bottom}${h0.map((v, j) => `V${py(v).toFixed(1)}H${px(edge(j + 1)).toFixed(1)}`).join('')}V${g.bottom}`;
+      for (const path of [ghostHalo, ghost]) ATTR(path, { d });
       const peak = Math.max(...h0.slice(Math.floor((1 - X_MIN) / BIN_W), Math.ceil((2 - X_MIN) / BIN_W)));
       ATTR(ghostText, { x: px(1.5), y: py(peak) - 8 });
       // At t = 0 the ghost would coincide with the bars.
-      for (const n of [ghost, ghostText]) n.classList.toggle('is-hidden', t === 0);
+      for (const n of [ghostHalo, ghost, ghostText]) n.classList.toggle('is-hidden', t === 0);
     }
     chip.textContent = `t = ${t} · ᾱ_t = ${format(Number(out.alphaBar), 'sig3')}`;
     if (knob && handleDef && handleName) knob.place(toPos(handleDef, p[handleName]!));
@@ -123,7 +128,7 @@ export const mountHistogram: FigureMount = (el, { spec, model, setParam }) => {
     draw,
     handle: knob && handleName ? { name: handleName, knob } : undefined,
     rowHeader: 0,
-    columns: ['bin from', 'bin to', 'density now', 'density at t = 0', `${refLabel} density at bin centre`],
+    columns: ['bin from', 'bin to', 'density now', 'density at t = 0', `${refLabel} at bin centre`],
     note: (p, out) => `step t = ${Math.round(p[handleName ?? 't'] ?? 0)}, alpha-bar ${format(Number(out.alphaBar), 'sig3')}`,
     rows: (_p, out) => {
       const h0 = nums(out.hist0);

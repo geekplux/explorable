@@ -180,6 +180,12 @@ export default async function diffusion({ page, baseURL, shot, assert, cvd, axe 
     await press(page, 'PageUp', 2);
     await settled(page);
     await shot(width === 390 ? 'diffusion-mobile' : 'diffusion-320');
+    // The open data table scrolls inside its own focusable region, never the page (WCAG 1.4.10).
+    await fig.locator('.xfig-data-toggle').click();
+    assert.equal(await page.evaluate(() => document.documentElement.scrollWidth - innerWidth), 0, `open table: no page scroll at ${width} px`);
+    await fig.locator('.xfig-table-wrap').focus();
+    assert.equal(await page.evaluate(() => document.activeElement?.getAttribute('role')), 'region');
+    await fig.locator('.xfig-data-toggle').click();
   }
   await page.emulateMedia({ reducedMotion: 'no-preference' });
   await page.setViewportSize({ width: 1280, height: 800 });

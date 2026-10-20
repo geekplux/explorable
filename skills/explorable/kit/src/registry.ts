@@ -31,6 +31,8 @@ export interface ParamDef {
 /** One readout a model can produce. */
 export interface OutputDef {
   label: string;
+  /** The label in words for screen readers when `label` has symbols ("signal" for "signal √ᾱ_t"). Default: `label`. */
+  spoken?: string;
   unit?: string;
   format: Format;
 }

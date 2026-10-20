@@ -1,4 +1,7 @@
-/** "Show data": a toggle button and a real `<table>` of the current values (A3). */
+/**
+ * "Show data": a toggle button and a real `<table>` of the current values (A3),
+ * in a focusable, labelled scroll region so a wide table never scrolls the page.
+ */
 export function createDataTable(id: string, caption: string, columns: readonly string[], rowHeader = 0) {
   const button = document.createElement('button');
   button.type = 'button';
@@ -7,11 +10,18 @@ export function createDataTable(id: string, caption: string, columns: readonly s
   button.setAttribute('aria-expanded', 'false');
   button.setAttribute('aria-controls', id);
 
+  const wrap = document.createElement('div');
+  wrap.id = id;
+  wrap.className = 'xfig-table-wrap';
+  wrap.hidden = true;
+  wrap.setAttribute('role', 'region');
+  wrap.tabIndex = 0;
+  wrap.setAttribute('aria-labelledby', `${id}-caption`);
   const table = document.createElement('table');
-  table.id = id;
   table.className = 'xfig-table';
-  table.hidden = true;
+  wrap.append(table);
   const cap = table.createCaption();
+  cap.id = `${id}-caption`;
   cap.textContent = caption;
   const head = table.createTHead().insertRow();
   const body = table.createTBody();
@@ -27,13 +37,15 @@ export function createDataTable(id: string, caption: string, columns: readonly s
   setColumns(columns);
 
   button.addEventListener('click', () => {
-    table.hidden = !table.hidden;
-    button.setAttribute('aria-expanded', String(!table.hidden));
-    button.textContent = table.hidden ? 'Show data' : 'Hide data';
+    wrap.hidden = !wrap.hidden;
+    button.setAttribute('aria-expanded', String(!wrap.hidden));
+    button.textContent = wrap.hidden ? 'Show data' : 'Hide data';
   });
 
   return {
     button,
+    /** The scroll region holding the table; mount this. */
+    wrap,
     table,
     setColumns,
     /** A one-line summary after the caption, e.g. the current verdict. */
