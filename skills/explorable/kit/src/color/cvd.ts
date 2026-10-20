@@ -7,7 +7,8 @@ export type Vision = 'normal' | 'protan' | 'deutan' | 'tritan';
 type Vec3 = [number, number, number];
 type Mat3 = [Vec3, Vec3, Vec3];
 
-const MACHADO: Record<Exclude<Vision, 'normal'>, Mat3> = {
+/** Machado 2009 matrices (severity 1.0), applied to linear sRGB. */
+export const MACHADO: Record<Exclude<Vision, 'normal'>, Mat3> = {
   protan: [
     [0.152286, 1.052583, -0.204868],
     [0.114503, 0.786281, 0.099216],

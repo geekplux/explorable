@@ -1,0 +1,11 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`mulberry32 > gives the documented stable sequence for seed 42 1`] = `
+[
+  0.6011037519,
+  0.448290559,
+  0.8524657935,
+  0.6697340414,
+  0.1748138987,
+]
+`;
