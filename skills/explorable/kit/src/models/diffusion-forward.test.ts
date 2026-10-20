@@ -10,6 +10,7 @@ vi.mock('../rng.ts', async (orig) => {
 const { ALPHA_BAR, BINS, N, diffusionForward, normalPdf, samples } = await import('./diffusion-forward.ts');
 const { format } = await import('../format.ts');
 const run = (t: number, seed = 2020) => diffusionForward.compute({ t, seed });
+const four = (a: Float64Array, i: number) => Array.from(a.subarray(i, i + 4), (v) => Number(v.toFixed(6)));
 const rel = (a: number, b: number) => Math.abs(a - b) / Math.abs(b);
 
 describe('diffusion-forward schedule', () => {
@@ -47,7 +48,6 @@ describe('diffusion-forward schedule', () => {
 describe('diffusion-forward samples at seed 2020', () => {
   it('matches the stream check', () => {
     const { x0, eps } = samples(2020);
-    const four = (a: Float64Array, i: number) => [...a.slice(i, i + 4)].map((v) => Number(v.toFixed(6)));
     expect(four(x0, 0)).toEqual([-2.32599, -2.465774, -2.224807, -1.984393]);
     expect(four(x0, 1000)).toEqual([1.759179, 1.174598, 1.814187, 1.091213]);
     expect(four(eps, 0)).toEqual([-0.91109, 1.359381, 0.159937, -0.531646]);

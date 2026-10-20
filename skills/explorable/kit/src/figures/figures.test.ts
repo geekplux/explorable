@@ -3,6 +3,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import bloomDoc from '../../../../../src/samples/bloom-filter.json';
 import attentionDoc from '../../../../../src/samples/attention.json';
+import diffusionDoc from '../../../../../src/samples/diffusion.json';
 import { essayHtml, hydrateFigures } from '../doc/essay.ts';
 import { parseDoc, type ExplorableDoc } from '../doc/schema.ts';
 
@@ -174,5 +175,66 @@ describe('bars + switch: attention Fig 2', () => {
     expect(texts('thead th')).toEqual(['#', 'key', 'score', 'weight', 'weight with other setting']);
     const first = [...$('tbody tr').children].map((c) => c.textContent);
     expect(first).toEqual(['1', 'k₁', '1.630', '0.156', '0.178']);
+  });
+});
+
+/** Each density label (right-aligned in the axis group) and its y. */
+const yAxis = () => [...root.querySelectorAll('.xfig-axis text[text-anchor="end"]')].map((t) => `${t.textContent}@${t.getAttribute('y')}`);
+const heights = () => [...root.querySelectorAll('rect.xfig-bar')].map((r) => r.getAttribute('height')).join();
+
+describe('histogram: diffusion Fig 1', () => {
+  beforeEach(() => mount(diffusionDoc, 'fig-histogram'));
+
+  it('draws 60 ink-outlined bars, the labelled dotted reference and the ±2σ guides', () => {
+    expect(readout()).toBe('signal √ᾱ_t 1.000 · noise √(1−ᾱ_t) 0.000 · spread (SD) 1.77');
+    expect(root.querySelectorAll('rect.xfig-bar')).toHaveLength(60);
+    expect(texts('.xfig-ref-label')).toEqual(['N(0, 1)']);
+    expect(texts('.xfig-ghost-label')).toEqual(['data (t = 0)']);
+    expect($('.xfig-ref').getAttribute('d')).toMatch(/^M[\d.]+ [\d.]+(L[\d.]+ [\d.]+){160}$/);
+    expect(texts('.xfig-sigma-label')).toEqual(['−2σ', 'of N(0, 1)', '+2σ']);
+    expect($('.xfig-ghost').classList.contains('is-hidden')).toBe(true);
+    expect($('.xfig-chip').textContent).toBe('t = 0 · ᾱ_t = 1.00');
+    expect(texts('.xfig-track text')).toEqual(['t', '0', '250', '500', '750', '1000']);
+  });
+
+  it('keys scrub t: PageUp from 0 goes to 50, End to 1000; the y axis never rescales', () => {
+    const knob = $('.xfig-knob');
+    expect(knob.getAttribute('aria-label')).toBe('step t (drag on chart)');
+    expect(knob.getAttribute('aria-valuetext')).toBe('0 of 1000');
+    const axis0 = yAxis();
+    expect(axis0.map((a) => a.split('@')[0])).toEqual(['0', '0.25', '0.5', '0.75', '1']);
+    const h0 = heights();
+    key(knob, 'PageUp');
+    expect(knob.getAttribute('aria-valuenow')).toBe('50');
+    expect($('#fig-histogram-t').getAttribute('aria-valuetext')).toBe('step t 50 of 1000');
+    expect(heights()).not.toBe(h0);
+    expect($('.xfig-ghost').classList.contains('is-hidden')).toBe(false);
+    key(knob, 'End');
+    expect(knob.getAttribute('aria-valuenow')).toBe('1000');
+    expect(readout()).toBe('signal √ᾱ_t 0.006 · noise √(1−ᾱ_t) 1.000 · spread (SD) 1.01');
+    expect($('.xfig-chip').textContent).toBe('t = 1000 · ᾱ_t = 4.04 × 10⁻⁵');
+    expect(yAxis()).toEqual(axis0);
+  });
+
+  it('"Show data" lists 60 bins with the t = 0 and N(0, 1) columns', () => {
+    key($('.xfig-knob'), 'End');
+    const table = $<HTMLTableElement>('table.xfig-table');
+    expect(texts('thead th')).toEqual(['bin from', 'bin to', 'density now', 'density at t = 0', 'N(0, 1) density at bin centre']);
+    expect(table.caption?.textContent).toContain('step t = 1000, alpha-bar 4.04 × 10⁻⁵');
+    const rows = [...table.querySelectorAll('tbody tr')].map((r) => [...r.children].map((c) => c.textContent));
+    expect(rows).toHaveLength(60);
+    expect(rows[15]).toEqual(['−2.00', '−1.87', '0.105', '0.735', '0.062']);
+    expect(rows[59]![1]).toBe('4.00');
+  });
+
+  it('the live description is one throttled sentence', () => {
+    vi.useFakeTimers();
+    key($('.xfig-knob'), 'End');
+    key($('.xfig-knob'), 'Home');
+    for (let i = 0; i < 10; i++) key($('.xfig-knob'), 'PageUp');
+    vi.advanceTimersByTime(600);
+    expect($('#fig-histogram-desc').textContent).toBe(
+      'Step t = 500: 28% of the original signal and noise of 0.96; the samples spread with SD 1.09, and pure noise would be 1.00.',
+    );
   });
 });

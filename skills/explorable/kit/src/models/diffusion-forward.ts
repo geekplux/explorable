@@ -32,7 +32,7 @@ export type DiffusionOutputs = {
 
 /** Density histogram of `xs` (count / (N·w)); out-of-range values land in the edge bins. */
 function histogram(xs: Float64Array): number[] {
-  const h = new Array<number>(BINS).fill(0);
+  const h = Array.from({ length: BINS }, () => 0);
   for (const x of xs) h[Math.min(BINS - 1, Math.max(0, Math.floor((x - X_MIN) / BIN_W)))]! += 1;
   return h.map((c) => c / (xs.length * BIN_W));
 }
@@ -65,7 +65,7 @@ export const diffusionForward = registerModel<DiffusionParams, DiffusionOutputs>
   keywords: ['diffusion', 'ddpm', 'denoising', 'noise', 'schedule', 'gaussian', 'forward process', 'generative'],
   params: {
     // The unit reads "260 of 1000" to assistive tech (diffusion.md, Fig 1 controls).
-    t: { label: 'step t', symbol: 't', min: 0, max: T, step: 1, pageStep: 50, default: 0, unit: 'of 1000' },
+    t: { label: 'step t', min: 0, max: T, step: 1, pageStep: 50, default: 0, unit: 'of 1000' },
     seed: { label: 'seed', min: 0, max: 2 ** 32 - 1, step: 1, default: 2020 },
   },
   outputs: {

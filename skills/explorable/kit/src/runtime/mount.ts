@@ -5,10 +5,12 @@
  */
 import { mountBars } from '../figures/bars.ts';
 import { mountBits } from '../figures/bits.ts';
+import { mountHistogram } from '../figures/histogram.ts';
 import type { FigureSpec } from '../doc/schema.ts';
 import { format } from '../format.ts';
 import { attentionScaling } from '../models/attention-scaling.ts';
 import { bloomFilter } from '../models/bloom-filter.ts';
+import { diffusionForward } from '../models/diffusion-forward.ts';
 import { softmaxTemperature } from '../models/softmax-temperature.ts';
 import { getModel, type FigureKind, type ModelDef, type ParamDef } from '../registry.ts';
 import { createAnnouncer } from './announce.ts';
@@ -44,9 +46,9 @@ export interface FigureView {
 }
 
 export type FigureMount = (drawing: HTMLElement, ctx: FigureCtx) => FigureView;
-const KINDS: Partial<Record<FigureKind, FigureMount>> = { bars: mountBars, bits: mountBits };
+const KINDS: Partial<Record<FigureKind, FigureMount>> = { bars: mountBars, bits: mountBits, histogram: mountHistogram };
 /** Models registered by importing the runtime. */
-export const BUILT_IN_MODELS = [softmaxTemperature, attentionScaling, bloomFilter] as unknown as readonly ModelDef[];
+export const BUILT_IN_MODELS = [softmaxTemperature, attentionScaling, bloomFilter, diffusionForward] as unknown as readonly ModelDef[];
 
 const noop = () => {};
 const el = (tag: string, cls: string) => Object.assign(document.createElement(tag), { className: cls });
