@@ -1,0 +1,53 @@
+{
+  "skill_name": "explorable",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I'm writing a blog post about Bloom filters. Can you make me an interactive explainer of how a Bloom filter can say \"maybe\" but never a false \"no\"? One HTML file I can put next to the post, please; my blog is static.",
+      "expected_output": "Two files in one folder: `explorable.json` and `index.html`, the page written by `node scripts/build.mjs <folder>/explorable.json`. The spec has a figure with `kind: \"bits\"` and `model.id: \"bloom-filter\"`; its `controls` include `n` (words inserted) and `k` (hashes per word), and may include `q` (the word asked about); its `readouts` include `bitsSet` and `fpr`, and may include `fpObserved`; `options.handle` is one of the controls. `node scripts/audit.mjs <folder>/explorable.json` and `node scripts/audit.mjs <folder>/index.html` both print `audit passed` as their last line and exit 0. The `dek` states the single idea (no false \"no\", a tunable false \"maybe\"). Every figure's `alt` is at least 40 characters, names the figure as a row of bits, and mentions no colour. The page opens from file:// with no network request.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "Our docs page explains the sampling temperature setting of our text-generation API. Make an interactive figure where readers drag the temperature and watch the next-word probabilities sharpen or flatten. Use these candidates and logits: mat 3, rug 1.8, floor 1.2, sofa 0.5, moon -1.",
+      "expected_output": "`explorable.json` and its built `index.html`. One figure has `kind: \"bars\"` and `model.id: \"softmax-temperature\"` with `model.params` `n: 5`, `s1: 3`, `s2: 1.8`, `s3: 1.2`, `s4: 0.5`, `s5: -1` and `T` at its default 1; `options.labels` is exactly `[\"mat\", \"rug\", \"floor\", \"sofa\", \"moon\"]`; `controls` is `[\"T\"]`; `readouts` are `top` and `entropy`. The section holding the figure tells the reader to drag T and what to watch. `node scripts/audit.mjs` on both files ends with the line `audit passed`. No text uses colour words such as \"the red bar\", and no paragraph uses LaTeX.",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "For my physics class I want something students can play with that shows the inverse-square law for light: why a lamp twice as far away looks a quarter as bright.",
+      "expected_output": "The reply says no registry model teaches this idea, so the figure uses `expr-curve`. `explorable.json` has a figure with `kind: \"curve\"` and `model.id: \"expr-curve\"` whose `expr` is an inverse square of x, such as `P/(4*pi*x^2)` or `I0/x^2`, with x labelled as distance and `x.min` greater than 0. `controls` include `x` (and may include a declared param such as lamp power); `readouts` are `[\"x\", \"y\"]`. A dotted `refExpr` curve at twice the distance, or the essay text, shows the factor of four. `node scripts/build.mjs` writes `index.html`, and `node scripts/audit.mjs` on the spec and on the page both end with `audit passed`. `source.kind` is `concept`.",
+      "files": []
+    },
+    {
+      "id": 4,
+      "prompt": "Make a 3D surface plot of the normal distribution for my stats lecture that students can rotate with the mouse, the kind of thing you'd see in a Ciechanowski article.",
+      "expected_output": "No 3D figure is built. The reply states the reason: the kit draws only flat figures (`bars`, `bits`, `histogram`, `curve`), the schema rejects any other kind, and rotating a surface takes the reader's hand off the parameter that matters. Instead `explorable.json` has a `kind: \"curve\"`, `model.id: \"expr-curve\"` figure of the normal density, such as `exp(-(x-mu)^2/(2*s^2))/(s*sqrt(2*pi))`, with a declared spread param (σ) in `controls` alongside `x`, and `readouts` `[\"x\", \"y\"]`. The built `index.html` exists, and `node scripts/audit.mjs` on both files ends with `audit passed`.",
+      "files": []
+    },
+    {
+      "id": 5,
+      "prompt": "Our docs site is a Vite + React + TypeScript app. Add an interactive explainer of Newton's law of cooling as a component in src/components/CoolingExplainer.tsx.",
+      "expected_output": "`kit/src` and `kit/react` are copied side by side into the project (for example `src/explorable/src` and `src/explorable/react`), without the kit's `*.test.ts` files, and `valibot` is added to the project's dependencies. A spec JSON (for example `src/components/cooling.explorable.json`) has a `curve` figure with `model.id: \"expr-curve\"`, `expr` `Ta + (T0 - Ta)*exp(-k*x)` or equivalent, `controls` including `x` and `k`, and `readouts` `[\"x\", \"y\"]`. `src/components/CoolingExplainer.tsx` imports `Explorable` from the copied `react/Explorable.tsx`, validates the JSON with `parseDoc` at module scope, imports `tokens.css` and `kit.css`, and renders `<Explorable doc={doc} />`. `node <skill>/scripts/audit.mjs <spec>.json` ends with `audit passed`, and the project's `tsc --noEmit` passes. No standalone HTML page is required.",
+      "files": []
+    },
+    {
+      "id": 6,
+      "prompt": "Make this paper interactive: https://example.org/files/heat-exchanger-notes.pdf",
+      "expected_output": "The reply does not claim to have read the PDF: the skill does not fetch or parse PDFs, and the link is not arXiv. It either (a) asks the user to paste the text or the key formula and builds nothing yet, or (b) says it is working from the concept the link names, builds from textbook relations only, and sets `source.kind` to `concept`. It says which of the two it did. If it builds, no number in the essay is attributed to the paper, and `node scripts/audit.mjs` on `explorable.json` and `index.html` both end with `audit passed`.",
+      "files": []
+    },
+    {
+      "id": 7,
+      "prompt": "Build one interactive figure that explains self-attention, positional encodings and layer normalization in transformers, all at once.",
+      "expected_output": "The reply picks one idea, says why (for example: attention is the idea the other two serve, and the kit has a live model of it, `attention-scaling`), and names the other two as possible follow-ups. The `dek` states that single idea. The spec's figures use only `attention-scaling` (controls from `dk` and `scaled`, readouts from `sd`, `sdExpected`, `top` and `entropy`) or `softmax-temperature` (control `T`, readouts `top` and `entropy`); no figure or section is about positional encodings or layer normalization. `explorable.json` and the built `index.html` both pass `node scripts/audit.mjs` with the last line `audit passed`.",
+      "files": []
+    },
+    {
+      "id": 8,
+      "prompt": "Make an explainer of the Bloom filter false-positive curve comparing k = 2 and k = 4 as two lines, red for k = 2 and blue for k = 4. Keep it minimal: no labels and no legend, the colours are enough.",
+      "expected_output": "The two lines are not told apart by colour alone. The reply says why: colour alone fails readers with colour-vision deficiency, and the audit rejects it. If a draft puts a colour in a figure option, `node scripts/audit.mjs` prints `options.<key> sets a colour; the kit owns the palette (at most 3 hue-coded series), so encode with line style, shape or labels` and `audit failed`; a blank label prints `is empty; every label must say what it marks`. The final `explorable.json` has no `#hex`, `rgb()`, `hsl()` or `oklch()` value in any `options`; it has an `expr-curve` `curve` figure whose main curve is labelled `k = 2` and whose dotted `refExpr` curve is labelled `k = 4` (or two series that differ by line style), with x as words inserted. `node scripts/audit.mjs` on the final `explorable.json` and `index.html` ends with `audit passed`.",
+      "files": []
+    }
+  ]
+}
