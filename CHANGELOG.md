@@ -15,6 +15,7 @@ All notable changes to this project are documented here. The format follows [Kee
 - The URL flow in the app, with loading, error, offline and "AI unavailable" states, and a local search over the samples for typed text.
 - The `/explorable` agent skill in `skills/explorable/`: a prebuilt kit bundle, a standalone page builder, an audit script that ends in `audit passed`, two worked examples (Bloom filter, Newton cooling), references, evals and a CI definition in `ci/github-workflow.yml`.
 - A headless-browser harness (`pnpm smoke`, `pnpm e2e`) with axe, keyboard, reduced-motion and colour-vision checks, and a bundle size budget.
+- A README with a hero image and three-way quick start, a social preview image (`pnpm build:images`), a root `examples/` gallery of standalone sample pages (`pnpm build:examples`, checked fresh in CI) and a launch kit in `docs/LAUNCH.md`.
 - Open-source basics: MIT licence, contributing guide, code of conduct, security policy, issue and PR templates, `docs/EXTENDING.md` and `docs/GOOD_FIRST_ISSUES.md`.
 
 ### Accessibility
