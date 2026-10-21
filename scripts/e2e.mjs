@@ -1,6 +1,7 @@
 // pnpm e2e <flow…> [--out <dir>] [--no-build]
 // Runs scripts/flows/<flow>.mjs inside one preview server and one browser.
-// A flow is `export default async ({ page, baseURL, shot, assert, cvd, axe }) => {}`.
+// A flow is `export default async ({ page, baseURL, shot, assert, cvd, axe }) => {}`;
+// it may `export const pageOptions = { allowApi, apiErrors }` (see newPage).
 import assert from 'node:assert/strict';
 import { axe } from './lib/axe.mjs';
 import { cvd } from './lib/cvd.mjs';
@@ -18,7 +19,7 @@ await run(async () => {
       withBrowser(
         async ({ newPage }) => {
           for (const [i, name] of flows.entries()) {
-            const page = await newPage({ width: 1280, height: 800 });
+            const page = await newPage({ width: 1280, height: 800 }, modules[i].pageOptions);
             console.log(`flow ${name}`);
             await modules[i].default({
               page,

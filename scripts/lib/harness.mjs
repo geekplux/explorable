@@ -131,7 +131,8 @@ export async function withPreview(fn, { build = true, port: preferred = 4173 } =
  * record every request outside `baseURL`, and record console errors, page
  * errors, failed requests and HTTP errors into `problems`. Requests to `/api/*`
  * are recorded as problems too (the sample path never calls the Worker) unless
- * the page is opened with `{ allowApi: true }`.
+ * the page is opened with `{ allowApi: true }`. `{ apiErrors: true }` also
+ * accepts failed or 4xx/5xx `/api/*` responses (flows that mock error codes).
  */
 export async function withBrowser(fn, { baseURL }) {
   const browser = await chromium.launch({
@@ -145,7 +146,9 @@ export async function withBrowser(fn, { baseURL }) {
   });
   const origin = new URL(baseURL).origin;
 
-  async function newPage(viewport, { allowApi = false, ...options } = {}) {
+  const isApi = (url) => URL.canParse(url) && new URL(url).origin === origin && new URL(url).pathname.startsWith('/api/');
+
+  async function newPage(viewport, { allowApi = false, apiErrors = false, ...options } = {}) {
     const context = await browser.newContext({ viewport, ...options });
     const blocked = new Set();
     await context.route('**/*', (route) => {
@@ -160,14 +163,14 @@ export async function withBrowser(fn, { baseURL }) {
     });
     const page = await context.newPage();
     page.on('console', (msg) => {
-      if (msg.type() === 'error') problems.push(`console error on ${page.url()}: ${msg.text()}`);
+      if (msg.type() === 'error' && !(apiErrors && isApi(msg.location().url))) problems.push(`console error on ${page.url()}: ${msg.text()}`);
     });
     page.on('pageerror', (error) => problems.push(`page error on ${page.url()}: ${error.message}`));
     page.on('requestfailed', (req) => {
-      if (!blocked.has(req.url())) problems.push(`request failed: ${req.url()} (${req.failure()?.errorText})`);
+      if (!blocked.has(req.url()) && !(apiErrors && isApi(req.url()))) problems.push(`request failed: ${req.url()} (${req.failure()?.errorText})`);
     });
     page.on('response', (res) => {
-      if (res.status() >= 400) problems.push(`HTTP ${res.status()}: ${res.url()}`);
+      if (res.status() >= 400 && !(apiErrors && isApi(res.url()))) problems.push(`HTTP ${res.status()}: ${res.url()}`);
     });
     return page;
   }
