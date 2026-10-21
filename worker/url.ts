@@ -20,13 +20,17 @@ const BLOCKED_V4: Array<[string, number]> = [
   ['172.16.0.0', 12], ['192.0.0.0', 24], ['192.0.2.0', 24], ['192.168.0.0', 16],
   ['198.18.0.0', 15], ['198.51.100.0', 24], ['203.0.113.0', 24], ['224.0.0.0', 3],
 ];
-const LOCAL_SUFFIX = /(^|\.)(localhost|local|internal|intranet|lan|home|corp|home\.arpa)$/;
+const LOCAL_SUFFIX = /(^|\.)(localhost|localdomain|local|internal|intranet|lan|home|corp|home\.arpa)$/;
 
 const v4 = (ip: string) => ip.split('.').reduce((n, part) => n * 256 + Number(part), 0);
 
 export function isBlockedHost(hostname: string): boolean {
-  const host = hostname.toLowerCase().replace(/\.$/, '');
-  if (host.startsWith('[')) return true; // IPv6 literals: none are needed for articles
+  const lower = hostname.toLowerCase();
+  if (lower.startsWith('[')) return true; // IPv6 literals: none are needed for articles
+  // An empty label (`127.0.0.1..`, `.foo`) makes the parser treat an IP or local
+  // name as a domain, slipping past the checks below; no real article needs one.
+  if (lower.startsWith('.') || lower.includes('..')) return true;
+  const host = lower.replace(/\.+$/, '');
   if (/^\d+\.\d+\.\d+\.\d+$/.test(host)) {
     const ip = v4(host);
     return BLOCKED_V4.some(([base, bits]) => Math.floor(ip / 2 ** (32 - bits)) === Math.floor(v4(base) / 2 ** (32 - bits)));

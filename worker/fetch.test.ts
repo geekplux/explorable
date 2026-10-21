@@ -49,6 +49,12 @@ describe('fetchText', () => {
     expect(fetchFn).toHaveBeenCalledTimes(1);
   });
 
+  it('blocks a redirect to a trailing-dots loopback address', async () => {
+    const fetchFn = vi.fn<FetchFn>(async () => redirect('http://127.0.0.1../'));
+    expect((await failure(fetchText('https://example.com/', HTML_TYPES, fetchFn))).code).toBe('BLOCKED_URL');
+    expect(fetchFn).toHaveBeenCalledTimes(1);
+  });
+
   it('times out a hanging request', async () => {
     const limits = { timeoutMs: 20, maxBytes: 1000, maxRedirects: 3 };
     const error = await failure(fetchText('https://example.com/', HTML_TYPES, hang, limits));
