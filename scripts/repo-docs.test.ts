@@ -187,13 +187,17 @@ describe('contributor docs', () => {
   });
 
   it.each([
-    ['docs/assets/hero.png', 400 * 1024, undefined],
-    ['docs/assets/social-preview.png', 1024 * 1024, [1280, 640]],
-  ] as const)('%s is a PNG within its size budget', (path, maxBytes, size) => {
+    ['docs/assets/hero.png', 400 * 1024],
+    ['docs/assets/social-preview.png', 1024 * 1024],
+  ] as const)('%s is a PNG within its size budget', (path, maxBytes) => {
     const png = readFileSync(path);
     expect(png.subarray(1, 4).toString()).toBe('PNG');
     expect(png.length).toBeLessThan(maxBytes);
-    if (size) expect([png.readUInt32BE(16), png.readUInt32BE(20)]).toEqual(size);
+  });
+
+  it('the social preview is 1280 × 640', () => {
+    const png = readFileSync('docs/assets/social-preview.png');
+    expect([png.readUInt32BE(16), png.readUInt32BE(20)]).toEqual([1280, 640]);
   });
 
   it('LICENSE is MIT with the project copyright line', () => {

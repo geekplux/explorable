@@ -4,16 +4,18 @@
 // rebuild the pages and fail when the committed ones are stale.
 import { readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-import * as kit from '../skills/explorable/kit/dist/explorable-kit.js';
-import { buildPage } from '../skills/explorable/scripts/build.mjs';
 
+// Imported by URL so the root typecheck does not pull in the skill's untyped script and prebuilt bundle.
+const skill = (path) => import(new URL(`../skills/explorable/${path}`, import.meta.url).href);
+const kit = await skill('kit/dist/explorable-kit.js');
+const { buildPage } = await skill('scripts/build.mjs');
 const SAMPLES = 'src/samples';
 const OUT = 'examples';
 
 const slugs = readdirSync(SAMPLES)
   .filter((f) => f.endsWith('.json'))
   .map((f) => f.slice(0, -'.json'.length))
-  .sort();
+  .toSorted();
 let failed = 0;
 for (const slug of slugs) {
   const parsed = kit.parseDoc(JSON.parse(readFileSync(join(SAMPLES, `${slug}.json`), 'utf8')));
