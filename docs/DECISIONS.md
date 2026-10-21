@@ -62,3 +62,5 @@ Record every non-trivial decision here: date, decision, alternatives considered,
 | 2026-10-21 | Kit bundle is ESM only; `build.mjs` inlines it as a page script (`inlineKit`, tested) | Second IIFE bundle | One artefact to keep fresh; CI diff catches drift. |
 | 2026-10-21 | Standalone pages carry a hash-based CSP; only Newsreader roman is inlined (headings fall back to it); `lang="en"` | Inline all fonts | Keeps pages ~145 KB and safe; schema has no language field yet. |
 | 2026-10-21 | `kit/dist/` committed with a one-line `package.json` (`type: module`) and the OFL font | Rely on repo package.json | Node 20 must read the bundle as ESM when the skill folder is copied out of the repo. |
+| 2026-10-21 | Phases 13–14: no separate designer/skill-author/a11y passes (docs-only or reusing already-reviewed builder output); verifier checked composition, claims and standalone pages | Run every specialist | No new UI surface; saves shared quota. |
+| 2026-10-21 | Root `examples/*.html` committed as built artefacts and CI-checked for freshness | Build on demand only | Gallery works from a fresh clone, offline. |
