@@ -3,7 +3,8 @@
  * (docs/PLAN.md §5.2). Models are pure and deterministic (seeded RNG only).
  */
 import type { FigureKind } from './doc/schema.ts';
-import type { Format } from './format.ts';
+import { format, isFormat, type Format } from './format.ts';
+import { showValue } from './runtime/controls.ts';
 
 export type { FigureKind };
 
@@ -54,6 +55,27 @@ export interface ModelDef<
   describe(p: P, o: O, labels?: readonly string[]): string;
   /** Slug of the curated sample used in match mode. */
   template?: string;
+}
+
+/**
+ * Fill a live-text template: `{name}` is an output (in its readout format) or a
+ * param (at its step's precision); `{name:fmt}` picks the format. `extra`
+ * values (such as `{marker}`) print with one decimal, integers without.
+ * Unknown placeholders stay as written.
+ */
+export function fillTemplate(
+  tpl: string, model: ModelDef, p: Record<string, number>, o: Record<string, number | number[]>, extra: Record<string, number> = {},
+): string {
+  return tpl.replace(/\{(\w+)(?::(\w+))?\}/g, (whole, name: string, f?: string) => {
+    const fmt = isFormat(f) ? f : undefined;
+    const own = <T extends object>(obj: T) => (Object.hasOwn(obj, name) ? (obj as Record<string, unknown>)[name] : undefined);
+    const [ex, out, param] = [own(extra), own(o), own(p)];
+    if (typeof ex === 'number') return fmt ? format(ex, fmt) : Number.isInteger(ex) ? format(ex, 'int') : format(ex, 'fixed1');
+    if (typeof out === 'number') return format(out, fmt ?? model.outputs[name]?.format ?? 'fixed2');
+    if (typeof param !== 'number') return whole;
+    const def = own(model.params) as ParamDef | undefined;
+    return fmt ? format(param, fmt) : def ? showValue(def, param) : String(param);
+  });
 }
 
 const models = new Map<string, ModelDef>();

@@ -1,5 +1,7 @@
 /** Readout formats (docs/figures/samples.md §4). */
-export type Format = 'int' | 'fixed1' | 'fixed2' | 'fixed3' | 'percent' | 'sci' | 'sig3';
+export const FORMATS = ['int', 'fixed1', 'fixed2', 'fixed3', 'percent', 'sci', 'sig3'] as const;
+export type Format = (typeof FORMATS)[number];
+export const isFormat = (v: unknown): v is Format => (FORMATS as readonly unknown[]).includes(v);
 
 const MINUS = '−';
 const SUPER = '⁰¹²³⁴⁵⁶⁷⁸⁹';
