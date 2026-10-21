@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Security vulnerability
+    url: https://github.com/geekplux/explorable/security/advisories/new
+    about: Report security problems privately, never in a public issue.
+  - name: Extending the kit
+    url: https://github.com/geekplux/explorable/blob/main/docs/EXTENDING.md
+    about: How to add a model, a figure kind, a sample or an expression function.

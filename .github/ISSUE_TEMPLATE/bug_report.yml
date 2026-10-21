@@ -1,0 +1,48 @@
+name: Bug report
+description: Something in the app, a figure, the Worker or the /explorable skill does not work as it should.
+labels: [bug]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: What you did, what you expected, and what you saw instead.
+    validations:
+      required: true
+  - type: dropdown
+    id: where
+    attributes:
+      label: Where
+      options:
+        - Gallery or a built-in sample
+        - A pasted URL
+        - The /explorable skill
+        - Local development
+    validations:
+      required: true
+  - type: input
+    id: link
+    attributes:
+      label: Page or URL
+      description: The sample route (for example /s/attention) or the URL you pasted.
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Open /s/diffusion
+        2. Tab to the step slider and press End
+        3. …
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Browser, OS and assistive technology
+      description: For example Firefox 140 on Linux with Orca, or the Node version for the skill.
+  - type: checkboxes
+    id: a11y
+    attributes:
+      label: Accessibility
+      options:
+        - label: This affects keyboard, screen-reader, reduced-motion or colour-vision users.

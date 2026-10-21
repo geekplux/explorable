@@ -1,0 +1,42 @@
+name: Figure or model request
+description: Propose an idea the kit cannot show yet, as a new model or figure kind.
+labels: [figure]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        A figure earns its place when dragging one control teaches one idea. If the idea is a formula y = f(x), the existing `expr-curve` may already cover it; see skills/explorable/references/models.md.
+  - type: textarea
+    id: idea
+    attributes:
+      label: The one idea
+      description: One sentence a reader could say aloud after using the figure.
+    validations:
+      required: true
+  - type: textarea
+    id: interaction
+    attributes:
+      label: What the reader drags, and what changes
+      description: The 1 to 3 controls, their ranges, and the readouts.
+    validations:
+      required: true
+  - type: textarea
+    id: model
+    attributes:
+      label: The model behind the numbers
+      description: The formula or procedure, with a source, and a few values you can check by hand.
+    validations:
+      required: true
+  - type: textarea
+    id: encoding
+    attributes:
+      label: Encoding without colour
+      description: How shapes, line styles, glyphs or labels carry the meaning.
+  - type: checkboxes
+    id: rules
+    attributes:
+      label: Fit
+      options:
+        - label: It is not decorative 3D and not finance-related.
+          required: true
+        - label: I would like to build it myself.
