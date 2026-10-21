@@ -1,0 +1,4 @@
+# Copy to .dev.vars (gitignored) to override vars for `pnpm dev` / `pnpm preview`.
+# No secrets or API keys are needed: local dev runs without Workers AI.
+# "1" enables the debug route GET /api/extract?url=… (already the local default).
+EXPLORABLE_DEBUG=1
