@@ -1,20 +1,41 @@
+import { useEffect, useState } from 'react';
 import type { ExplorableDoc } from '@kit/doc/schema.ts';
 import { MiniCards } from '../SampleCard.tsx';
 
-/** Local matches for typed words; the count is announced politely. */
+/** How long typing must pause before the match count is announced. */
+export const COUNT_DELAY_MS = 500;
+
+export const countText = (n: number): string =>
+  n ? `${n} built-in ${n === 1 ? 'match' : 'matches'}. Open one, or paste a link.` : 'No built-in match: paste a link instead.';
+
+/**
+ * Local matches for typed words. The visible count updates at once; screen
+ * readers hear it from one polite `<output>` that stays mounted at all times and
+ * only changes its text, debounced, so the first count is announced and fast
+ * typing does not queue a stream of counts.
+ */
 export function SearchResults({ results }: { results: readonly ExplorableDoc[] | null }) {
-  // The live region stays mounted so the first result count is announced too.
-  if (!results) return <output className="visually-hidden" />;
-  const n = results.length;
+  const text = results ? countText(results.length) : '';
+  const [said, setSaid] = useState('');
+  useEffect(() => {
+    const t = setTimeout(() => setSaid(text), text ? COUNT_DELAY_MS : 0);
+    return () => clearTimeout(t);
+  }, [text]);
+
   return (
-    <section className="search-results" aria-labelledby="search-heading">
-      <h2 id="search-heading" className="kicker">
-        Built-in matches
-      </h2>
-      <output className="search-count">
-        {n ? `${n} built-in ${n === 1 ? 'match' : 'matches'}. Open one, or paste a link.` : 'No built-in match: paste a link instead.'}
-      </output>
-      {n > 0 && <MiniCards docs={results} />}
+    <section className={results ? 'search-results' : undefined} aria-labelledby={results ? 'search-heading' : undefined}>
+      <output className="visually-hidden search-live">{said}</output>
+      {results && (
+        <>
+          <h2 id="search-heading" className="kicker">
+            Built-in matches
+          </h2>
+          <p className="search-count" aria-hidden="true">
+            {text}
+          </p>
+          {results.length > 0 && <MiniCards docs={results} />}
+        </>
+      )}
     </section>
   );
 }

@@ -1,4 +1,4 @@
-import { type FormEvent, useId, useRef, useState } from 'react';
+import { type FormEvent, useEffect, useId, useRef, useState } from 'react';
 import { classifyInput } from '../lib/input.ts';
 import { explainPath, navigate } from '../router.ts';
 import { useOnline } from './states/OfflineBanner.tsx';
@@ -26,9 +26,13 @@ export function UrlField({ onQuery }: { onQuery: (query: string) => void }) {
   const [invalid, setInvalid] = useState(false);
   const online = useOnline();
   const input = useRef<HTMLInputElement>(null);
+  const frame = useRef(0);
   const id = useId();
 
+  useEffect(() => () => cancelAnimationFrame(frame.current), []);
+
   const change = (next: string) => {
+    cancelAnimationFrame(frame.current);
     setValue(next);
     setDraft(next);
     setMessage('');
@@ -40,14 +44,24 @@ export function UrlField({ onQuery }: { onQuery: (query: string) => void }) {
   const submit = (event: FormEvent) => {
     event.preventDefault();
     const parsed = classifyInput(value);
+    if (parsed.kind === 'url' && online) return navigate(explainPath(parsed.url));
     // Only a malformed or missing link marks the field invalid; offline or a search is not the input's fault.
     setInvalid(parsed.kind === 'empty' || parsed.kind === 'invalid');
-    if (parsed.kind === 'empty') setMessage('Paste a link to an arXiv paper or a blog post, or type a topic.');
-    else if (parsed.kind === 'invalid') setMessage(parsed.message);
-    else if (parsed.kind === 'text') setMessage('Pick a built-in match below, or paste a link.');
-    else if (!online) setMessage('You’re offline, so this link can’t be read now. The samples below still work.');
-    else navigate(explainPath(parsed.url));
-    if (parsed.kind !== 'url' || !online) input.current?.focus();
+    const next =
+      parsed.kind === 'empty'
+        ? 'Paste a link to an arXiv paper or a blog post, or type a topic.'
+        : parsed.kind === 'invalid'
+          ? parsed.message
+          : parsed.kind === 'text'
+            ? 'Pick a built-in match below, or paste a link.'
+            : 'You’re offline, so this link can’t be read now.';
+    // Clear, move focus, then set the message on the next frame: the alert is
+    // announced once (not also as the focused input's description), and a
+    // repeated identical message is announced again.
+    setMessage('');
+    input.current?.focus();
+    cancelAnimationFrame(frame.current);
+    frame.current = requestAnimationFrame(() => setMessage(next));
   };
 
   return (

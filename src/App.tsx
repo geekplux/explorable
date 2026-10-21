@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { Footer } from './components/Footer.tsx';
 import { Header } from './components/Header.tsx';
+import { getDraft } from './components/UrlField.tsx';
 import { GalleryPage } from './pages/GalleryPage.tsx';
 import { NotFoundPage } from './pages/NotFoundPage.tsx';
 import { ResultPage } from './pages/ResultPage.tsx';
@@ -17,8 +18,10 @@ export function App() {
   useEffect(() => {
     if (shown.current === key) return;
     shown.current = key;
-    document.querySelector<HTMLElement>('main h1')?.focus();
-  }, [key]);
+    // Back on the gallery with a draft (Cancel, "Edit the link", Back): land in the filled input.
+    const target = route.name === 'gallery' && getDraft() ? '.url-row input' : 'main h1';
+    document.querySelector<HTMLElement>(target)?.focus();
+  }, [key, route.name]);
 
   return (
     <>

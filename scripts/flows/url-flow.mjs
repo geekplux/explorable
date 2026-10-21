@@ -125,6 +125,14 @@ export default async function urlFlow(ctx) {
     if (code === 'FETCH_FAILED') {
       await noBlocking(ctx, 'error');
       await shot('error-fetch-failed');
+      // "Try again" (keyboard) swaps in the loading view: focus lands on its h1, not <body>.
+      await mock(page, status, { ok: false, error: { code, message: 'm', hint: 'h' } }, 1000);
+      await page.getByRole('button', { name: 'Try again' }).focus();
+      await page.keyboard.press('Enter');
+      await page.locator('[aria-busy="true"]').waitFor();
+      assert.equal(await page.evaluate(() => document.activeElement?.tagName), 'H1', 'Try again: focus on the loading h1');
+      assert.equal(await page.locator('.loading-title').textContent(), 'Reading notes.example.org', 'loading h1 names the host only');
+      await page.locator(`.error-panel[data-code="${code}"]`).waitFor();
     }
     if (code === 'AI_UNAVAILABLE') {
       assert.ok((await page.locator('.error-hint').textContent()).includes('Why ropes beat strings for big edits'), 'shows the extracted title');
@@ -151,6 +159,7 @@ export default async function urlFlow(ctx) {
   await page.keyboard.press('Enter');
   await page.waitForURL(`${baseURL}/`);
   assert.equal(await page.locator('.url-row input').inputValue(), URL_IN, 'input still filled after Cancel');
+  assert.equal(await page.evaluate(() => document.activeElement?.matches('.url-row input')), true, 'Cancel: focus on the filled input');
   await wait(300);
   assert.ok(aborted.length >= 1, 'Cancel aborted the request');
 
@@ -187,7 +196,8 @@ export default async function urlFlow(ctx) {
   await page.locator('.offline-banner').waitFor();
   assert.equal((await page.locator('.offline-banner').textContent()).trim(), 'You’re offline. The samples below still work.');
   await submit(page);
-  assert.match(await page.locator('.url-message').textContent(), /offline/);
+  await page.locator('.url-message', { hasText: 'You’re offline, so this link can’t be read now.' }).waitFor();
+  assert.doesNotMatch(await page.locator('.url-message').textContent(), /samples below/, 'offline message does not repeat the banner');
   assert.equal(new URL(page.url()).pathname, '/', 'stays on / while offline');
   await shot('offline-banner');
   await page.context().setOffline(false);

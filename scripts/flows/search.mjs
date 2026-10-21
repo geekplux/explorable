@@ -12,10 +12,14 @@ export default async function search(ctx) {
   page.on('request', (req) => (api += req.url().includes('/api/') ? 1 : 0));
   await page.goto(`${baseURL}/`, { waitUntil: 'networkidle' });
   const input = page.getByLabel(LABEL);
+  assert.equal(await page.locator('output.search-live').count(), 1, 'count live region mounted before any typing');
 
   await input.pressSequentially('bloom');
   assert.deepEqual(await page.locator('.search-results .mini-card a').allTextContents(), [bloom.title]);
   assert.equal(await page.locator('.search-count').textContent(), '1 built-in match. Open one, or paste a link.');
+  // The polite live region was mounted before typing and gets the count once typing pauses.
+  assert.equal(await page.locator('output.search-live').count(), 1, 'one live region for the count');
+  await page.locator('output.search-live', { hasText: '1 built-in match. Open one, or paste a link.' }).waitFor();
   assert.deepEqual(blocking(await ctx.axe()).map((v) => v.id), [], 'axe on search results');
   await shot('search-bloom');
 
@@ -27,7 +31,7 @@ export default async function search(ctx) {
   // A broken link gets an inline message and aria-invalid.
   await input.fill('ftp://example.org/notes');
   await page.keyboard.press('Enter');
-  assert.match(await page.locator('.url-message').textContent(), /http and https/);
+  await page.locator('.url-message', { hasText: /http and https/ }).waitFor();
   assert.equal(await input.getAttribute('aria-invalid'), 'true');
 
   // A Try chip fills the field with its link.
