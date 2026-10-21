@@ -1,10 +1,12 @@
-STATE: IN-PROGRESS
+STATE: DONE
+
+All 15 phases are implemented, verified and open as stacked PRs (#1, #2, #4–#16). **Deployment is prepared but NOT executed — awaiting Sean's approval to deploy.** Exact steps: docs/DEPLOY.md and PR #16 (create the KV namespace, paste its id, then `pnpm build:prod && pnpm exec wrangler deploy`).
 
 # Status
 
-- Current phase: Phase 15 (`phase-15-deploy-prep`), starting
+- Current phase: none (all phases done; deploy awaits approval)
 - Plan: docs/PLAN.md (15 phases, committed on main)
-- Blockers: none
+- Blockers: none (deploy intentionally stopped for approval; production KV id is the placeholder `REPLACE_WITH_KV_ID`)
 
 | Phase | Branch | PR | State | Verify rounds |
 |---|---|---|---|---|
@@ -22,12 +24,13 @@ STATE: IN-PROGRESS
 | 12 | phase-12-skill-docs-evals | https://github.com/geekplux/explorable/pull/13 | PR open (verified PASS) | 1 |
 | 13 | phase-13-oss-hygiene | https://github.com/geekplux/explorable/pull/14 | PR open (verified PASS) | 1 |
 | 14 | phase-14-readme-launch | https://github.com/geekplux/explorable/pull/15 | PR open (verified PASS) | 1 |
-| 15 | phase-15-deploy-prep | - | in progress | 0 |
+| 15 | phase-15-deploy-prep | https://github.com/geekplux/explorable/pull/16 | PR open (verified PASS; dry run only, awaiting deploy approval) | 1 |
 
 ## Follow-ups (for Sean)
 
 - Move `ci/github-workflow.yml` to `.github/workflows/` (needs `workflow` token scope).
 - Upload the social preview image in GitHub repo settings (manual).
+- Create the production KV namespace (`wrangler kv namespace create EXPLORABLE_CACHE`) and paste its id into `wrangler.jsonc` env.production.
 - Create issue labels `figure` and `sample` on GitHub (the issue forms apply them; `bug` exists by default).
 
-Last updated: 2026-10-21 12:28 UTC
+Last updated: 2026-10-21 13:49 UTC
