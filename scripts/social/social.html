@@ -1,0 +1,36 @@
+<!doctype html>
+<!-- The 1280×640 social preview card. Rendered by scripts/social-image.mjs, which
+     serves this file next to the app preview (for /fonts/*) and supplies
+     figure.png, a still of the live attention figure taken in the same run. -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>explorable: social preview</title>
+<style>
+@font-face{font-family:Fraunces;src:url(/fonts/fraunces-latin.woff2) format("woff2");font-weight:400 700}
+@font-face{font-family:Newsreader;src:url(/fonts/newsreader-latin.woff2) format("woff2");font-weight:400 700}
+@font-face{font-family:"Explorable Math";src:url(/fonts/symbols-math.woff2) format("woff2");unicode-range:U+00B1,U+00D7,U+00F7,U+2190-21FF,U+2200-22FF}
+*{box-sizing:border-box;margin:0}
+html,body{width:1280px;height:640px;overflow:hidden}
+body{background:#FBF8F1;color:#1D1B17;font-family:Newsreader,"Explorable Math",Georgia,serif;display:grid;grid-template-columns:520px 1fr;gap:56px;align-items:center;padding:0 64px 0 80px;position:relative}
+body::after{content:"";position:absolute;left:80px;right:64px;bottom:52px;border-top:1px solid #D8D0BF}
+.wordmark{display:flex;align-items:baseline;gap:.18em;font:650 84px/1 Fraunces,Georgia,serif;letter-spacing:-.01em}
+.wordmark svg{width:1.25em;height:1.25em;flex:none;position:relative;top:.195em}
+.pitch{margin-top:36px;font-size:36px;line-height:1.28}
+.facts{margin-top:28px;font:500 21px/1.5 ui-sans-serif,system-ui,sans-serif;color:#5A554B}
+.facts b{color:#1D1B17;font-weight:600}
+.still{margin-bottom:24px}
+.still img{display:block;width:100%;height:auto;border-radius:10px}
+.foot{position:absolute;left:80px;bottom:18px;font:500 17px ui-sans-serif,system-ui,sans-serif;color:#5A554B}
+</style>
+</head>
+<body>
+<div>
+  <p class="wordmark"><svg viewBox="0 0 32 32" fill="none" aria-hidden="true"><path d="M4 22C10 22 12 8 16 8S22 22 28 22" stroke="#1D1B17" stroke-width="2.5" stroke-linecap="round"/><path d="M4 27H28" stroke="#1D1B17" stroke-width="2" stroke-linecap="round"/><path d="M20 21.5V14.5" stroke="#1D1B17" stroke-width="1.5" stroke-linecap="round" stroke-dasharray="0 3.5"/><circle cx="20" cy="12.5" r="2" fill="#1D1B17"/><circle cx="20" cy="27" r="3.5" fill="#FBF8F1" stroke="#C4451C" stroke-width="2.5"/></svg>explorable</p>
+  <p class="pitch">Turn the core idea of a paper or post into a short essay with figures you can drag.</p>
+  <p class="facts"><b>Every number from a tested model.</b><br>Samples work offline, no key. One AI call per new link, at most.</p>
+</div>
+<div class="still"><img src="figure.png" alt="The attention figure mid-drag: lowering the temperature sharpens six bars into one spike."></div>
+<p class="foot">open source · MIT · github.com/geekplux/explorable</p>
+</body>
+</html>
