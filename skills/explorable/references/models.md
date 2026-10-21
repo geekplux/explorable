@@ -1,6 +1,6 @@
 # Models
 
-Every number on the page comes from a `ModelDef` (`kit/src/registry.ts`): params in, outputs out, through a pure `compute` that uses only seeded randomness, so the same params always draw the same figure. There are four registry models plus `expr-curve`, which you build per figure from a formula (`expressions.md`).
+Every number on the page comes from a `ModelDef` (`kit/src/registry.ts`): params in, outputs out, through a pure `compute` that uses only seeded randomness, so the same params always draw the same figure. The registry models are listed below; `expr-curve` is the one you build per figure from a formula (`expressions.md`).
 
 **Use a registry model only when the idea *is* that model's idea.** "Heat diffusion" is not `diffusion-forward`, even though the search below ranks it first. When no model teaches the idea, use `expr-curve`.
 

@@ -44,8 +44,8 @@ Add both to the expression language. Follow [add an expression function](EXTENDI
 
 ## 9. Harness port race
 
-`scripts/lib/harness.mjs` picks a free port, then starts the preview server on it. If another process takes the port in between, the run can drive the wrong app.
-**Done when** the harness fails fast if the server process exits, and checks a page marker (such as the wordmark) before any flow runs.
+`scripts/lib/harness.mjs` picks a free port, then starts the preview server on it with `--strictPort`, and already fails fast ("preview exited early") if that server dies. What is left: if another app answers on the port, a 200 from `/` is all the harness checks, so a run could still drive the wrong app.
+**Done when** the harness checks a page marker (such as `<title>explorable</title>` in the HTML from `/`) before any flow runs, and fails with a clear message when it is missing.
 
 ## 10. Narrow-screen figure polish
 
