@@ -1,11 +1,12 @@
 // node --test skills/explorable/scripts/*.test.mjs (Node 20.10+, no deps)
 import assert from 'node:assert/strict';
 import { execFileSync, spawnSync } from 'node:child_process';
-import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { describe, it } from 'node:test';
 import { fileURLToPath } from 'node:url';
+import * as kit from '../kit/dist/explorable-kit.js';
 import { auditFile, auditHtml, auditSpec } from './audit.mjs';
 import { buildPage } from './build.mjs';
 
@@ -235,4 +236,79 @@ describe('audit: failing fixtures', () => {
     assert.match(lines[2], /^2\. figure "fig-bits": param n = -1/);
     assert.equal(lines.at(-1), 'audit failed: 2 problems');
   });
+});
+
+/** The bloom-filter example with its first figure replaced by `figure` (and the second removed). */
+function withFigure(figure) {
+  const doc = bloom();
+  const sections = doc.sections.filter((x) => x.figure);
+  sections[0].figure = { ...sections[0].figure, ...figure };
+  delete sections[1].figure;
+  return doc;
+}
+
+/** The SNR figure of the app's diffusion sample: at t = 0 the SNR is +∞ dB, shown as "∞ dB". */
+const snrFigure = (options = {}) => ({
+  id: 'fig-snr',
+  kind: 'curve',
+  model: { id: 'diffusion-forward', params: { t: 100, seed: 2020 } },
+  controls: ['t'],
+  readouts: ['alphaBar', 'snrDb'],
+  options: { handle: 't', xParam: 't', series: ['signalSeries', 'noiseSeries'], seriesLabels: ['signal', 'noise'], ...options },
+});
+
+// A test-only model: at x = 0 every output is +∞ except `nan`; at x = 1 `nan` is NaN; at x = 2 `inf` is −∞.
+kit.registerModel({
+  id: 'test-infinite',
+  title: 'Test: infinite outputs',
+  kinds: ['curve'],
+  keywords: [],
+  params: { x: { label: 'x', min: 0, max: 2, step: 1, default: 1 } },
+  outputs: {
+    inf: { label: 'inf', format: 'fixed1', infinite: true },
+    nan: { label: 'nan', format: 'fixed1', infinite: true },
+    raw: { label: 'raw', format: 'fixed1' },
+  },
+  compute: ({ x }) => ({ inf: [Infinity, 1, -Infinity][x], nan: x === 1 ? NaN : 1, raw: x === 0 ? Infinity : 1 }),
+  describe: () => 'test',
+});
+const testFigure = (readouts, options = {}) => ({ id: 'fig-t', kind: 'curve', model: { id: 'test-infinite', params: { x: 1 } }, controls: ['x'], readouts, options });
+
+describe('audit: outputs flagged `infinite` may show ±∞ as text, never NaN, never as a position', () => {
+  it('diffusion-forward flags snrDb, and ∞ formats as "∞"', () => {
+    assert.equal(kit.getModel('diffusion-forward').outputs.snrDb.infinite, true);
+    assert.equal(kit.format(kit.getModel('diffusion-forward').compute({ t: 0, seed: 2020 }).snrDb, 'fixed1'), '∞');
+  });
+  it('a readout of +∞ dB at t = 0 passes', () => {
+    assert.deepEqual(auditSpec(withFigure(snrFigure())), []);
+  });
+  it('the flagged output filled into describe passes', () => {
+    assert.deepEqual(auditSpec(withFigure(snrFigure({ describe: 'At t = {t} the SNR is {snrDb:fixed1} dB.' }))), []);
+  });
+  it('+∞ and −∞ pass for a flagged readout', () => {
+    assert.deepEqual(auditSpec(withFigure(testFigure(['inf']))), []);
+  });
+  it('a flagged output used as a marker stays strict', () => {
+    const problems = auditSpec(withFigure(snrFigure({ markers: ['snrDb'] })));
+    assert.deepEqual(problems, ['figure "fig-snr": marker "snrDb" is not a finite number at t = 0']);
+  });
+  it('NaN fails even when flagged', () => {
+    assert.deepEqual(auditSpec(withFigure(testFigure(['nan']))), ['figure "fig-t": readout "nan" is not a finite number at the defaults (x = 1)']);
+  });
+  it('±∞ still fails for an output without the flag', () => {
+    assert.deepEqual(auditSpec(withFigure(testFigure(['raw']))), ['figure "fig-t": readout "raw" is not a finite number at x = 0']);
+  });
+});
+
+// The app's built-in samples are built from the same kit; auditing them here keeps app and skill from drifting.
+// Skipped when the skill folder is used on its own (no app around it).
+const APP_SAMPLES = here('../../../src/samples/');
+describe('audit: the app samples pass', () => {
+  for (const name of ['attention', 'bloom-filter', 'diffusion']) {
+    const file = join(APP_SAMPLES, `${name}.json`);
+    it(`src/samples/${name}.json`, { skip: !existsSync(file) && 'app samples not present' }, () => {
+      const out = execFileSync(process.execPath, [AUDIT, file], { encoding: 'utf8' });
+      assert.equal(out.trim().split('\n').at(-1), 'audit passed');
+    });
+  }
 });

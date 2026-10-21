@@ -72,7 +72,8 @@ export const diffusionForward = registerModel<DiffusionParams, DiffusionOutputs>
     alphaBar: { label: 'ᾱ_t', spoken: 'alpha-bar', format: 'sig3' },
     signal: { label: 'signal √ᾱ_t', spoken: 'signal', format: 'fixed3' },
     noise: { label: 'noise √(1−ᾱ_t)', spoken: 'noise', format: 'fixed3' },
-    snrDb: { label: 'SNR', spoken: 'signal-to-noise ratio', unit: 'dB', format: 'fixed1' },
+    // +∞ dB at t = 0 (no noise yet); the page shows "∞ dB" (docs/figures/diffusion.md).
+    snrDb: { label: 'SNR', spoken: 'signal-to-noise ratio', unit: 'dB', format: 'fixed1', infinite: true },
     sd: { label: 'spread (SD)', spoken: 'spread', format: 'fixed2' },
     mean: { label: 'mean', format: 'fixed2' },
     crossT: { label: 'signal = noise', spoken: 'signal equals noise at step', format: 'int' },

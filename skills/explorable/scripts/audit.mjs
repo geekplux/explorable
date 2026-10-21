@@ -64,11 +64,16 @@ function auditFigure(fig) {
       out.push(`readout "${id}" is not an output of ${model.id} (it has ${Object.keys(values).filter((k) => model.outputs[k] && finite(values[k])).join(', ')})`);
     } else shown.set(id, `readout "${id}"`);
   }
+  const positions = new Set(); // outputs plotted on an axis
   const markers = 'expr' in fig.model ? (typeof o.markerExpr === 'string' ? ['marker'] : []) : [o.markers ?? []].flat();
   if ('expr' in fig.model && typeof o.refExpr === 'string') markers.push('ref');
   for (const id of markers) {
     if (!Object.hasOwn(model.outputs, id) || Array.isArray(values[id])) out.push(`options.markers "${id}" is not a number output of ${model.id}`);
-    else if (!shown.has(id)) shown.set(id, id === 'marker' || id === 'ref' ? id : `marker "${id}"`);
+    else {
+      // A marker is a position on an axis, so it stays strict even if its output allows ±∞.
+      positions.add(id);
+      shown.set(id, id === 'marker' || id === 'ref' ? id : `marker "${id}"`);
+    }
   }
   for (const key of ['describe', ...LABEL_KEYS]) {
     for (const tpl of [o[key] ?? []].flat()) {
@@ -78,8 +83,10 @@ function auditFigure(fig) {
       }
     }
   }
+  // Text may show ±∞ (as ∞) for an output flagged `infinite`; NaN never, and a position never.
+  const ok = (id, v) => finite(v) || (!positions.has(id) && model.outputs[id]?.infinite === true && Math.abs(v) === Infinity);
   for (const [id, name] of shown) {
-    const bad = results.find(([, r]) => !finite(r[id]));
+    const bad = results.find(([, r]) => !ok(id, r[id]));
     if (bad) out.push(`${name} is not a finite number at ${stateText(bad[0], base)}`);
   }
   return out;

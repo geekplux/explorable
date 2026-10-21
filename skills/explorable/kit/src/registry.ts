@@ -36,6 +36,11 @@ export interface OutputDef {
   spoken?: string;
   unit?: string;
   format: Format;
+  /**
+   * ±∞ is a meaningful value of this output (it formats as ∞ or −∞), such as an SNR in dB at
+   * t = 0. Text only: the audit still rejects NaN, and a marker or anything plotted stays finite.
+   */
+  infinite?: boolean;
 }
 
 /** A registered model: params in, outputs out, plus a one-sentence live description. */
