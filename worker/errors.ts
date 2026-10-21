@@ -29,8 +29,16 @@ export class ApiError extends Error {
   }
 }
 
+/** /api/* runs before Static Assets, so `public/_headers` never reaches it: set the same basics here. */
+export const API_HEADERS: Readonly<Record<string, string>> = {
+  'cache-control': 'no-store',
+  'content-security-policy': "default-src 'none'; frame-ancestors 'none'; base-uri 'none'",
+  'x-content-type-options': 'nosniff',
+  'referrer-policy': 'no-referrer',
+};
+
 export const json = (body: unknown, status = 200, headers: Record<string, string> = {}): Response =>
-  Response.json(body, { status, headers: { 'cache-control': 'no-store', ...headers } });
+  Response.json(body, { status, headers: { ...API_HEADERS, ...headers } });
 
 /** `{ ok: false, error: { code, message, hint } }`; unknown errors become INTERNAL. */
 export function errorResponse(error: unknown, headers?: Record<string, string>): Response {

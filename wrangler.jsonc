@@ -1,7 +1,10 @@
 // Local-safe top-level config (docs/PLAN.md §5.4, D2/D4): no Workers AI binding,
 // a local KV id that Miniflare simulates, debug routes on. `vite dev` and
-// `vite preview` run this Worker in workerd with no login. Production gets its
-// own `env.production` block in the deploy phase.
+// `vite preview` run this Worker in workerd with no login.
+//
+// `env.production` is what `pnpm build:prod` (CLOUDFLARE_ENV=production) bakes
+// into dist/explorable/wrangler.json for deploys; see docs/DEPLOY.md. Bindings
+// and vars are not inherited by named environments, so it lists them all.
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "explorable",
@@ -14,5 +17,18 @@
   },
   "kv_namespaces": [{ "binding": "EXPLORABLE_CACHE", "id": "explorable-cache-local" }],
   "vars": { "EXPLORABLE_DEBUG": "1" },
-  "observability": { "enabled": true }
+  "observability": { "enabled": true },
+  "env": {
+    "production": {
+      "ai": { "binding": "AI" },
+      // REPLACE_WITH_KV_ID: paste the id printed by
+      // `pnpm exec wrangler kv namespace create EXPLORABLE_CACHE` (docs/DEPLOY.md).
+      "kv_namespaces": [{ "binding": "EXPLORABLE_CACHE", "id": "REPLACE_WITH_KV_ID" }],
+      // 10 uncached explains per 60 s per client IP; cache hits are never limited.
+      "ratelimits": [{ "name": "EXPLAIN_LIMITER", "namespace_id": "1001", "simple": { "limit": 10, "period": 60 } }],
+      // PROMPT_VERSION is a code constant (worker/plan/prompt.ts), not a var.
+      "vars": { "AI_MODEL": "@cf/meta/llama-3.3-70b-instruct-fp8-fast", "EXPLORABLE_DEBUG": "0" },
+      "observability": { "enabled": true }
+    }
+  }
 }

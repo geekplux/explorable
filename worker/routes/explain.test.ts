@@ -142,6 +142,44 @@ const limiter = (result: boolean | Error) => ({
   }),
 });
 
+describe('rate limiter (EXPLAIN_LIMITER, production only)', () => {
+  it('returns RATE_LIMITED (429) before any fetch or model call when the binding says no', async () => {
+    const ai = fakeAi(valid);
+    const gate = limiter(false);
+    const { kv, fetchFn, env } = setup({ AI: ai, EXPLAIN_LIMITER: gate });
+    const req = new Request(`http://localhost/api/explain?url=${encodeURIComponent(URLS.attention)}`, { headers: { 'cf-connecting-ip': '203.0.113.7' } });
+    const res = await explain(req, env, fetchFn);
+    expect(res.status).toBe(429);
+    expect(((await res.json()) as Body).error?.code).toBe('RATE_LIMITED');
+    expect(gate.limit).toHaveBeenCalledWith({ key: '203.0.113.7' });
+    expect(fetchFn).not.toHaveBeenCalled();
+    expect(ai.run).not.toHaveBeenCalled();
+    expect(kv.store.size).toBe(0); // never cached: the next minute may succeed
+  });
+
+  it('does not apply to cache hits', async () => {
+    const ai = fakeAi(valid);
+    const gate = { limit: vi.fn<() => Promise<{ success: boolean }>>(async () => ({ success: true })) };
+    const { call } = setup({ AI: ai, EXPLAIN_LIMITER: gate });
+    expect((await call(URLS.attention)).body).toMatchObject({ ok: true, cache: 'miss' });
+    expect(gate.limit).toHaveBeenCalledOnce();
+    gate.limit.mockResolvedValue({ success: false });
+    const hit = await call(URLS.attention);
+    expect(hit.status).toBe(200);
+    expect(hit.body).toMatchObject({ ok: true, cache: 'hit' });
+    expect(gate.limit).toHaveBeenCalledOnce();
+    expect(ai.run).toHaveBeenCalledOnce();
+  });
+
+  it('API responses carry security headers', async () => {
+    const { res } = await setup({ EXPLAIN_LIMITER: limiter(false) }).call(URLS.attention);
+    expect(res.headers.get('content-security-policy')).toBe("default-src 'none'; frame-ancestors 'none'; base-uri 'none'");
+    expect(res.headers.get('x-content-type-options')).toBe('nosniff');
+    expect(res.headers.get('referrer-policy')).toBe('no-referrer');
+    expect(res.headers.get('cache-control')).toBe('no-store');
+  });
+});
+
 describe('error codes (docs/PLAN.md §5.6)', () => {
   const cases: Array<[string, string, Partial<ExplainEnv>?]> = [
     ['INVALID_URL', ''],
