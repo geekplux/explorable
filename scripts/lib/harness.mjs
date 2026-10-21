@@ -97,7 +97,11 @@ const freePort = (preferred) => probePort(preferred).catch(() => probePort(0));
  */
 export async function withPreview(fn, { build = true, port: preferred = 4173 } = {}) {
   const port = await freePort(preferred);
-  if (build) execFileSync(process.execPath, [VITE, 'build', '--logLevel', 'warn'], { stdio: 'inherit' });
+  if (build) {
+    // Same as `pnpm build`: the local-safe config (no AI, no login) plus sw.js.
+    execFileSync(process.execPath, [VITE, 'build', '--logLevel', 'warn'], { stdio: 'inherit' });
+    execFileSync(process.execPath, [join(process.cwd(), 'scripts', 'gen-sw.mjs')], { stdio: 'inherit' });
+  }
   const child = spawn(
     process.execPath,
     [VITE, 'preview', '--host', '127.0.0.1', '--port', String(port), '--strictPort'],
@@ -133,6 +137,7 @@ export async function withPreview(fn, { build = true, port: preferred = 4173 } =
  * are recorded as problems too (the sample path never calls the Worker) unless
  * the page is opened with `{ allowApi: true }`. `{ apiErrors: true }` also
  * accepts failed or 4xx/5xx `/api/*` responses (flows that mock error codes).
+ * Other options go to browser.newContext (e.g. `{ serviceWorkers: 'allow' }`).
  */
 export async function withBrowser(fn, { baseURL }) {
   const browser = await chromium.launch({
@@ -149,7 +154,9 @@ export async function withBrowser(fn, { baseURL }) {
   const isApi = (url) => URL.canParse(url) && new URL(url).origin === origin && new URL(url).pathname.startsWith('/api/');
 
   async function newPage(viewport, { allowApi = false, apiErrors = false, ...options } = {}) {
-    const context = await browser.newContext({ viewport, ...options });
+    // Service workers are blocked unless a flow opts in (`serviceWorkers: 'allow'`),
+    // so page.route mocks and request checks always see the network.
+    const context = await browser.newContext({ viewport, serviceWorkers: 'block', ...options });
     const blocked = new Set();
     await context.route('**/*', (route) => {
       const url = route.request().url();
