@@ -152,14 +152,16 @@ describe('GitHub issue forms', () => {
 });
 
 const DOCS = [
-  'CONTRIBUTING.md', 'CODE_OF_CONDUCT.md', 'SECURITY.md', 'CHANGELOG.md',
+  'README.md', 'examples/README.md', 'CONTRIBUTING.md', 'CODE_OF_CONDUCT.md', 'SECURITY.md', 'CHANGELOG.md',
   'docs/EXTENDING.md', 'docs/GOOD_FIRST_ISSUES.md', '.github/pull_request_template.md',
 ];
 const clean = (p: string) => p.replace(/#.*$/, '');
-/** Relative link targets (resolved from the doc's folder) and repository paths in inline code (from the root). */
+/** Paths a later phase creates; linking ahead is fine until then. Remove an entry once its file exists. */
+const PENDING = ['docs/DEPLOY.md' /* Phase 15, deploy prep */];
+/** Relative link and image targets (markdown or `src`/`href` attributes, resolved from the doc's folder) and repository paths in inline code (from the root). */
 function namedPaths(doc: string): string[] {
   const text = readFileSync(doc, 'utf8');
-  const links = [...text.matchAll(/\]\(([^)\s]+)\)/g)].map((m) => m[1]!).filter((t) => !/^(?:[a-z]+:|#)/i.test(t));
+  const links = [...text.matchAll(/\]\(([^)\s]+)\)|\b(?:src|href)="([^"]+)"/g)].map((m) => (m[1] ?? m[2])!).filter((t) => !/^(?:[a-z]+:|#)/i.test(t));
   const code = [...text.matchAll(/`((?:\.github|ci|docs|scripts|skills|src|worker)\/[^`\s]*)`/g)].map((m) => m[1]!);
   // Skip templates such as `models/<id>.ts`, globs, and the files EXTENDING.md's worked examples create.
   const created = /\/(?:coin-flips|meter|tanh)\.[\w.]+$/;
@@ -168,8 +170,30 @@ function namedPaths(doc: string): string[] {
 
 describe('contributor docs', () => {
   it.each(DOCS)('%s exists and every relative link and named path resolves', (doc) => {
-    const missing = namedPaths(doc).filter((p) => !existsSync(p));
+    const missing = namedPaths(doc).filter((p) => !existsSync(p) && !PENDING.includes(p));
     expect(missing).toEqual([]);
+  });
+
+  it('pending paths are still missing (drop them from PENDING once they exist)', () => {
+    expect(PENDING.filter((p) => existsSync(p))).toEqual([]);
+  });
+
+  it('README leads with the pitch, the hero image and the quick start', () => {
+    const headings = readFileSync('README.md', 'utf8').split('\n').filter((l) => l.startsWith('## '));
+    const top = readFileSync('README.md', 'utf8').split('## ')[0]!;
+    expect(top).toContain('docs/assets/hero.png');
+    expect(top).toMatch(/Live demo: link coming soon/);
+    expect(headings[0]).toBe('## Quick start');
+  });
+
+  it.each([
+    ['docs/assets/hero.png', 400 * 1024, undefined],
+    ['docs/assets/social-preview.png', 1024 * 1024, [1280, 640]],
+  ] as const)('%s is a PNG within its size budget', (path, maxBytes, size) => {
+    const png = readFileSync(path);
+    expect(png.subarray(1, 4).toString()).toBe('PNG');
+    expect(png.length).toBeLessThan(maxBytes);
+    if (size) expect([png.readUInt32BE(16), png.readUInt32BE(20)]).toEqual(size);
   });
 
   it('LICENSE is MIT with the project copyright line', () => {
