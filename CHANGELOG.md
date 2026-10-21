@@ -16,6 +16,7 @@ All notable changes to this project are documented here. The format follows [Kee
 - The `/explorable` agent skill in `skills/explorable/`: a prebuilt kit bundle, a standalone page builder, an audit script that ends in `audit passed`, two worked examples (Bloom filter, Newton cooling), references, evals and a CI definition in `ci/github-workflow.yml`.
 - A headless-browser harness (`pnpm smoke`, `pnpm e2e`) with axe, keyboard, reduced-motion and colour-vision checks, and a bundle size budget.
 - A README with a hero image and three-way quick start, a social preview image (`pnpm build:images`), a root `examples/` gallery of standalone sample pages (`pnpm build:examples`, checked fresh in CI) and a launch kit in `docs/LAUNCH.md`.
+- Deployment prep with no deploy: an offline service worker (`scripts/gen-sw.mjs`), a strict CSP and cache headers (`public/_headers`), a production Wrangler environment with Workers AI, KV and a 10-per-minute rate limit on uncached explains, `pnpm build:prod`, a `pnpm run check:deploy` dry run and `docs/DEPLOY.md`.
 - Open-source basics: MIT licence, contributing guide, code of conduct, security policy, issue and PR templates, `docs/EXTENDING.md` and `docs/GOOD_FIRST_ISSUES.md`.
 
 ### Accessibility

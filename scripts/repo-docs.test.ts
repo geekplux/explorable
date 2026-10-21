@@ -153,11 +153,11 @@ describe('GitHub issue forms', () => {
 
 const DOCS = [
   'README.md', 'examples/README.md', 'CONTRIBUTING.md', 'CODE_OF_CONDUCT.md', 'SECURITY.md', 'CHANGELOG.md',
-  'docs/EXTENDING.md', 'docs/GOOD_FIRST_ISSUES.md', '.github/pull_request_template.md',
+  'docs/EXTENDING.md', 'docs/GOOD_FIRST_ISSUES.md', 'docs/DEPLOY.md', '.github/pull_request_template.md',
 ];
 const clean = (p: string) => p.replace(/#.*$/, '');
 /** Paths a later phase creates; linking ahead is fine until then. Remove an entry once its file exists. */
-const PENDING = ['docs/DEPLOY.md' /* Phase 15, deploy prep */];
+const PENDING: string[] = [];
 /** Relative link and image targets (markdown or `src`/`href` attributes, resolved from the doc's folder) and repository paths in inline code (from the root). */
 function namedPaths(doc: string): string[] {
   const text = readFileSync(doc, 'utf8');
@@ -172,6 +172,14 @@ describe('contributor docs', () => {
   it.each(DOCS)('%s exists and every relative link and named path resolves', (doc) => {
     const missing = namedPaths(doc).filter((p) => !existsSync(p) && !PENDING.includes(p));
     expect(missing).toEqual([]);
+  });
+
+  it('DEPLOY.md has the anchors the app and README link to, and the placeholder it documents', () => {
+    const deploy = readFileSync('docs/DEPLOY.md', 'utf8');
+    expect(deploy).toMatch(/^## Self-host without AI$/m); // #self-host-without-ai (src/components/states/ErrorState.tsx)
+    expect(deploy).toContain('pnpm build:prod && pnpm exec wrangler deploy');
+    expect(readFileSync('wrangler.jsonc', 'utf8')).toContain('REPLACE_WITH_KV_ID');
+    expect(deploy).toContain('REPLACE_WITH_KV_ID');
   });
 
   it('pending paths are still missing (drop them from PENDING once they exist)', () => {

@@ -2,7 +2,7 @@
 
 **Turn the core idea of a paper or post into a short essay with figures you can drag, and every number on them comes from a real, tested model.**
 
-<img src="docs/assets/hero.png" width="700" alt="Figure 1 of the attention sample, mid-drag: the temperature knob is at 0.50, the bar for &quot;cat&quot; has grown to 0.82 and is marked top, and the readout says top weight 0.82, entropy 1.01 bits.">
+<img src="docs/assets/hero.png" width="560" alt="Figure 1 of the attention sample, mid-drag: the temperature knob is at 0.50, the bar for &quot;cat&quot; has grown to 0.82 and is marked top, and the readout says top weight 0.82, entropy 1.01 bits.">
 
 **Live demo: link coming soon.** &nbsp; Licence: MIT · Samples need no key and work offline · At most one AI call per new link · No tracking
 
@@ -59,7 +59,7 @@ Everything else is deterministic code: URL handling, extraction, search, the mat
 
 ## Samples
 
-All three ship with the app as data, open instantly and work offline. Each is also built as a standalone page in [examples/](examples/README.md).
+All three ship with the app as data, open instantly and work offline. Each is also built as a standalone page in [examples/](examples/README.md). Until the live demo is up, download or clone the repository to open `examples/*.html`: GitHub shows their source, not the page.
 
 | Sample | The idea | Source | Figures |
 |---|---|---|---|
