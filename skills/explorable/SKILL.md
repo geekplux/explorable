@@ -34,7 +34,7 @@ An explorable is not an illustrated article. It picks the single thing the reade
 | Attention divides by √d_k | `attention-scaling` | `bars` | key width `dk`, the √d_k switch |
 | Diffusion adds noise on a schedule | `diffusion-forward` | `histogram`, `curve` | step `t` |
 | Coffee cools fast, then slowly | `expr-curve` | `curve` | time `x`, cooling constant `k` |
-| Anything else with a formula | `expr-curve` | `curve` | `x` and up to 6 declared params |
+| Anything else with a formula | `expr-curve` | `curve` | `x` or any declared param (1–3 controls) |
 
 Two ways this fails:
 
@@ -48,7 +48,7 @@ Two ways this fails:
    ```sh
    node -e "import('./kit/dist/explorable-kit.js').then(k => console.log(k.searchModels('bloom filter false positives').map(m => m.id)))"
    ```
-3. **Write `explorable.json`.** Copy the closest example to where the page should live and edit it: 2–6 sections, a figure where the reader should *do* something, 1–3 controls and 1–3 readouts per figure, alt text of at least 40 characters. Field limits are in `references/spec-format.md`, figure options in `references/figure-kinds.md`, voice in `references/writing.md`.
+3. **Write `explorable.json`.** Copy the closest example to where the page should live (here `/tmp/explorable-draft`) and edit it: 2–6 sections, a figure where the reader should *do* something, 1–3 controls and 1–3 readouts per figure, alt text of at least 40 characters. Field limits are in `references/spec-format.md`, figure options in `references/figure-kinds.md`, voice in `references/writing.md`.
    ```sh
    mkdir -p /tmp/explorable-draft
    cp examples/newton-cooling/explorable.json /tmp/explorable-draft/explorable.json
