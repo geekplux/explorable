@@ -28,7 +28,7 @@ export function createHandle(parent: SVGElement, { def, onChange }: HandleOption
   const root = svgEl(parent, 'g', { class: 'xfig-handle' });
   const band = svgEl(root, 'rect', { class: 'xfig-track-hit' });
   const knob = svgEl(root, 'g', {
-    class: 'xfig-knob', role: 'slider', tabindex: 0, 'aria-label': `${spoken(def)} (${def.symbol ? `${def.symbol}, ` : ''}drag on chart)`,
+    class: 'xfig-knob', role: 'slider', tabindex: 0, 'aria-label': `${spoken(def)} (${def.symbol && !spoken(def).endsWith(` ${def.symbol}`) ? `${def.symbol}, ` : ''}drag on chart)`,
     'aria-valuemin': def.min, 'aria-valuemax': def.max, 'aria-orientation': 'horizontal',
   });
   const move = svgEl(knob, 'g');
@@ -49,21 +49,41 @@ export function createHandle(parent: SVGElement, { def, onChange }: HandleOption
     const scale = box && box.width ? vbWidth / box.width : 1;
     return ((clientX - (box?.left ?? 0)) * scale - x0) / (x1 - x0 || 1);
   };
-  const onDown = (e: PointerEvent) => {
-    if (e.button > 0) return;
-    e.preventDefault();
-    dragging = e.pointerId;
-    root.setPointerCapture?.(e.pointerId);
+  // A touch on the band (not the knob) may be the start of a vertical page scroll (`touch-action: pan-y`), so it
+  // moves nothing until it turns sideways (|dx| > 8 px) or ends as a tap. A cancelled gesture puts the value back.
+  const SLOP = 8;
+  let saved = value, pending: { x: number; y: number } | undefined;
+  const begin = (clientX: number) => {
     knob.classList.add('is-pointer'); // focus ring only for keyboard focus
     knob.focus({ preventScroll: true });
-    onChange(snap(def, fromPos(def, posAt(e.clientX))), true);
+    onChange(snap(def, fromPos(def, posAt(clientX))), true);
+  };
+  const onDown = (e: PointerEvent) => {
+    if (e.button > 0) return;
+    dragging = e.pointerId;
+    saved = value;
+    root.setPointerCapture?.(e.pointerId);
+    if (e.pointerType === 'touch' && !knob.contains(e.target as Node)) {
+      pending = { x: e.clientX, y: e.clientY };
+      return;
+    }
+    e.preventDefault();
+    pending = undefined;
+    begin(e.clientX);
   };
   const onMove = (e: PointerEvent) => {
-    if (dragging === e.pointerId) onChange(snap(def, fromPos(def, posAt(e.clientX))), true);
+    if (dragging !== e.pointerId) return;
+    if (!pending) return onChange(snap(def, fromPos(def, posAt(e.clientX))), true);
+    if (Math.abs(e.clientX - pending.x) <= SLOP) return;
+    pending = undefined;
+    begin(e.clientX);
   };
   const onUp = (e: PointerEvent) => {
     if (dragging !== e.pointerId) return;
-    dragging = undefined;
+    const tap = pending && Math.hypot(e.clientX - pending.x, e.clientY - pending.y) <= SLOP;
+    if (pending && e.type === 'pointerup' && tap) begin(e.clientX);
+    if (!pending && e.type === 'pointercancel' && value !== saved) onChange(saved, true);
+    dragging = pending = undefined;
     root.releasePointerCapture?.(e.pointerId);
   };
   const onKey = (e: KeyboardEvent) => {

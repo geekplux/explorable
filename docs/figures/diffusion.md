@@ -194,7 +194,7 @@ The raw counts are 196, 218 and 0 at t = 0 and 28, 40 and 104 at t = 1000. Snaps
 3. t = 500: the signal is down to 0.28 (−10.7 dB).
 4. t = 750 to 1000: the signal goes from 0.058 to 0.006. The last 250 steps change the picture very little, which is why later work proposed other schedules.
 
-**Alt (static).** "Line chart over diffusion steps 0 to 1,000: the signal coefficient √ᾱ_t falls from 1 to almost 0, slowly at first, then steeply between steps 100 and 600, while the noise coefficient √(1−ᾱ_t) rises from 0 to 1. They cross at step 260."
+**Alt (static).** "Line chart over diffusion steps 0 to 1,000: the signal coefficient (the square root of alpha-bar) falls from 1 to almost 0, slowly at first, then steeply between steps 100 and 600, while the noise coefficient (the square root of one minus alpha-bar) rises from 0 to 1. They cross at step 260."
 
 **Caption.** "Both curves come from the same schedule as the figure above, β from 0.0001 to 0.02. Drag along the signal curve; the readout shows ᾱ_t and the signal-to-noise ratio in decibels."
 
@@ -275,7 +275,7 @@ The raw counts are 196, 218 and 0 at t = 0 and 28, 40 and 104 at t = 1000. Snaps
         "kind": "curve",
         "title": "How much signal is left at each step",
         "caption": "Both curves come from the same schedule as the figure above, β from 0.0001 to 0.02. Drag along the signal curve; the readout shows ᾱ_t and the signal-to-noise ratio in decibels.",
-        "alt": "Line chart over diffusion steps 0 to 1,000: the signal coefficient √ᾱ_t falls from 1 to almost 0, slowly at first, then steeply between steps 100 and 600, while the noise coefficient √(1−ᾱ_t) rises from 0 to 1. They cross at step 260.",
+        "alt": "Line chart over diffusion steps 0 to 1,000: the signal coefficient (the square root of alpha-bar) falls from 1 to almost 0, slowly at first, then steeply between steps 100 and 600, while the noise coefficient (the square root of one minus alpha-bar) rises from 0 to 1. They cross at step 260.",
         "model": { "id": "diffusion-forward", "params": { "t": 100, "seed": 2020 } },
         "controls": ["t"],
         "readouts": ["alphaBar", "snrDb"],
@@ -284,6 +284,7 @@ The raw counts are 196, 218 and 0 at t = 0 and 28, 40 and 104 at t = 1000. Snaps
           "xParam": "t",
           "series": ["signalSeries", "noiseSeries"],
           "seriesLabels": ["signal √ᾱ_t", "noise √(1−ᾱ_t)"],
+          "seriesSpoken": ["signal, square root of alpha-bar", "noise, square root of one minus alpha-bar"],
           "markers": ["crossT"],
           "markerLabels": ["signal = noise (t ≈ {marker})"],
           "ticks": ["0", "250", "500", "750", "1000"]

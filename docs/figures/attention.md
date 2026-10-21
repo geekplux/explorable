@@ -147,7 +147,7 @@ Outputs: `scores` (number[8]), `weights` (number[8]), `weightsOther` (number[8])
 4. Flip "divide by √d_k": the SD drops to about 1 and stays there from 1 to 512. Entropy stays near 2 to 2.7 bits.
 5. At d_k = 1 the switch has no effect (√1 = 1). Both states are identical, which is a sanity check.
 
-**Alt (static).** "Bar chart of softmax attention weights over eight random keys for key width d_k = 4 without scaling: weights are uneven, with key 4 highest at 0.57. As d_k grows toward 512 the unscaled weights collapse onto one key, while dividing by √d_k keeps them spread out."
+**Alt (static).** "Bar chart of softmax attention weights over eight random keys for key width d_k = 4 without scaling: weights are uneven, with key 4 highest at 0.57. As d_k grows toward 512 the unscaled weights collapse onto one key, while dividing by the square root of d_k keeps them spread out."
 
 **Caption.** "The query q and the eight keys are random, with N(0, 1) components (seed 229). Drag the width d_k; switch the √d_k division on and off. Dashed outlines show the other setting."
 
@@ -245,7 +245,7 @@ Tolerance ±1e-3 on scores, ±1e-4 on weights and SD. P5 AC 4 ("SD ≈ 1 ±0.3 o
         "kind": "bars",
         "title": "Wider vectors, sharper softmax, unless you divide by √d_k",
         "caption": "The query q and the eight keys are random, with N(0, 1) components (seed 229). Drag the width d_k; switch the √d_k division on and off. Dashed outlines show the other setting.",
-        "alt": "Bar chart of softmax attention weights over eight random keys for key width d_k = 4 without scaling: weights are uneven, with key 4 highest at 0.57. As d_k grows toward 512 the unscaled weights collapse onto one key, while dividing by √d_k keeps them spread out.",
+        "alt": "Bar chart of softmax attention weights over eight random keys for key width d_k = 4 without scaling: weights are uneven, with key 4 highest at 0.57. As d_k grows toward 512 the unscaled weights collapse onto one key, while dividing by the square root of d_k keeps them spread out.",
         "model": { "id": "attention-scaling", "params": { "dk": 4, "scaled": 0, "seed": 229 } },
         "controls": ["dk", "scaled"],
         "readouts": ["sd", "top", "entropy"],

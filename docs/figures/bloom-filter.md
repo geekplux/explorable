@@ -225,7 +225,7 @@ P5 AC 1 fixture: m = 32, k = 3, n = 8 → (1 − e^(−0.75))³ = 0.1469 (±1e-4
 - `options.markerExpr`: `m*ln(2)/k`. `options.markerLabel`: `k = {k} is best at n ≈ {marker}`.
 - `options.refExpr`: `0.5^(m*ln(2)/x)`, the rate with the best real-valued k at each n, which is `(1/2)^((m/n)·ln 2)` ≈ 0.6185^(m/n). `options.refLabel`: `best possible k`.
 - `options.x0`: 8. `options.xStep`: 1 (invented: the knob snaps to whole items). `options.xFormat`: `int`. `options.yFormat`: `percent`.
-- `options.describe` (invented, optional): `At n = {x} items, the false-positive rate is {y}.` (P7 AC 6 wording).
+- `options.describe` (invented, optional): `At n = {x} items, the false-positive rate is {y}; k = {k} is best at n ≈ {marker}.` (P7 AC 6 wording, plus the marker so it is spoken).
 
 All three expressions use only whitelisted tokens (`exp`, `ln`, `^`, `*`, `/`, `-`, numbers and declared identifiers). They are finite over the full x range and every param range, so they pass the 90 %-finite check.
 
@@ -279,7 +279,7 @@ At the marker the FPR equals 0.5^k exactly: 0.12500 (k = 3), 0.50000 (k = 1), 0.
 
 ### Acceptance criteria for the implementer (Fig 2, in addition to P7)
 
-1. At the defaults the readout reads exactly `items inserted n 8 · false-positive rate 14.7%`, and the live description reads "At n = 8 items, the false-positive rate is 14.7%."
+1. At the defaults the readout reads exactly `items inserted n 8 · false-positive rate 14.7%`, and the live description reads "At n = 8 items, the false-positive rate is 14.7%; k = 3 is best at n ≈ 7.4."
 2. The marker label reads "k = 3 is best at n ≈ 7.4". After k = 6 it reads "k = 6 is best at n ≈ 3.7".
 3. The reference curve is dotted ink and directly labelled. The marker point is a filled ●, not a ring.
 4. At m = 128, k = 1 the marker is off the chart and shown as an edge ▶ with its label.
@@ -380,7 +380,7 @@ At the marker the FPR equals 0.5^k exactly: 0.12500 (k = 3), 0.50000 (k = 1), 0.
           "markerLabel": "k = {k} is best at n ≈ {marker}",
           "refExpr": "0.5^(m*ln(2)/x)",
           "refLabel": "best possible k",
-          "describe": "At n = {x} items, the false-positive rate is {y}."
+          "describe": "At n = {x} items, the false-positive rate is {y}; k = {k} is best at n ≈ {marker}."
         }
       }
     }

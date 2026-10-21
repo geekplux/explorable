@@ -2,7 +2,10 @@
  * "Show data": a toggle button and a real `<table>` of the current values (A3),
  * in a focusable, labelled scroll region so a wide table never scrolls the page.
  */
-export function createDataTable(id: string, caption: string, columns: readonly string[], rowHeader = 0) {
+/** A column header: its text, or the text plus a spoken form for screen readers (e.g. "signal" for "signal √ᾱ_t"). */
+export type Column = string | { text: string; spoken?: string };
+
+export function createDataTable(id: string, caption: string, columns: readonly Column[], rowHeader = 0) {
   const button = document.createElement('button');
   button.type = 'button';
   button.className = 'xfig-data-toggle';
@@ -27,11 +30,17 @@ export function createDataTable(id: string, caption: string, columns: readonly s
   const body = table.createTBody();
   let shown = '';
   /** Set the column headers (skipped if unchanged). */
-  const setColumns = (cols: readonly string[]) => {
-    if (cols.join('\n') === shown) return;
-    shown = cols.join('\n');
+  const setColumns = (cols: readonly Column[]) => {
+    const parts = cols.map((c) => (typeof c === 'string' ? { text: c } : c));
+    const key = JSON.stringify(parts);
+    if (key === shown) return;
+    shown = key;
     head.replaceChildren(
-      ...cols.map((c) => Object.assign(document.createElement('th'), { scope: 'col', textContent: c })),
+      ...parts.map(({ text, spoken }) => {
+        const th = Object.assign(document.createElement('th'), { scope: 'col', textContent: text });
+        if (spoken && spoken !== text) th.setAttribute('aria-label', spoken);
+        return th;
+      }),
     );
   };
   setColumns(columns);

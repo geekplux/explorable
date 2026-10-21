@@ -286,9 +286,17 @@ describe('curve: Bloom Fig 2 (expr-curve)', () => {
     expect(texts('.xfig-axis text').slice(6)).toEqual(['1', '8', '16', '32', '64', 'items inserted n']);
   });
 
+  it('names the plot from the filled labels and the marker text, and keeps the name current', () => {
+    const name = () => $('svg.xfig-curve [role="img"]').getAttribute('aria-label');
+    expect(name()).toBe('False positives as the filter fills: line chart of k = 3, m = 32 and best possible k; k = 3 is best at n ≈ 7.4');
+    key($('#fig-fpr-curve-k'), 'End');
+    expect(name()).toBe('False positives as the filter fills: line chart of k = 6, m = 32 and best possible k; k = 6 is best at n ≈ 3.7');
+    expect(name()).not.toMatch(/[{}]/);
+  });
+
   it('the knob rides the curve; keys move n, and k and m keep n while moving the marker', () => {
     const knob = $('.xfig-knob');
-    expect(knob.getAttribute('aria-label')).toBe('items inserted n (n, drag on chart)');
+    expect(knob.getAttribute('aria-label')).toBe('items inserted n (drag on chart)');
     expect(knob.getAttribute('aria-valuetext')).toBe('8');
     const y8 = Number(/ ([\d.]+)\)/.exec($('.xfig-knob g').getAttribute('transform')!)![1]);
     key(knob, 'PageUp');
@@ -325,7 +333,7 @@ describe('curve: Bloom Fig 2 (expr-curve)', () => {
     key($('.xfig-knob'), 'ArrowRight');
     key($('.xfig-knob'), 'ArrowLeft');
     vi.advanceTimersByTime(600);
-    expect($('#fig-fpr-curve-desc').textContent).toBe('At n = 8 items, the false-positive rate is 14.7%.');
+    expect($('#fig-fpr-curve-desc').textContent).toBe('At n = 8 items, the false-positive rate is 14.7%; k = 3 is best at n ≈ 7.4.');
   });
 });
 
@@ -349,6 +357,14 @@ describe('curve: diffusion Fig 2 (registry series)', () => {
     // The current t: a filled ■ on the noise curve and a dotted drop line.
     expect(root.querySelectorAll('.xfig-marks.xfig-s1')).toHaveLength(3); // the line's marks, the knob's ■ and the legend swatch
     expect($('.xfig-drop').getAttribute('d')).toMatch(/^M[\d.]+ [\d.]+V[\d.]+$/);
+  });
+
+  it('speaks the series and column names in words, not symbols', () => {
+    expect($('svg.xfig-curve [role="img"]').getAttribute('aria-label')).toBe(
+      'How much signal is left at each step: line chart of signal, square root of alpha-bar and noise, square root of one minus alpha-bar; signal = noise (t ≈ 260)',
+    );
+    const heads = [...root.querySelectorAll('thead th')].map((th) => th.getAttribute('aria-label'));
+    expect(heads).toEqual([null, 'alpha-bar', 'signal', 'noise', 'signal-to-noise ratio (dB)']);
   });
 
   it('reads ∞ dB at t = 0 and lists t ± 50 in steps of 10', () => {

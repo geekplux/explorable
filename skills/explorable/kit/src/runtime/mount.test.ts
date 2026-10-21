@@ -43,10 +43,11 @@ const $ = <T extends Element = HTMLElement>(s: string) => root.querySelector<T>(
 const readout = () => $('.xfig-readout').textContent;
 /** Fallback geometry: 640 px wide, track from 56 to 616 px. */
 const xFor = (T: number) => 56 + (Math.log(T / 0.05) / Math.log(100)) * 560;
-const ev = (type: string, x: number) => new PointerEvent(type, { pointerId: 7, pointerType: 'touch', clientX: x, bubbles: true, cancelable: true });
+const ev = (type: string, x: number, y = 0) => new PointerEvent(type, { pointerId: 7, pointerType: 'touch', clientX: x, clientY: y, bubbles: true, cancelable: true });
 /** Drawn height of the "cat" bar. */
 const bar = () => Number(root.querySelectorAll('rect.xfig-bar')[1]!.getAttribute('height'));
 const knob = () => $<SVGGElement>('.xfig-knob');
+const now = () => knob().getAttribute('aria-valuenow');
 const key = (el: Element, k: string) => el.dispatchEvent(new KeyboardEvent('keydown', { key: k, bubbles: true, cancelable: true }));
 function mount(reducedMotion = true, visible = true) {
   root = document.createElement('div');
@@ -153,8 +154,8 @@ describe('hydrateFigures: fig-temperature', () => {
     handle.releasePointerCapture = vi.fn<(id: number) => void>();
     handle.dispatchEvent(ev('pointerdown', xFor(1)));
     expect(capture).toHaveBeenCalledWith(7);
-    expect(knob().classList.contains('is-pointer')).toBe(true);
     handle.dispatchEvent(ev('pointermove', xFor(0.1)));
+    expect(knob().classList.contains('is-pointer')).toBe(true);
     expect(knob().getAttribute('aria-valuenow')).toBe('0.1');
     expect(Number(readout()?.match(/top weight ([\d.]+)/)?.[1])).toBeGreaterThan(0.9);
     handle.dispatchEvent(ev('pointerup', xFor(0.1)));
@@ -162,6 +163,25 @@ describe('hydrateFigures: fig-temperature', () => {
     expect(knob().getAttribute('aria-valuenow')).toBe('0.1');
     key(knob(), 'ArrowRight');
     expect(knob().classList.contains('is-pointer')).toBe(false);
+  });
+
+  it('touch on the band waits: a vertical swipe moves nothing, a tap jumps, a cancelled drag reverts', () => {
+    mount();
+    const handle = $<SVGGElement>('.xfig-handle');
+    const before = now();
+    handle.dispatchEvent(ev('pointerdown', xFor(0.1), 200));
+    expect(now()).toBe(before);
+    handle.dispatchEvent(ev('pointermove', xFor(0.1) + 3, 120));
+    handle.dispatchEvent(ev('pointercancel', xFor(0.1) + 3, 120));
+    expect(now()).toBe(before);
+    handle.dispatchEvent(ev('pointerdown', xFor(0.1), 200));
+    handle.dispatchEvent(ev('pointerup', xFor(0.1) + 2, 202));
+    expect(now()).toBe('0.1');
+    handle.dispatchEvent(ev('pointerdown', xFor(0.1), 200));
+    handle.dispatchEvent(ev('pointermove', xFor(2), 200));
+    expect(now()).toBe('2');
+    handle.dispatchEvent(ev('pointercancel', xFor(2), 200));
+    expect(now()).toBe('0.1');
   });
 
   it('"Show data" toggles a real table of tokens and weights in a labelled scroll region', () => {

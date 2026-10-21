@@ -52,7 +52,7 @@ describe('expr-curve (Bloom Fig 2)', () => {
 
   it('words the live description and fills labels', () => {
     const o = model.compute({ x: 8, k: 3, m: 32 });
-    expect(fillTemplate(String(spec.options!.describe), model, { x: 8, k: 3, m: 32 }, o)).toBe('At n = 8 items, the false-positive rate is 14.7%.');
+    expect(fillTemplate(String(spec.options!.describe), model, { x: 8, k: 3, m: 32 }, o)).toBe('At n = 8 items, the false-positive rate is 14.7%; k = 3 is best at n ≈ 7.4.');
     expect(model.describe({ x: 8, k: 3, m: 32 }, o)).toBe('At items inserted n = 8, false-positive rate is 14.7%.');
     expect(fillTemplate(String(spec.options!.markerLabel), model, { x: 8, k: 6, m: 32 }, o, { marker: 3.697 })).toBe('k = 6 is best at n ≈ 3.7');
     expect(fillTemplate('{k} {nope} {y:fixed3} {marker}', model, { k: 2.6 }, o, { marker: 260 })).toBe('3 {nope} 0.147 260');

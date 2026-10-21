@@ -142,7 +142,7 @@
           "markerLabel": "k = {k} is best at n ≈ {marker}",
           "refExpr": "0.5^(m*ln(2)/x)",
           "refLabel": "best possible k",
-          "describe": "At n = {x} items, the false-positive rate is {y}.",
+          "describe": "At n = {x} items, the false-positive rate is {y}; k = {k} is best at n ≈ {marker}.",
           "xSymbol": "n",
           "ticks": [
             "1",

@@ -1,8 +1,9 @@
 // Bloom Fig 1 is live: the false-positive query by keyboard, k = 1 then 6 by
 // keyboard, an n drag, CVD, axe, and the 2 × 16 layout at 390 px.
 // Bloom Fig 2 (curve): the knob dragged along the FPR curve, the optimal-k
-// marker for k = 6 and off the chart, the data table, CVD, and 1280 / 390 /
-// 320 px with no text overlaps or clipping and ≥ 44 px hit areas.
+// marker for k = 6 and off the chart, the data table, CVD, 1280 / 390 / 320 px
+// with no text overlaps or clipping and ≥ 44 px hit areas, and a vertical
+// touch swipe at 390 px that scrolls without moving the knob.
 import { blocking } from '../lib/axe.mjs';
 import { assertHitAreas as hitAreas, assertTableContained, settledBy, textProblems } from '../lib/figure.mjs';
 
@@ -133,6 +134,24 @@ async function openCurve(page, baseURL) {
   return fig;
 }
 
+/** A vertical touch swipe over the plot, away from the knob, scrolls the page and leaves n alone. */
+async function verticalSwipe(page, assert, fig) {
+  const before = await fig.locator('.xfig-knob').getAttribute('aria-valuenow');
+  const band = await fig.locator('.xfig-track-hit').boundingBox();
+  const [x, y] = [band.x + band.width * 0.8, band.y + band.height * 0.6];
+  const cdp = await page.context().newCDPSession(page);
+  await cdp.send('Emulation.setTouchEmulationEnabled', { enabled: true, maxTouchPoints: 1 });
+  const touch = (type, dy = 0) => cdp.send('Input.dispatchTouchEvent', { type, touchPoints: type === 'touchEnd' ? [] : [{ x, y: y + dy }] });
+  await touch('touchStart');
+  for (const dy of [-10, -25, -45, -70, -100]) await touch('touchMove', dy);
+  await touch('touchEnd');
+  await page.waitForTimeout(150);
+  assert.equal(await fig.locator('.xfig-knob').getAttribute('aria-valuenow'), before, 'a vertical touch swipe over the plot does not move the knob');
+  await cdp.send('Emulation.setTouchEmulationEnabled', { enabled: false });
+  await cdp.detach();
+  await fig.scrollIntoViewIfNeeded();
+}
+
 /** Bloom Fig 2: the FPR curve over n for the current m and k. */
 async function fprCurve({ page, baseURL, shot, assert, cvd, axe }) {
   const fig = await openCurve(page, baseURL);
@@ -157,7 +176,7 @@ async function fprCurve({ page, baseURL, shot, assert, cvd, axe }) {
   await page.mouse.up();
   assert.equal(await fig.locator('.xfig-knob').getAttribute('aria-valuenow'), '16');
   assert.equal(await curveReadout(page), 'items inserted n 16 · false-positive rate 46.9%');
-  await page.waitForFunction((sel) => document.querySelector(`${sel}-desc`)?.textContent === 'At n = 16 items, the false-positive rate is 46.9%.', CURVE, { timeout: 10_000 });
+  await page.waitForFunction((sel) => document.querySelector(`${sel}-desc`)?.textContent === 'At n = 16 items, the false-positive rate is 46.9%; k = 3 is best at n ≈ 7.4.', CURVE, { timeout: 10_000 });
   const knobY = (await fig.locator('.xfig-knob-ring').boundingBox()).y;
   assert.ok(knobY < ring.y - 40, 'the knob climbs the curve as n grows');
   await curveSettled(page);
@@ -202,6 +221,7 @@ async function fprCurve({ page, baseURL, shot, assert, cvd, axe }) {
     await hitAreas(page, assert, CURVE, width);
     assert.deepEqual(await textProblems(page, CURVE), [], `Fig 2: no text overlaps or clipping at ${width} px (hint showing)`);
     await shot(width === 390 ? 'curve-mobile' : 'bloom-fig2-320');
+    if (width === 390) await verticalSwipe(page, assert, fig);
     const states = [['#fig-fpr-curve-k', 'End'], ['#fig-fpr-curve-m', 'End'], ['#fig-fpr-curve-k', 'Home'], ['#fig-fpr-curve-x', 'End'], ['#fig-fpr-curve-m', 'Home']];
     for (const [sel, key] of states) {
       await fig.locator(sel).focus();

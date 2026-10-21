@@ -89,7 +89,7 @@
         "kind": "curve",
         "title": "How much signal is left at each step",
         "caption": "Both curves come from the same schedule as the figure above, β from 0.0001 to 0.02. Drag along the signal curve; the readout shows ᾱ_t and the signal-to-noise ratio in decibels.",
-        "alt": "Line chart over diffusion steps 0 to 1,000: the signal coefficient √ᾱ_t falls from 1 to almost 0, slowly at first, then steeply between steps 100 and 600, while the noise coefficient √(1−ᾱ_t) rises from 0 to 1. They cross at step 260.",
+        "alt": "Line chart over diffusion steps 0 to 1,000: the signal coefficient (the square root of alpha-bar) falls from 1 to almost 0, slowly at first, then steeply between steps 100 and 600, while the noise coefficient (the square root of one minus alpha-bar) rises from 0 to 1. They cross at step 260.",
         "model": {
           "id": "diffusion-forward",
           "params": {
@@ -114,6 +114,10 @@
           "seriesLabels": [
             "signal √ᾱ_t",
             "noise √(1−ᾱ_t)"
+          ],
+          "seriesSpoken": [
+            "signal, square root of alpha-bar",
+            "noise, square root of one minus alpha-bar"
           ],
           "markers": [
             "crossT"

@@ -52,6 +52,7 @@ The implementer should add each of these to the schema (P3) or registry (P4 to P
 | `ticks` | `histogram`, `curve` | Labelled tick values on the scrubber or x axis, as a `string[]` of numbers (the plan's `options` type has no `number[]`). |
 | `refLabel` | `histogram`, `curve` | Direct label of the dotted reference curve. |
 | `series`, `seriesLabels` | `curve` (registry model) | Output ids of `number[]` outputs to draw as series, and their direct labels. |
+| `seriesSpoken` | `curve` | Optional spoken forms of `seriesLabels` for the plot's accessible name (default: the labels), for labels with symbols such as `√ᾱ_t`. |
 | `xParam` | `curve` (registry model) | Which model parameter is the x axis and the knob (`t` for diffusion). The series index is the x value. |
 | `markers`, `markerLabels` | `curve` | Output ids (registry) giving x positions of vertical markers, and their labels. |
 | `markerExpr`, `markerLabel` | `curve` (`expr-curve`) | A marker x position as a whitelisted expression over the declared params, and its label. The label may hold `{name}` placeholders for declared params and `{marker}` for the marker x, each formatted with fixed1 (integers without decimals). |

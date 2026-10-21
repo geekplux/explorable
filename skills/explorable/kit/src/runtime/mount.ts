@@ -19,7 +19,7 @@ import { createAnnouncer } from './announce.ts';
 import { createChoice, createRange, createToggle, fromPos, snap, toPos } from './controls.ts';
 import type { Handle } from './handle.ts';
 import { HINT_DELAY, follow, nudge, reducedMotion } from './motion.ts';
-import { createDataTable } from './table.ts';
+import { createDataTable, type Column } from './table.ts';
 
 export type Params = Record<string, number>;
 export type Outputs = Record<string, number | number[]>;
@@ -38,7 +38,7 @@ export interface FigureView {
   /** The ring knob on the figure, if any, and the param it controls. */
   handle?: { name: string; knob: Handle };
   /** Data-table column headers, fixed or following the current state. */
-  columns: string[] | ((p: Params, o: Outputs) => string[]);
+  columns: Column[] | ((p: Params, o: Outputs) => Column[]);
   /** One-line summary appended to the table caption. */
   note?(p: Params, o: Outputs): string;
   /** Index of the column that names each row (a row header). */

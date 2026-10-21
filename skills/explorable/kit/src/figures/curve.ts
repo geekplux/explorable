@@ -57,10 +57,13 @@ export const mountCurve: FigureMount = (el, { spec, model, setParam }) => {
   if (!defs[xName]) throw new Error(`curve: x param "${xName}" is not a model param`);
   const xDef: ParamDef = defs[xName];
   const labels = strs(o.seriesLabels);
+  // Spoken forms for the plot's name, where a label has symbols a screen reader would mangle ("√ᾱ_t").
+  const spokenLabels = strs(o.seriesSpoken);
   let style = 0;
   const series = strs(o.series).slice(0, 3).map((id, i) => {
     const ref = id === o.refSeries;
-    return { id, ref, s: ref ? -1 : style++, label: labels[i] ?? id };
+    const label = labels[i] ?? id;
+    return { id, ref, s: ref ? -1 : style++, label, spoken: spokenLabels[i] ?? label };
   });
   const primaryId = series.find((d) => d.s === 0)?.id ?? '';
   const markers = strs(o.markers);
@@ -81,7 +84,8 @@ export const mountCurve: FigureMount = (el, { spec, model, setParam }) => {
   const svg = svgEl(el, 'svg', { class: 'xfig-svg xfig-curve' });
   const clip = svgEl(svgEl(svgEl(svg, 'defs'), 'clipPath', { id: `${spec.id}-clip` }), 'rect');
   const axis = svgEl(svg, 'g', { class: 'xfig-axis', 'aria-hidden': 'true' });
-  const plot = svgEl(svg, 'g', { role: 'img', 'aria-label': `${spec.title}: line chart of ${series.map((d) => d.label).join(' and ')}` });
+  // Named in draw(), from the filled series labels and the marker texts (which sit inside this role="img").
+  const plot = svgEl(svg, 'g', { role: 'img', 'aria-label': `${spec.title}: line chart` });
   const lines = svgEl(plot, 'g', { 'clip-path': `url(#${spec.id}-clip)` });
   // The primary series is drawn last, so it sits on top and its halo cuts the others where they cross.
   const parts = new Map(
@@ -217,6 +221,8 @@ export const mountCurve: FigureMount = (el, { spec, model, setParam }) => {
       m.dot.setAttribute('d', side ? `M${f1(mx - 4 * side)} ${row - 9}l${8 * side} 5l${-8 * side} 5z` : Number.isFinite(mv) ? SHAPES[0]!(mx, py(mv), 4) : '');
       rowLabel(m.text, mx, side);
     });
+    const name = `${spec.title}: line chart of ${series.map((d) => fillTemplate(d.spoken, model, p, out)).join(' and ')}${markerEls.map((m) => `; ${m.text.textContent}`).join('')}`;
+    if (plot.getAttribute('aria-label') !== name) plot.setAttribute('aria-label', name);
     for (const [d, at] of atKnob) {
       const v = yAt(nums(out[d.id]), pos);
       at.setAttribute('d', Number.isFinite(v) ? SHAPES[d.s]!(kx, py(v), 5) : '');
@@ -234,7 +240,11 @@ export const mountCurve: FigureMount = (el, { spec, model, setParam }) => {
     draw,
     handle: { name: xName, knob },
     rowHeader: 0,
-    columns: [xHead, ...columnIds.map((id) => `${model.outputs[id]!.label}${model.outputs[id]!.unit ? ` (${model.outputs[id]!.unit})` : ''}`)],
+    columns: [xHead, ...columnIds.map((id) => {
+      const { label, spoken, unit } = model.outputs[id]!;
+      const u = unit ? ` (${unit})` : '';
+      return { text: `${label}${u}`, spoken: `${spoken ?? label}${u}` };
+    })],
     note: (p) => `the knob is at ${xHead} = ${showValue(xDef, p[xName]!)}`,
     // Sampled points around the knob: x − 5 … x + 5 steps, clipped to the range.
     rows: (p) =>
