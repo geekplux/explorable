@@ -138,7 +138,7 @@ export const mountCurve: FigureMount = (el, { spec, model, setParam }) => {
     const box = el.getBoundingClientRect();
     const [w, h] = [box.width || 640, box.height || 360];
     // Above the plot: the y-axis title, then a row for marker labels. Below: x tick labels, then the x-axis title.
-    g = { w, L: 44, R: w - 18, top: markers.length ? 46 : 30, bottom: h - 44 };
+    g = { w, L: 44, R: w - 18, top: markers.length ? 50 : 30, bottom: h - 44 };
     ATTR(svg, { viewBox: `0 0 ${w} ${h}`, width: '100%', height: '100%' });
     ATTR(clip, { x: g.L - 6, y: g.top - 6, width: g.R - g.L + 12, height: g.bottom - g.top + 8 });
     axis.replaceChildren();
@@ -169,7 +169,7 @@ export const mountCurve: FigureMount = (el, { spec, model, setParam }) => {
     if (textWidth(t) > g.w - 8 - (side ? 14 : 0)) t.classList.add('is-tight');
     const tw = textWidth(t);
     const tx = side > 0 ? mx - 10 - tw : side < 0 ? mx + 10 : mx + 5 + tw > g.w - 4 ? mx - 5 - tw : mx + 5;
-    ATTR(t, { x: f1(Math.max(4, Math.min(g.w - 4 - tw, tx))), y: g.top - 12 });
+    ATTR(t, { x: f1(Math.max(4, Math.min(g.w - 4 - tw, tx))), y: g.top - 15 });
   }
 
   function draw(p: Params, out: Outputs) {
@@ -187,13 +187,21 @@ export const mountCurve: FigureMount = (el, { spec, model, setParam }) => {
       part.marks.setAttribute('d', d.ref ? '' : markPath(s, d.s, 3.5));
       legendText[i]!.textContent = endLabels[i]!.textContent = fillTemplate(d.label, model, p, out);
     });
-    // Direct labels at the right end: the highest line's label above it, the others below theirs, ≥ 16 px apart, inside the plot.
+    // Direct labels at the right end, clear of their own line: the highest line's label above it (below if there is no room), the others below
+    // theirs (above if there is no room); then ≥ 16 px apart.
     let prev = -Infinity;
     series
-      .map((d, i) => ({ t: endLabels[i]!, y: py(lastFinite(nums(out[d.id]))) }))
-      .toSorted((a, b) => a.y - b.y)
+      .map((d, i) => {
+        const [t, s] = [endLabels[i]!, nums(out[d.id])];
+        const [a, b] = [(g.R - 8 - textWidth(t) - g.L) / (g.R - g.L), (g.R - g.L - 8) / (g.R - g.L)];
+        const ys = Array.from({ length: 9 }, (_, j) => yAt(s, a + ((b - a) * j) / 8)).filter(Number.isFinite).map(py);
+        return { t, end: py(lastFinite(s)), hi: Math.min(...ys), lo: Math.max(...ys) };
+      })
+      .toSorted((u, v) => u.end - v.end)
       .forEach((e, i) => {
-        prev = Math.min(g.bottom - 6, Math.max(i ? e.y + 16 : e.y - 8, g.top + 12, prev + 16));
+        const [above, below] = [e.hi - 5, e.lo + 15];
+        const y = i === 0 ? (above - 11 >= g.top ? above : below) : below <= g.bottom - 4 ? below : above;
+        prev = Math.max(y, prev + 16);
         ATTR(e.t, { x: g.R - 8, y: f1(prev) });
       });
     markers.forEach((id, i) => {
@@ -201,7 +209,7 @@ export const mountCurve: FigureMount = (el, { spec, model, setParam }) => {
       const xv = Number(out[id]);
       const side = xv < xDef.min ? -1 : xv > xDef.max ? 1 : 0;
       const mpos = toPos(xDef, xv);
-      const [mx, row] = [px(mpos), g.top - 12];
+      const [mx, row] = [px(mpos), g.top - 15];
       m.text.textContent = `${fillTemplate(markerLabels[i] ?? '', model, p, out, { marker: xv })}${side ? ' (off the chart)' : ''}`;
       m.line.setAttribute('d', side ? '' : `M${f1(mx)} ${g.top}V${g.bottom}`);
       // On the chart, a filled ● where the marker meets the primary line (filled: a ring means draggable); off it, an edge ▶ or ◀.

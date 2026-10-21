@@ -99,6 +99,7 @@ circle.xfig-knob-hint { fill: none; stroke: var(--ink-2); stroke-width: 1.5; str
 .xfig-control input::-moz-range-thumb { width: 15px; height: 15px; border: 2.5px solid var(--live); border-radius: 50%; background: var(--paper); }
 .xfig-control input[type=range]:focus-visible, .xfig-data-toggle:focus-visible { outline: 3px solid var(--series-1); outline-offset: 2px; }
 .xfig-control output, .xfig-table td { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+.xfig-control output { white-space: nowrap; }
 .xfig-foot { flex-wrap: wrap; align-items: center; margin-top: var(--space-2); }
 .xfig-readout { margin: 0; font-size: .875rem; }
 .xfig-data-toggle { min-height: 44px; min-width: 44px; padding: 0 .9rem; font: .875rem var(--font-ui); color: var(--ink); background: var(--paper); border: 1px solid var(--ink-3); border-radius: var(--radius-pill); cursor: pointer; }
