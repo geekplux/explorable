@@ -1,4 +1,4 @@
-/** v1 light-theme colour tokens. Must match `src/styles/tokens.css` (tested). */
+/** v1 light-theme colour tokens. Must match `styles/tokens.css` (tested). */
 export const PALETTE = {
   paper: '#FBF8F1',
   well: '#F3EEE2',

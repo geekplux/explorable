@@ -1,4 +1,4 @@
-/* Essay column and figure card. Uses the identity tokens (src/styles/tokens.css). */
+/* Essay column and figure card. Uses the identity tokens (tokens.css beside this file). */
 :root { --follow-tau: 90ms; --hint-delay: 1200ms; --hint-duration: 600ms; --hint-distance: 8px; }
 .essay { counter-reset: sec; }
 .essay-hero, .essay-section > :not(.xfig), .essay-takeaway { max-width: var(--measure); margin-inline: auto; }

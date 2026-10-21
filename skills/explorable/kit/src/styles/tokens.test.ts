@@ -1,7 +1,7 @@
 /// <reference types="node" />
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { PALETTE } from '@kit/color/palette.ts';
+import { PALETTE } from '../color/palette.ts';
 
 const css = readFileSync(new URL('./tokens.css', import.meta.url), 'utf8');
 

@@ -1,0 +1,30 @@
+/* Identity tokens (docs/design/identity.md §1): the kit's single source. Hex values are tested against color/palette.ts. */
+:root {
+  --paper: #FBF8F1;
+  --well: #F3EEE2;
+  --rule: #D8D0BF;
+  --ink: #1D1B17;
+  --ink-2: #5A554B;
+  --ink-3: #7A7365;
+  --live: #C4451C;
+  --live-ink: #A93A12;
+  --live-wash: #FBE3D8;
+  --series-1: #2851C0;
+  --series-2: #0F8A6E;
+  --note-wash: #F6E7B8;
+
+  --font-display: Fraunces, "Explorable Greek", "Explorable Math", Georgia, "Times New Roman", serif;
+  --font-text: Newsreader, "Explorable Greek", "Explorable Math", Georgia, "Times New Roman", serif;
+  --font-ui: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+
+  --space-1: .25rem; --space-2: .5rem; --space-3: .75rem; --space-4: 1rem;
+  --space-5: 1.5rem; --space-6: 2rem; --space-7: 3rem; --space-8: 4rem;
+  --radius: 10px;
+  --radius-pill: 999px;
+  --ease: cubic-bezier(.2, .7, .2, 1);
+  --dur-ui: 160ms;
+  --measure: 38rem;
+  --wide: 56rem;
+  --shell: 60rem;
+}
