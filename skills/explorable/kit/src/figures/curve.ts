@@ -193,16 +193,23 @@ export const mountCurve: FigureMount = (el, { spec, model, setParam }) => {
     });
     // Direct labels at the right end, clear of their own line: the highest line's label above it (below if there is no room), the others below
     // theirs (above if there is no room); then ≥ 16 px apart.
+    // A label wider than about half the plot would run into the knob, its hint and the marker line on a narrow screen, so it is
+    // dropped where the legend (two or more series) or the y-axis title already names that line. The rest keep the places they
+    // would have had (the highest line still decides above / below), so dropping one label never moves another onto a line.
     let prev = -Infinity;
+    const yTitle = String(o.yLabel ?? '');
     series
       .map((d, i) => {
         const [t, s] = [endLabels[i]!, nums(out[d.id])];
+        const hide = textWidth(t) > (g.R - g.L) / 2 && (series.length > 1 || t.textContent === yTitle);
+        t.classList.toggle('is-hidden', hide);
         const [a, b] = [(g.R - 8 - textWidth(t) - g.L) / (g.R - g.L), (g.R - g.L - 8) / (g.R - g.L)];
         const ys = Array.from({ length: 9 }, (_, j) => yAt(s, a + ((b - a) * j) / 8)).filter(Number.isFinite).map(py);
-        return { t, end: py(lastFinite(s)), hi: Math.min(...ys), lo: Math.max(...ys) };
+        return { t, hide, end: py(lastFinite(s)), hi: Math.min(...ys), lo: Math.max(...ys) };
       })
       .toSorted((u, v) => u.end - v.end)
       .forEach((e, i) => {
+        if (e.hide) return;
         const [above, below] = [e.hi - 5, e.lo + 15];
         const y = i === 0 ? (above - 11 >= g.top ? above : below) : below <= g.bottom - 4 ? below : above;
         prev = Math.max(y, prev + 16);

@@ -56,7 +56,7 @@ describe('control value rules', () => {
     expect(output.getAttribute('for')).toBe('fig-T');
     expect(output.textContent).toBe('T = 0.50');
     expect(r.el.querySelector('label')?.htmlFor).toBe('fig-T');
-    expect(r.el.querySelector('input')?.getAttribute('aria-valuetext')).toBe('temperature 0.50');
+    expect(r.el.querySelector('input')?.getAttribute('aria-valuetext')).toBe('0.50');
   });
 
   it('switch: its name starts with the visible words before the first symbol (WCAG 2.5.3)', () => {

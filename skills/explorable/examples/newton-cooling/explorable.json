@@ -55,6 +55,8 @@
           "yFormat": "fixed1",
           "refExpr": "Ta",
           "refLabel": "room temperature Tₐ",
+          "seriesLabels": ["k = {k}, T₀ = {T0}, Tₐ = {Ta}", "room temperature Tₐ"],
+          "seriesSpoken": ["k = {k}, start temperature {T0} °C, room temperature {Ta} °C", "room temperature"],
           "markerExpr": "ln(2)/k",
           "markerLabel": "gap halves at {marker} min",
           "describe": "At {x} minutes the cup is at {y} °C; the gap to the room halves every {marker} minutes."

@@ -128,7 +128,7 @@ export default async function diffusion({ page, baseURL, shot, assert, cvd, axe 
   await page.keyboard.press('Home');
   await page.keyboard.press('PageUp');
   assert.equal(await value(page), '50', 'the native range steps 50 with PageUp');
-  assert.equal(await fig.locator('#fig-histogram-t').getAttribute('aria-valuetext'), 'step t 50 of 1000');
+  assert.equal(await fig.locator('#fig-histogram-t').getAttribute('aria-valuetext'), '50 of 1000', 'the value only: the label already names the slider');
   assert.equal(await fig.locator('output').textContent(), 't = 50');
 
   // "Show data": 60 bins.

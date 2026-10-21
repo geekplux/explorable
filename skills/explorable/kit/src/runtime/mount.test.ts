@@ -112,7 +112,7 @@ describe('hydrateFigures: fig-temperature', () => {
     expect(knob().getAttribute('aria-valuenow')).toBe('5');
     expect(readout()).toBe('top weight 0.22 · entropy 2.57 bits');
     expect($('output').textContent).toBe('T = 5.00');
-    expect($<HTMLInputElement>('input[type=range]').getAttribute('aria-valuetext')).toBe('temperature 5.00');
+    expect($<HTMLInputElement>('input[type=range]').getAttribute('aria-valuetext')).toBe('5.00');
     key(knob(), 'PageDown');
     key(knob(), 'ArrowLeft');
     expect(Number(knob().getAttribute('aria-valuenow'))).toBeLessThan(5);

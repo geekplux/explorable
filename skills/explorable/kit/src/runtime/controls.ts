@@ -3,7 +3,7 @@
  * in values.ts (DOM-free) and are re-exported here.
  */
 import type { ParamDef } from '../registry.ts';
-import { fromPos, keyValue, showValue, snap, toPos, valueText } from './values.ts';
+import { fromPos, keyValue, showValue, snap, toPos, valueOnly } from './values.ts';
 
 export * from './values.ts';
 
@@ -36,7 +36,8 @@ export function createRange(id: string, def: ParamDef, onChange: (v: number, ins
     set(v: number) {
       value = v;
       input.value = String(Math.round(toPos(def, v) * RANGE_STEPS));
-      input.setAttribute('aria-valuetext', valueText(def, v));
+      // The value only (with its unit): the label already names the slider, so a reader would hear it twice.
+      input.setAttribute('aria-valuetext', valueOnly(def, v));
       output.textContent = `${name} = ${showValue(def, v)}`;
     },
   };

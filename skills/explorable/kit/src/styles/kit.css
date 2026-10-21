@@ -43,7 +43,9 @@
 .xfig-tick { stroke: var(--ink-3); }
 .xfig-handle { cursor: pointer; touch-action: none; }
 .xfig-track-hit, .xfig-knob-hit { fill: transparent; }
-.xfig-knob { outline: none; cursor: grab; }
+.xfig-knob { cursor: grab; }
+/* The ring (.xfig-knob-focus) is the focus indicator; no page-level outline on top of it. */
+.xfig-knob, .xfig-knob:focus-visible { outline: none; }
 .xfig-knob-ring { fill: var(--paper); stroke: var(--live); stroke-width: 2.5; }
 .xfig-knob-grip { fill: none; stroke: var(--live); stroke-width: 1.25; stroke-linecap: round; }
 .xfig-knob-focus { fill: none; stroke: var(--series-1); stroke-width: 3; visibility: hidden; }
@@ -135,6 +137,32 @@ circle.xfig-knob-hint { fill: none; stroke: var(--ink-2); stroke-width: 1.5; str
   .xfig-knob-focus { stroke: Highlight; }
   .xfig-control input:focus-visible, .xfig-data-toggle:focus-visible, .xfig-table-wrap:focus-visible, .xfig-switch:focus-visible, .xfig-choice label:has(:focus-visible) { outline-color: Highlight; }
   .xfig-probe { stroke: Highlight; }
+  /* SVG paint is not forced, so every stroke and fill that carries meaning names a system colour here. */
+  .xfig-line, .xfig-line:is(.xfig-s0, .xfig-s1, .xfig-s2), .xfig-ref, .xfig-ghost, .xfig-sigma, .xfig-marker-line, .xfig-axis path, .xfig-baseline, .xfig-tick, .xfig-drop,
+  .xfig-track-line, .xfig-bar-other, .xfig-arrow, .xfig-hatch, .xfig-zero, .xfig-verdict-icon, .xfig-knob-grip, circle.xfig-knob-hint { stroke: CanvasText; }
+  .xfig-axis .xfig-grid { stroke: GrayText; }
+  .xfig-line-halo, .xfig-bar-other-halo, .xfig-probe-halo, .xfig-arrow-halo { stroke: Canvas; }
+  .xfig-marks, .xfig-marks:is(.xfig-s0, .xfig-s1, .xfig-s2), .xfig-meet { fill: CanvasText; stroke: Canvas; }
+  .xfig-arrowhead, .xfig-top path { fill: CanvasText; }
+  .xfig-bar { fill: Canvas; stroke: CanvasText; stroke-width: 2; }
+  .xfig-knob-ring { fill: Canvas; stroke: CanvasText; }
+  .xfig-word rect, .xfig-word.is-in rect, .xfig-bit rect, .xfig-query:not([data-fp]), .xfig-verdict:not([data-fp]) { fill: Canvas; stroke: CanvasText; }
+  .xfig-query, .xfig-verdict { stroke: CanvasText; }
+  .xfig-bit.is-set rect { fill: CanvasText; stroke: Canvas; }
+  .xfig-svg text, .xfig-svg .xfig-bar-label, .xfig-svg .is-top, .xfig-svg .xfig-top text, .xfig-svg .xfig-bit text,
+  .xfig-svg .xfig-word.is-in text, .xfig-svg .xfig-query-text, .xfig-svg .xfig-verdict-text, .xfig-svg .xfig-bits > g > g > text { fill: CanvasText; }
+  .xfig-svg .xfig-bit.is-set text { fill: Canvas; }
+  /* Labels drawn with a halo (paint-order: stroke) keep it, in the canvas colour. */
+  .xfig-svg .xfig-series-label, .xfig-svg .xfig-marker-label, .xfig-svg .xfig-ref-label, .xfig-svg .xfig-ghost-label,
+  .xfig-svg .xfig-bit-index, .xfig-svg .xfig-verdict-text, .xfig-svg .xfig-query-text { fill: CanvasText; stroke: Canvas; }
+  /* Range tracks are backgrounds, which forced colours paint as Canvas; one rule per engine (an unknown pseudo-element drops the whole list). */
+  .xfig-control input::-webkit-slider-runnable-track { forced-color-adjust: none; background: CanvasText; }
+  .xfig-control input::-moz-range-track { forced-color-adjust: none; background: CanvasText; }
+  .xfig-control input::-webkit-slider-thumb { forced-color-adjust: none; background: Canvas; border-color: CanvasText; }
+  .xfig-control input::-moz-range-thumb { forced-color-adjust: none; background: Canvas; border-color: CanvasText; }
+  .xfig-switch-track::after { forced-color-adjust: none; background: CanvasText; }
+  .xfig-switch[aria-checked="true"] .xfig-switch-track { forced-color-adjust: none; background: CanvasText; border-color: CanvasText; }
+  .xfig-switch[aria-checked="true"] .xfig-switch-track::after { background: Canvas; }
 }
 .xfig figcaption { max-width: var(--measure); margin: var(--space-3) 0 0; font-size: .9375rem; font-style: italic; line-height: 1.5; color: var(--ink-2); }
 

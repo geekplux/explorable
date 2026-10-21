@@ -6,6 +6,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import bloomDoc from '../../../../../src/samples/bloom-filter.json';
 import attentionDoc from '../../../../../src/samples/attention.json';
 import diffusionDoc from '../../../../../src/samples/diffusion.json';
+import newtonDoc from '../../../examples/newton-cooling/explorable.json';
 import { essayHtml, hydrateFigures } from '../doc/essay.ts';
 import { parseDoc, type ExplorableDoc } from '../doc/schema.ts';
 
@@ -29,6 +30,8 @@ function mount(json: unknown, fig: string, width = 862) {
   root = $(`#${fig}`);
 }
 const readout = () => $('.xfig-readout').textContent;
+/** Which direct curve labels are hidden, in DOM order. */
+const hidden = () => [...root.querySelectorAll('.xfig-series-label, .xfig-ref-label')].map((t) => t.classList.contains('is-hidden'));
 const marker = () => $('.xfig-marker-label').textContent;
 const sw = () => $<HTMLButtonElement>('[role="switch"]');
 /** x of a `translate(x y)` transform. */
@@ -99,10 +102,10 @@ describe('bits: Bloom Fig 1', () => {
     key(knob, 'End');
     expect(readout()).toBe('bits set 24 / 32 · predicted FPR 30.8% · observed FP 19 / 50');
     const k = $<HTMLInputElement>('#fig-bits-k');
-    expect(k.getAttribute('aria-valuetext')).toBe('hashes per word 3');
+    expect(k.getAttribute('aria-valuetext')).toBe('3');
     key(k, 'Home');
     key(knob, 'PageDown');
-    expect(k.getAttribute('aria-valuetext')).toBe('hashes per word 1');
+    expect(k.getAttribute('aria-valuetext')).toBe('1');
     expect($('output').textContent).toBe('n = 2');
     key(k, 'End');
     expect(texts('output')).toContain('k = 6');
@@ -159,7 +162,7 @@ describe('bars + switch: attention Fig 2', () => {
   it('dragging d_k to 512 unscaled saturates the softmax; scaled keeps SD near 1', () => {
     const knob = $('.xfig-knob');
     expect(knob.getAttribute('aria-label')).toBe('key width d k (d_k, drag on chart)');
-    expect($('#fig-scaling-dk').getAttribute('aria-valuetext')).toBe('key width d k 4 dimensions');
+    expect($('#fig-scaling-dk').getAttribute('aria-valuetext')).toBe('4 dimensions');
     key(knob, 'End');
     expect(knob.getAttribute('aria-valuetext')).toBe('512 dimensions');
     expect(readout()).toBe('score SD 23.95 · top weight 1.00 · entropy 0.00 bits');
@@ -231,7 +234,7 @@ describe('histogram: diffusion Fig 1', () => {
     const h0 = heights();
     key(knob, 'PageUp');
     expect(knob.getAttribute('aria-valuenow')).toBe('50');
-    expect($('#fig-histogram-t').getAttribute('aria-valuetext')).toBe('step t 50 of 1000');
+    expect($('#fig-histogram-t').getAttribute('aria-valuetext')).toBe('50 of 1000');
     expect(heights()).not.toBe(h0);
     expect($('.xfig-ghost').classList.contains('is-hidden')).toBe(false);
     key(knob, 'End');
@@ -334,6 +337,28 @@ describe('curve: Bloom Fig 2 (expr-curve)', () => {
     key($('.xfig-knob'), 'ArrowLeft');
     vi.advanceTimersByTime(600);
     expect($('#fig-fpr-curve-desc').textContent).toBe('At n = 8 items, the false-positive rate is 14.7%; k = 3 is best at n ≈ 7.4.');
+  });
+});
+
+describe('curve: direct labels on a narrow plot', () => {
+  it('keeps short labels; drops one wider than half the plot when the legend names it, text intact', () => {
+    mount(bloomDoc, 'fig-fpr-curve');
+    expect(hidden()).toEqual([false, false]);
+    destroy();
+    mount(bloomDoc, 'fig-fpr-curve', 200);
+    expect(hidden()).toEqual([true, true]);
+    expect(texts('.xfig-series-label')).toEqual(['k = 3, m = 32']);
+    expect(texts('.xfig-legend li')).toEqual(['k = 3, m = 32', 'best possible k']);
+  });
+
+  it('a lone series drops a wide label only when it repeats the y-axis title', () => {
+    mount(newtonDoc, 'fig-half-life', 320);
+    expect(texts('.xfig-series-label')).toEqual(['half-life of the gap (minutes)']);
+    expect(texts('.xfig-axis text')).toContain('half-life of the gap (minutes)');
+    expect(hidden()).toEqual([true]);
+    destroy();
+    mount(newtonDoc, 'fig-half-life');
+    expect(hidden()).toEqual([false]);
   });
 });
 
