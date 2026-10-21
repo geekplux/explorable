@@ -17,7 +17,8 @@ export async function cvd(page, vision) {
     const svg = document.createElementNS(ns, 'svg');
     svg.id = 'cvd-sim';
     svg.setAttribute('aria-hidden', 'true');
-    svg.setAttribute('style', 'position:absolute;width:0;height:0');
+    // CSSOM, not a style attribute: the standalone page's CSP blocks inline style attributes.
+    svg.style.cssText = 'position:absolute;width:0;height:0';
     svg.innerHTML = `<filter id="cvd-filter" color-interpolation-filters="linearRGB"><feColorMatrix type="matrix" values="${matrix}"/></filter>`;
     document.body.append(svg);
     document.documentElement.style.filter = 'url(#cvd-filter)';

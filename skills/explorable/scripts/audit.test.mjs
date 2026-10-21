@@ -46,6 +46,44 @@ describe('audit: failing fixtures', () => {
     fig(doc).alt = 'A chart.';
     fails(auditSpec(doc), /alt: must be at least 40 characters/);
   });
+  it('alt padded to 40 characters with spaces', () => {
+    const doc = newton();
+    fig(doc).alt = `Chart.${' '.repeat(50)}`;
+    fails(auditSpec(doc), /figure\.alt: must be at least 40 characters/);
+  });
+  it('whitespace-only caption', () => {
+    const doc = newton();
+    fig(doc).caption = '   ';
+    fails(auditSpec(doc), /figure\.caption: must not be empty/);
+  });
+  it('marker that is not finite at the end of a control', () => {
+    const doc = newton();
+    fig(doc).model.params.find((p) => p.name === 'k').min = 0;
+    assert.equal(fig(doc).options.markerExpr, 'ln(2)/k');
+    const problems = auditSpec(doc);
+    assert.ok(problems.includes('figure "fig-cooling": marker is not a finite number at k = 0'), problems.join('\n'));
+  });
+  it('reference curve that is not finite at the end of a control', () => {
+    const doc = newton();
+    fig(doc).options.refExpr = 'Ta/(T0 - 40)';
+    fails(auditSpec(doc), /figure "fig-cooling": ref is not a finite number at T0 = 40$/);
+  });
+  it('an output named only in describe that is not finite', () => {
+    const doc = newton();
+    const f = fig(doc);
+    f.model.expr = 'Ta + (T0 - Ta)/(k - 0.01)';
+    f.readouts = ['x'];
+    f.options.describe = 'At {x} minutes the cup is at {y:fixed1} °C.';
+    fails(auditSpec(doc), /figure "fig-cooling": output "y" \(in options\.describe\) is not a finite number at k = 0\.01$/);
+  });
+  it('empty and whitespace-only labels', () => {
+    const doc = newton();
+    Object.assign(fig(doc).options, { seriesLabels: ['k = {k}', '  '], refLabel: '', markerLabel: ' \t' });
+    const problems = auditSpec(doc);
+    fails(problems, /figure "fig-cooling": options\.seriesLabels\[1\] is empty/);
+    fails(problems, /figure "fig-cooling": options\.refLabel is empty/);
+    fails(problems, /figure "fig-cooling": options\.markerLabel is empty/);
+  });
   it('unknown model', () => {
     const doc = bloom();
     fig(doc).model.id = 'bloom-filtre';

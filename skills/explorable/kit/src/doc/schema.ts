@@ -9,10 +9,11 @@ export const FIGURE_KINDS = ['bars', 'bits', 'histogram', 'curve'] as const;
 
 const slug = (what: string) =>
   v.pipe(v.string(), v.regex(/^[a-z0-9][a-z0-9-]*$/, `${what} must be lowercase letters, digits and dashes`));
+/** A string whose trimmed length is at least `min` (so padding never counts) and whose length is at most `max`. */
 const text = (max: number, min = 1) =>
   v.pipe(
     v.string(),
-    v.minLength(min, min === 1 ? 'must not be empty' : `must be at least ${min} characters`),
+    v.check((s) => s.trim().length >= min, min === 1 ? 'must not be empty' : `must be at least ${min} characters`),
     v.maxLength(max, `must be at most ${max} characters`),
   );
 const list = <T extends v.GenericSchema>(item: T, min: number, max: number) =>

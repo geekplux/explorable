@@ -44,18 +44,54 @@ function auditFigure(fig) {
       out.push(`options.${key} sets a colour; the kit owns the palette (at most 3 hue-coded series), so encode with line style, shape or labels`);
     }
   }
-  // Every readout must be a finite number at the defaults and at each end of every control.
+  const o = fig.options ?? {};
+  // Labels carry meaning (never colour alone), so a label the figure shows may not be blank.
+  for (const key of LABEL_KEYS) {
+    if (o[key] === undefined) continue;
+    const blank = [o[key]].flat().map((v, i) => (typeof v === 'string' && !v.trim() ? i : -1)).filter((i) => i >= 0);
+    for (const i of blank) out.push(`options.${key}${Array.isArray(o[key]) ? `[${i}]` : ''} is empty; every label must say what it marks`);
+  }
+  // Every number the figure shows must be finite at the defaults and at each end of every control:
+  // the readouts, the marker and reference outputs, and every output a label or `describe` fills in.
   const states = [base, ...fig.controls.filter((c) => defs[c]).flatMap((c) => [{ ...base, [c]: defs[c].min }, { ...base, [c]: defs[c].max }])];
-  const values = model.compute(base);
+  const results = states.map((p) => [p, model.compute(p)]);
+  const values = results[0][1];
+  const shown = new Map(); // output id -> how the problem names it
   for (const id of fig.readouts) {
     if (!model.outputs[id] || !(id in values)) {
       out.push(`readout "${id}" is not an output of ${model.id} (it has ${Object.keys(values).filter((k) => model.outputs[k] && finite(values[k])).join(', ')})`);
-      continue;
+    } else shown.set(id, `readout "${id}"`);
+  }
+  const markers = 'expr' in fig.model ? (typeof o.markerExpr === 'string' ? ['marker'] : []) : [o.markers ?? []].flat();
+  if ('expr' in fig.model && typeof o.refExpr === 'string') markers.push('ref');
+  for (const id of markers) {
+    if (!Object.hasOwn(model.outputs, id) || Array.isArray(values[id])) out.push(`options.markers "${id}" is not a number output of ${model.id}`);
+    else if (!shown.has(id)) shown.set(id, id === 'marker' || id === 'ref' ? id : `marker "${id}"`);
+  }
+  for (const key of ['describe', ...LABEL_KEYS]) {
+    for (const tpl of [o[key] ?? []].flat()) {
+      if (typeof tpl !== 'string') continue;
+      for (const [, id] of tpl.matchAll(/\{(\w+)(?::\w+)?\}/g)) {
+        if (!shown.has(id) && Object.hasOwn(model.outputs, id) && !Array.isArray(values[id])) shown.set(id, `output "${id}" (in options.${key})`);
+      }
     }
-    const bad = states.find((p) => !finite(model.compute(p)[id]));
-    if (bad) out.push(`readout "${id}" is not a finite number at ${Object.entries(bad).map(([k, v]) => `${k} = ${v}`).join(', ')}`);
+  }
+  for (const [id, name] of shown) {
+    const bad = results.find(([, r]) => !finite(r[id]));
+    if (bad) out.push(`${name} is not a finite number at ${stateText(bad[0], base)}`);
   }
   return out;
+}
+
+/** The option keys that hold labels (strings or string lists) the figure shows. */
+const LABEL_KEYS = ['labels', 'compareLabels', 'seriesLabels', 'seriesSpoken', 'refLabel', 'markerLabel', 'markerLabels', 'yLabel'];
+
+const assignments = (entries) => entries.map(([k, v]) => `${k} = ${v}`).join(', ');
+
+/** "k = 0" for a state that moves one control off the defaults, "the defaults (x = 10, k = 0.05)" for the base. */
+function stateText(state, base) {
+  const moved = Object.entries(state).filter(([k, v]) => v !== base[k]);
+  return moved.length ? assignments(moved) : `the defaults (${assignments(Object.entries(base))})`;
 }
 
 /** Problems with a doc (raw JSON input). */

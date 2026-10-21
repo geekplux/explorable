@@ -54,7 +54,9 @@ describe('parseDoc', () => {
   const cases: [string, (d: Json) => void, string][] = [
     ['missing alt', (d) => delete d.sections[0].figure.alt, 'sections[0].figure.alt: is required'],
     ['short alt', (d) => (d.sections[0].figure.alt = 'Too short.'), 'sections[0].figure.alt: must be at least 40 characters'],
-    ['0 sections', (d) => (d.sections = []), 'sections: needs 2 to 6 items'],
+    ['space-padded alt', (d) => (d.sections[0].figure.alt = `Chart.${' '.repeat(50)}`), 'sections[0].figure.alt: must be at least 40 characters'],
+    ['whitespace-only caption', (d) => (d.sections[0].figure.caption = ' \n\t '), 'sections[0].figure.caption: must not be empty'],
+    ['0 sections',(d) => (d.sections = []), 'sections: needs 2 to 6 items'],
     ['7 sections', (d) => (d.sections = [1, 2, 3, 4, 5, 6, 7].map(section)), 'sections: needs 2 to 6 items'],
     ['4 controls', (d) => (d.sections[1].figure.controls = ['x', 'k', 'm', 'k']), 'sections[1].figure.controls: needs 1 to 3 items'],
     ['wrong schema version', (d) => (d.schema = 2), 'schema: must be 1 (ExplorableDoc v1)'],
