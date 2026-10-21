@@ -2,7 +2,7 @@ STATE: IN-PROGRESS
 
 # Status
 
-- Current phase: Phase 13 (`phase-13-oss-hygiene`), starting
+- Current phase: Phase 14 (`phase-14-readme-launch`), starting
 - Plan: docs/PLAN.md (15 phases, committed on main)
 - Blockers: none
 
@@ -20,13 +20,14 @@ STATE: IN-PROGRESS
 | 10 | phase-10-url-flow-ui | https://github.com/geekplux/explorable/pull/11 | PR open (verified PASS) | 1 |
 | 11 | phase-11-skill-build-audit | https://github.com/geekplux/explorable/pull/12 | PR open (verified PASS) | 4 |
 | 12 | phase-12-skill-docs-evals | https://github.com/geekplux/explorable/pull/13 | PR open (verified PASS) | 1 |
-| 13 | phase-13-oss-hygiene | - | in progress | 0 |
-| 14 | phase-14-readme-launch | - | pending | 0 |
+| 13 | phase-13-oss-hygiene | https://github.com/geekplux/explorable/pull/14 | PR open (verified PASS) | 1 |
+| 14 | phase-14-readme-launch | - | in progress | 0 |
 | 15 | phase-15-deploy-prep | - | pending | 0 |
 
 ## Follow-ups (for Sean)
 
 - Move `ci/github-workflow.yml` to `.github/workflows/` (needs `workflow` token scope).
 - Upload the social preview image in GitHub repo settings (manual).
+- Create issue labels `figure` and `sample` on GitHub (the issue forms apply them; `bug` exists by default).
 
-Last updated: 2026-10-21 09:24 UTC
+Last updated: 2026-10-21 11:21 UTC
