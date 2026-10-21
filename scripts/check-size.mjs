@@ -1,15 +1,15 @@
-// pnpm check:size: P1 budgets on dist/ (run `pnpm build` first). Initial JS
+// pnpm check:size: P1 budgets on dist/client/ (run `pnpm build` first). Initial JS
 // and CSS for "/" in gzip; preloaded fonts as shipped (woff2 is compressed).
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { gzipSync } from 'node:zlib';
 
-const DIST = 'dist';
+const DIST = 'dist/client'; // the Cloudflare Vite plugin puts the Worker in dist/explorable
 const KB = 1024;
 const BUDGETS = { js: 110 * KB, css: 20 * KB, fonts: 70 * KB };
 
 if (!existsSync(join(DIST, 'index.html'))) {
-  console.error('dist/index.html not found: run `pnpm build` first');
+  console.error('dist/client/index.html not found: run `pnpm build` first');
   process.exit(1);
 }
 const html = readFileSync(join(DIST, 'index.html'), 'utf8');

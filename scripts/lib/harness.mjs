@@ -91,7 +91,8 @@ const probePort = (port) =>
 const freePort = (preferred) => probePort(preferred).catch(() => probePort(0));
 
 /**
- * Build (optionally), start `vite preview` in its own process group, run
+ * Build (optionally), start `vite preview` (which runs the Worker in workerd
+ * via @cloudflare/vite-plugin) in its own process group, run
  * fn({ baseURL }). Uses port 4173 when free, otherwise any free port.
  */
 export async function withPreview(fn, { build = true, port: preferred = 4173 } = {}) {
@@ -111,7 +112,14 @@ export async function withPreview(fn, { build = true, port: preferred = 4173 } =
       return `preview ${pid}`; // already gone
     }
     if (!(await waitForExit(child, 3000))) process.kill(-pid, 'SIGKILL');
-    return `preview ${pid}`;
+    // The Cloudflare plugin's workerd shares the group; make sure none of it outlives vite.
+    await new Promise((r) => setTimeout(r, 200));
+    try {
+      process.kill(-pid, 'SIGKILL');
+    } catch {
+      // group already gone
+    }
+    return `preview ${pid} (+ workerd)`;
   });
   const baseURL = `http://127.0.0.1:${port}`;
   await waitForHttp(`${baseURL}/`, child, 30_000);
@@ -121,7 +129,9 @@ export async function withPreview(fn, { build = true, port: preferred = 4173 } =
 /**
  * Launch one headless system Chrome and run fn({ newPage }). Pages block and
  * record every request outside `baseURL`, and record console errors, page
- * errors, failed requests and HTTP errors into `problems`.
+ * errors, failed requests and HTTP errors into `problems`. Requests to `/api/*`
+ * are recorded as problems too (the sample path never calls the Worker) unless
+ * the page is opened with `{ allowApi: true }`.
  */
 export async function withBrowser(fn, { baseURL }) {
   const browser = await chromium.launch({
@@ -135,12 +145,15 @@ export async function withBrowser(fn, { baseURL }) {
   });
   const origin = new URL(baseURL).origin;
 
-  async function newPage(viewport, options = {}) {
+  async function newPage(viewport, { allowApi = false, ...options } = {}) {
     const context = await browser.newContext({ viewport, ...options });
     const blocked = new Set();
     await context.route('**/*', (route) => {
       const url = route.request().url();
-      if (url.startsWith('data:') || new URL(url).origin === origin) return route.continue();
+      if (url.startsWith('data:')) return route.continue();
+      const { origin: to, pathname } = new URL(url);
+      if (to === origin && !allowApi && pathname.startsWith('/api/')) problems.push(`unexpected Worker request: ${url}`);
+      if (to === origin) return route.continue();
       blocked.add(url);
       problems.push(`third-party request blocked: ${url}`);
       return route.abort('blockedbyclient');

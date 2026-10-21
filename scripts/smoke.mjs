@@ -41,6 +41,11 @@ await run(
               for (const route of viewportName === '800' ? routes.filter((r) => r === '/') : routes) {
                 await page.goto(baseURL + route, { waitUntil: 'networkidle' });
                 await check(page, route, viewportName);
+                if (viewportName === 'desktop' && route.startsWith('/s/')) {
+                  // SPA deep-link fallback must also hold on reload (served by the Worker's asset config).
+                  await page.reload({ waitUntil: 'networkidle' });
+                  await check(page, route, `${viewportName} after reload`);
+                }
                 console.log(`shot ${await shot(page, out, `${nameFor(route)}-${viewportName}`)}`);
               }
               await page.context().close();
