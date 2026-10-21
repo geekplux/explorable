@@ -6,7 +6,7 @@ All 15 phases are implemented, verified and open as stacked PRs (#1, #2, #4–#1
 
 - Current phase: none (all phases done; deploy awaits approval)
 - Plan: docs/PLAN.md (15 phases, committed on main)
-- Blockers: none (deploy intentionally stopped for approval; production KV id is the placeholder `REPLACE_WITH_KV_ID`)
+- Blockers: none (deploy intentionally stopped for approval; production KV id `06957ddddaad40bb86bfa7df7b6edd75` is committed)
 
 | Phase | Branch | PR | State | Verify rounds |
 |---|---|---|---|---|
