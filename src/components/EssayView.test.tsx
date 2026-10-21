@@ -22,8 +22,8 @@ describe('EssayView', () => {
     const bloom = createRoot(host);
     act(() => bloom.render(<EssayView doc={getSample('bloom-filter')!} />));
     expect(host.querySelector('#fig-bits .xfig-readout')?.textContent).toBe('bits set 20 / 32 · predicted FPR 14.7% · observed FP 10 / 50');
-    expect(host.querySelector('#fig-fpr-curve .xfig-drawing')).toBeNull();
-    expect(host.querySelector('#fig-fpr-curve .xfig-alt')?.textContent?.length).toBeGreaterThan(40);
+    expect(host.querySelector('#fig-fpr-curve .xfig-readout')?.textContent).toBe('items inserted n 8 · false-positive rate 14.7%');
+    expect(host.querySelectorAll('figure[data-live]')).toHaveLength(2);
     act(() => bloom.unmount());
   });
 });

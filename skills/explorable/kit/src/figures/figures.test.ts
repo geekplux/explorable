@@ -1,5 +1,7 @@
 // @vitest-environment happy-dom
 // Live `bits` (Bloom Fig 1) and `bars` with a √d_k switch (attention Fig 2), mounted from the real samples.
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import bloomDoc from '../../../../../src/samples/bloom-filter.json';
 import attentionDoc from '../../../../../src/samples/attention.json';
@@ -27,6 +29,7 @@ function mount(json: unknown, fig: string, width = 862) {
   root = $(`#${fig}`);
 }
 const readout = () => $('.xfig-readout').textContent;
+const marker = () => $('.xfig-marker-label').textContent;
 const sw = () => $<HTMLButtonElement>('[role="switch"]');
 /** x of a `translate(x y)` transform. */
 const x = (t: string) => Number(/translate\(([\d.]+)/.exec(t)![1]);
@@ -258,5 +261,119 @@ describe('histogram: diffusion Fig 1', () => {
     expect($('#fig-histogram-desc').textContent).toBe(
       'Step t = 500: 28% of the original signal and noise of 0.96; the samples spread with SD 1.09, and pure noise would be 1.00.',
     );
+  });
+});
+
+describe('curve: Bloom Fig 2 (expr-curve)', () => {
+  beforeEach(() => mount(bloomDoc, 'fig-fpr-curve'));
+
+  it('draws the FPR curve, the dotted reference and the optimal-k marker, all labelled directly', () => {
+    expect(readout()).toBe('items inserted n 8 · false-positive rate 14.7%');
+    expect(texts('.xfig-series-label')).toEqual(['k = 3, m = 32']);
+    expect(texts('.xfig-ref-label')).toEqual(['best possible k']);
+    expect(marker()).toBe('k = 3 is best at n ≈ 7.4');
+    expect($('svg.xfig-curve .xfig-line.xfig-s0').getAttribute('d')).toMatch(/^M[\d.]+ [\d.]+(L[\d.]+ [\d.]+){200}$/);
+    expect($('svg.xfig-curve .xfig-ref').getAttribute('d')).toMatch(/^M/);
+    // Primary on top: the reference is drawn first, and each line has a paper halo with the same path.
+    const paths = [...root.querySelectorAll('.xfig-line-halo + path')];
+    expect(paths.map((p) => p.getAttribute('class'))).toEqual(['xfig-ref', 'xfig-line xfig-s0']);
+    expect(paths.every((p) => p.previousElementSibling!.getAttribute('d') === p.getAttribute('d'))).toBe(true);
+    // ● markers every 8 items (8 … 64), and a filled ● (not a ring) where the marker meets the curve.
+    expect(($('svg.xfig-curve .xfig-marks.xfig-s0').getAttribute('d') ?? '').match(/M/g)).toHaveLength(8);
+    expect($('.xfig-meet').getAttribute('d')).toMatch(/a4 4/);
+    expect(texts('.xfig-legend li')).toEqual(['k = 3, m = 32', 'best possible k']);
+    expect(texts('.xfig-axis text').slice(0, 6)).toEqual(['0%', '25%', '50%', '75%', '100%', 'false-positive rate']);
+    expect(texts('.xfig-axis text').slice(6)).toEqual(['1', '8', '16', '32', '64', 'items inserted n']);
+  });
+
+  it('the knob rides the curve; keys move n, and k and m keep n while moving the marker', () => {
+    const knob = $('.xfig-knob');
+    expect(knob.getAttribute('aria-label')).toBe('items inserted n (n, drag on chart)');
+    expect(knob.getAttribute('aria-valuetext')).toBe('8');
+    const y8 = Number(/ ([\d.]+)\)/.exec($('.xfig-knob g').getAttribute('transform')!)![1]);
+    key(knob, 'PageUp');
+    expect(readout()).toBe('items inserted n 18 · false-positive rate 54.1%');
+    const y18 = Number(/ ([\d.]+)\)/.exec($('.xfig-knob g').getAttribute('transform')!)![1]);
+    expect(y18).toBeLessThan(y8 - 50);
+    for (let i = 0; i < 10; i++) key(knob, 'ArrowLeft');
+    key($('#fig-fpr-curve-k'), 'End');
+    expect(readout()).toBe('items inserted n 8 · false-positive rate 22.0%');
+    expect(marker()).toBe('k = 6 is best at n ≈ 3.7');
+    expect(texts('.xfig-series-label')).toEqual(['k = 6, m = 32']);
+    key($('#fig-fpr-curve-m'), 'End');
+    key($('#fig-fpr-curve-k'), 'Home');
+    expect(marker()).toBe('k = 1 is best at n ≈ 88.7 (off the chart)');
+    expect($('.xfig-marker-line').getAttribute('d')).toBe('');
+    expect($('.xfig-meet').getAttribute('d')).toMatch(/l8 5l-8 5z$/);
+    expect(readout()).toBe('items inserted n 8 · false-positive rate 6.1%');
+  });
+
+  it('"Show data" lists 11 sampled points around the knob, clipped to the range', () => {
+    const table = $<HTMLTableElement>('table.xfig-table');
+    expect(texts('thead th')).toEqual(['n', 'false-positive rate', 'best possible k']);
+    const rows = () => [...table.querySelectorAll('tbody tr')].map((r) => [...r.children].map((c) => c.textContent));
+    expect(rows()).toHaveLength(11);
+    expect(rows()[0]).toEqual(['3', '1.5%', '0.59%']);
+    expect(rows()[5]).toEqual(['8', '14.7%', '14.6%']);
+    expect(table.caption?.textContent).toMatch(/— the knob is at n = 8$/);
+    key($('.xfig-knob'), 'Home');
+    expect(rows().map((r) => r[0])).toEqual(['1', '2', '3', '4', '5', '6']);
+  });
+
+  it('speaks the spec sentence', () => {
+    vi.useFakeTimers();
+    key($('.xfig-knob'), 'ArrowRight');
+    key($('.xfig-knob'), 'ArrowLeft');
+    vi.advanceTimersByTime(600);
+    expect($('#fig-fpr-curve-desc').textContent).toBe('At n = 8 items, the false-positive rate is 14.7%.');
+  });
+});
+
+describe('curve: diffusion Fig 2 (registry series)', () => {
+  beforeEach(() => mount(diffusionDoc, 'fig-signal-noise'));
+
+  it('signal is solid with ● markers, noise dashed with ■, both labelled, the crossing marked', () => {
+    expect(readout()).toBe('ᾱ_t 0.897 · SNR 9.4 dB');
+    expect($('.xfig-foot .xfig-sr').textContent).toBe('alpha-bar 0.897, signal-to-noise ratio 9.4 dB');
+    expect(texts('.xfig-series-label')).toEqual(['signal √ᾱ_t', 'noise √(1−ᾱ_t)']);
+    expect($('.xfig-marker-label').textContent).toBe('signal = noise (t ≈ 260)');
+    const s0 = ($('svg.xfig-curve .xfig-marks.xfig-s0').getAttribute('d') ?? '').match(/M[^M]+/g)!;
+    const s1 = ($('svg.xfig-curve .xfig-marks.xfig-s1').getAttribute('d') ?? '').match(/M[^M]+/g)!;
+    expect([s0.length, s1.length]).toEqual([11, 11]);
+    expect(s0.every((d) => d.includes('a3.5'))).toBe(true);
+    expect(s1.every((d) => /h7v7h-7z/.test(d))).toBe(true);
+    // The marker line sits at x(260), between the ticks at 250 and 500.
+    const tickX = (label: string) => Number([...root.querySelectorAll('.xfig-axis text')].find((t) => t.textContent === label)?.getAttribute('x'));
+    const mx = Number(/^M([\d.]+)/.exec($('.xfig-marker-line').getAttribute('d')!)![1]);
+    expect(mx).toBeCloseTo(tickX('250') + (tickX('500') - tickX('250')) * 0.04, 0);
+    // The current t: a filled ■ on the noise curve and a dotted drop line.
+    expect(root.querySelectorAll('.xfig-marks.xfig-s1')).toHaveLength(3); // the line's marks, the knob's ■ and the legend swatch
+    expect($('.xfig-drop').getAttribute('d')).toMatch(/^M[\d.]+ [\d.]+V[\d.]+$/);
+  });
+
+  it('reads ∞ dB at t = 0 and lists t ± 50 in steps of 10', () => {
+    key($('.xfig-knob'), 'Home');
+    expect(readout()).toBe('ᾱ_t 1.00 · SNR ∞ dB');
+    key($('.xfig-knob'), 'PageUp');
+    key($('.xfig-knob'), 'PageUp');
+    const rows = [...root.querySelectorAll('tbody tr')].map((r) => [...r.children].map((c) => c.textContent));
+    expect(texts('thead th')).toEqual(['t', 'ᾱ_t', 'signal √ᾱ_t', 'noise √(1−ᾱ_t)', 'SNR (dB)']);
+    expect(rows.map((r) => r[0])).toEqual(['50', '60', '70', '80', '90', '100', '110', '120', '130', '140', '150']);
+    expect(rows[5]).toEqual(['100', '0.897', '0.947', '0.321', '9.4']);
+  });
+
+  it('speaks its own sentence', () => {
+    vi.useFakeTimers();
+    key($('.xfig-knob'), 'ArrowRight');
+    key($('.xfig-knob'), 'ArrowLeft');
+    vi.advanceTimersByTime(600);
+    expect($('#fig-signal-noise-desc').textContent).toBe(
+      'At t = 100, alpha-bar is 0.897: signal 0.95, noise 0.32, signal-to-noise ratio 9.4 dB.',
+    );
+  });
+
+  it('has no hard-coded schedule values', () => {
+    const src = readFileSync(join(import.meta.dirname, 'curve.ts'), 'utf8');
+    expect(src).not.toMatch(/0\.0001|0\.02\b|1e-4/);
   });
 });

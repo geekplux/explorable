@@ -5,14 +5,16 @@
  */
 import { mountBars } from '../figures/bars.ts';
 import { mountBits } from '../figures/bits.ts';
+import { mountCurve } from '../figures/curve.ts';
 import { mountHistogram } from '../figures/histogram.ts';
 import type { FigureSpec } from '../doc/schema.ts';
 import { format } from '../format.ts';
 import { attentionScaling } from '../models/attention-scaling.ts';
 import { bloomFilter } from '../models/bloom-filter.ts';
 import { diffusionForward } from '../models/diffusion-forward.ts';
+import { exprCurveModel } from '../models/expr-curve.ts';
 import { softmaxTemperature } from '../models/softmax-temperature.ts';
-import { getModel, type FigureKind, type ModelDef, type ParamDef } from '../registry.ts';
+import { fillTemplate, getModel, type FigureKind, type ModelDef, type ParamDef } from '../registry.ts';
 import { createAnnouncer } from './announce.ts';
 import { createChoice, createRange, createToggle, fromPos, snap, toPos } from './controls.ts';
 import type { Handle } from './handle.ts';
@@ -46,7 +48,7 @@ export interface FigureView {
 }
 
 export type FigureMount = (drawing: HTMLElement, ctx: FigureCtx) => FigureView;
-const KINDS: Partial<Record<FigureKind, FigureMount>> = { bars: mountBars, bits: mountBits, histogram: mountHistogram };
+const KINDS: Record<FigureKind, FigureMount> = { bars: mountBars, bits: mountBits, histogram: mountHistogram, curve: mountCurve };
 /** Models registered by importing the runtime. */
 export const BUILT_IN_MODELS = [softmaxTemperature, attentionScaling, bloomFilter, diffusionForward] as unknown as readonly ModelDef[];
 
@@ -60,18 +62,27 @@ export interface MountOptions {
   reducedMotion?: boolean;
 }
 
+/** An `expr-curve` spec's own model, or undefined if one of its expressions is invalid. */
+function exprModel(spec: FigureSpec): ModelDef | undefined {
+  try {
+    return exprCurveModel(spec);
+  } catch {
+    return undefined;
+  }
+}
+
 /** Mount a live figure, or return undefined (the static shell stays) if its kind or model is not available. */
 export function mountFigure(stage: HTMLElement, spec: FigureSpec, opts: MountOptions = {}) {
-  const found = getModel(spec.model.id);
+  const found = 'expr' in spec.model ? exprModel(spec) : getModel(spec.model.id);
   const kind = KINDS[spec.kind];
-  if (!found || !kind || 'expr' in spec.model) return undefined;
+  if (!found || !kind) return undefined;
   const model: ModelDef = found;
   const figure = stage.closest('figure') ?? stage;
   const reduced = opts.reducedMotion ?? reducedMotion();
   const defs = model.params as Record<string, ParamDef>;
   const controls = spec.controls.filter((c) => defs[c]);
   const target: Params = Object.fromEntries(Object.entries(defs).map(([k, d]) => [k, d.default]));
-  Object.assign(target, spec.model.params);
+  if (!('expr' in spec.model)) Object.assign(target, spec.model.params);
   for (const c of controls) target[c] = snap(defs[c]!, target[c]!);
   let shown = { ...target };
 
@@ -116,6 +127,10 @@ export function mountFigure(stage: HTMLElement, spec: FigureSpec, opts: MountOpt
   stage.append(data.wrap);
 
   const labels = spec.options?.labels;
+  // A figure may word its own live description (`options.describe`); otherwise the model's sentence.
+  const tpl = spec.options?.describe;
+  const describe = (out: Outputs) =>
+    typeof tpl === 'string' ? fillTemplate(tpl, model, target, out) : model.describe(target, out, Array.isArray(labels) ? labels : undefined);
   const drawState = (p: Params) => {
     shown = p;
     view.draw(p, model.compute(p));
@@ -144,7 +159,7 @@ export function mountFigure(stage: HTMLElement, spec: FigureSpec, opts: MountOpt
     data.setColumns(columns(out));
     data.setRows(view.rows(target, out));
     data.setNote(view.note?.(target, out) ?? '');
-    announcer.say(model.describe(target, out, Array.isArray(labels) ? labels : undefined), dragging ? DRAG_IDLE : undefined);
+    announcer.say(describe(out), dragging ? DRAG_IDLE : undefined);
     stopFollow();
     if (instant || reduced) return drawState({ ...target });
     const goal = { ...target };

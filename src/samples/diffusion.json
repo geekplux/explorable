@@ -127,7 +127,17 @@
             "500",
             "750",
             "1000"
-          ]
+          ],
+          "yLabel": "coefficient",
+          "markEvery": 100,
+          "tableStep": 10,
+          "tableColumns": [
+            "alphaBar",
+            "signal",
+            "noise",
+            "snrDb"
+          ],
+          "describe": "At t = {t}, alpha-bar is {alphaBar}: signal {signal:fixed2}, noise {noise:fixed2}, signal-to-noise ratio {snrDb:fixed1} dB."
         }
       }
     },

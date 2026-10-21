@@ -26,7 +26,7 @@ export type Handle = ReturnType<typeof createHandle>;
 
 export function createHandle(parent: SVGElement, { def, onChange }: HandleOptions) {
   const root = svgEl(parent, 'g', { class: 'xfig-handle' });
-  const band = svgEl(root, 'rect', { class: 'xfig-track-hit', height: 46 });
+  const band = svgEl(root, 'rect', { class: 'xfig-track-hit' });
   const knob = svgEl(root, 'g', {
     class: 'xfig-knob', role: 'slider', tabindex: 0, 'aria-label': `${spoken(def)} (${def.symbol ? `${def.symbol}, ` : ''}drag on chart)`,
     'aria-valuemin': def.min, 'aria-valuemax': def.max, 'aria-orientation': 'horizontal',
@@ -82,14 +82,14 @@ export function createHandle(parent: SVGElement, { def, onChange }: HandleOption
 
   return {
     knob,
-    /** Track from x0 to x1 at height y, in SVG user units (CSS px). */
-    layout(nx0: number, nx1: number, ny: number) {
+    /** Track from x0 to x1 at height y, in SVG user units (CSS px); `band` = [top, bottom] of a taller pointer band. */
+    layout(nx0: number, nx1: number, ny: number, [top, bottom] = [ny - 23, ny + 23]) {
       [x0, x1, y] = [nx0, nx1, ny];
-      for (const [k, v] of Object.entries({ x: x0 - 23, y: y - 23, width: x1 - x0 + 46 })) band.setAttribute(k, String(v));
+      for (const [k, v] of Object.entries({ x: x0 - 23, y: top, width: x1 - x0 + 46, height: bottom - top })) band.setAttribute(k, String(v));
     },
-    /** Draw the knob at track position `pos` in [0, 1]. */
-    place(pos: number) {
-      x = x0 + pos * (x1 - x0);
+    /** Draw the knob at track position `pos` in [0, 1] (and at height `ny`, for a knob that rides a curve). */
+    place(pos: number, ny = y) {
+      [x, y] = [x0 + pos * (x1 - x0), ny];
       placeMove();
     },
     /** Current (target) value, for assistive tech. */
