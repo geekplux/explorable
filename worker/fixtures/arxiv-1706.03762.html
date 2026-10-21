@@ -1,0 +1,119 @@
+<!DOCTYPE html><html lang="en">
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<title>Attention Is All You Need</title>
+<script>initializeReadingPreferences();</script>
+</head><body>
+<header class="arxiv-html-header">
+  <div class="html-header-logo">
+    <a href="/"><img alt="arXiv logo" class="logo desktop-only" width="100"
+        src="/static/base/1.0.1/images/arxiv-logo-primary-light.svg">
+      <span class="sr-only">Back to arXiv</span>
+    </a>
+  </div>
+  <!--TOC, dark mode, links-->
+  <nav class="html-header-nav"><a class="header-button" href="https://info.arxiv.org/about/accessible_HTML.html">Why HTML?</a> <a class="header-button" href="#">Report an issue with this paper and its rendering</a></nav>
+</header><nav class="ltx_page_navbar">
+<nav class="ltx_TOC">
+<ol class="ltx_toclist">
+<li class="ltx_tocentry ltx_tocentry_abstract"><a href="#abstract1" title="In Attention Is All You Need" class="ltx_ref"><span class="ltx_text ltx_ref_title">Abstract</span></a></li>
+<li class="ltx_tocentry ltx_tocentry_section"><a href="#S1" title="In Attention Is All You Need" class="ltx_ref"><span class="ltx_text ltx_ref_title"><span class="ltx_tag ltx_tag_ref">1 </span>Introduction</span></a></li>
+<li class="ltx_tocentry ltx_tocentry_section"><a href="#S2" title="In Attention Is All You Need" class="ltx_ref"><span class="ltx_text ltx_ref_title"><span class="ltx_tag ltx_tag_ref">2 </span>Background</span></a></li>
+<li class="ltx_tocentry ltx_tocentry_section"><a href="#S3" title="In Attention Is All You Need" class="ltx_ref"><span class="ltx_text ltx_ref_title"><span class="ltx_tag ltx_tag_ref">3 </span>Model Architecture</span></a>
+</ol></li></ol></nav></nav>
+<div class="ltx_page_main">
+<div id="infobox" class="infobox">
+  <a id="license-tr" href="https://info.arxiv.org/help/license/index.html#licenses-available">
+    License: arXiv.org perpetual non-exclusive license
+  </a>
+  <div id="watermark-tr">
+arXiv:1706.03762v7 [cs.CL] 02 Aug 2023</div>
+</div><div class="ltx_page_content">
+<article class="ltx_document ltx_authors_1line">
+<h1 class="ltx_title ltx_title_document">Attention Is All You Need</h1>
+<div class="ltx_authors"><span class="ltx_creator ltx_role_author"><span class="ltx_personname">Ashish Vaswani</span></span> <span class="ltx_creator ltx_role_author"><span class="ltx_personname">Noam Shazeer</span></span></div>
+<div id="abstract1" class="ltx_abstract"><h6 class="ltx_title ltx_title_abstract">Abstract</h6>
+    
+<p id="abstract1.1" class="ltx_p">The dominant sequence transduction models are based on complex recurrent or convolutional neural networks that include an encoder and a decoder. The best performing models also connect the encoder and decoder through an attention mechanism. We propose a new simple network architecture, the Transformer, based solely on attention mechanisms, dispensing with recurrence and convolutions entirely. Experiments on two machine translation tasks show these models to be superior in quality while being more parallelizable and requiring significantly less time to train. Our model achieves 28.4 BLEU on the WMT 2014 English-to-German translation task, improving over the existing best results, including ensembles, by over 2 BLEU. On the WMT 2014 English-to-French translation task, our model establishes a new single-model state-of-the-art BLEU score of 41.8 after training for 3.5 days on eight GPUs, a small fraction of the training costs of the best models from the literature. We show that the Transformer generalizes well to other tasks by applying it successfully to English constituency parsing both with large and limited training data.</p>
+  
+</div>
+<section id="S1" class="ltx_section">
+<h2 class="ltx_title ltx_title_section"><span class="ltx_tag ltx_tag_section">1 </span>Introduction</h2>
+
+<div id="S1.p1" class="ltx_para ltx_noindent">
+<p id="S1.p1.1" class="ltx_p">Recurrent neural networks, long short-term memory <cite class="ltx_cite ltx_citemacro_citep">[<a href="#bib.bib13" title="" class="ltx_ref">13</a>]</cite> and gated recurrent <cite class="ltx_cite ltx_citemacro_citep">[<a href="#bib.bib7" title="" class="ltx_ref">7</a>]</cite> neural networks in particular, have been firmly established as state of the art approaches in sequence modeling and transduction problems such as language modeling and machine translation <cite class="ltx_cite ltx_citemacro_citep">[<a href="#bib.bib35" title="" class="ltx_ref">35</a>, <a href="#bib.bib2" title="" class="ltx_ref">2</a>, <a href="#bib.bib5" title="" class="ltx_ref">5</a>]</cite>. Numerous efforts have since continued to push the boundaries of recurrent language models and encoder-decoder architectures <cite class="ltx_cite ltx_citemacro_citep">[<a href="#bib.bib38" title="" class="ltx_ref">38</a>, <a href="#bib.bib24" title="" class="ltx_ref">24</a>, <a href="#bib.bib15" title="" class="ltx_ref">15</a>]</cite>.</p>
+</div>
+<div id="S1.p2" class="ltx_para ltx_noindent">
+<p id="S1.p2.1" class="ltx_p">Recurrent models typically factor computation along the symbol positions of the input and output sequences. Aligning the positions to steps in computation time, they generate a sequence of hidden states <math id="S1.p2.m1" class="ltx_Math" alttext="h_{t}" display="inline" intent=":literal"><semantics><msub><mi>h</mi><mi>t</mi></msub><annotation encoding="application/x-tex">h_{t}</annotation></semantics></math>, as a function of the previous hidden state <math id="S1.p2.m2" class="ltx_Math" alttext="h_{t-1}" display="inline" intent=":literal"><semantics><msub><mi>h</mi><mrow><mi>t</mi><mo>−</mo><mn>1</mn></mrow></msub><annotation encoding="application/x-tex">h_{t-1}</annotation></semantics></math> and the input for position <math id="S1.p2.m3" class="ltx_Math" alttext="t" display="inline" intent=":literal"><semantics><mi>t</mi><annotation encoding="application/x-tex">t</annotation></semantics></math>. This inherently sequential nature precludes parallelization within training examples, which becomes critical at longer sequence lengths, as memory constraints limit batching across examples.
+Recent work has achieved significant improvements in computational efficiency through factorization tricks <cite class="ltx_cite ltx_citemacro_citep">[<a href="#bib.bib21" title="" class="ltx_ref">21</a>]</cite> and conditional computation <cite class="ltx_cite ltx_citemacro_citep">[<a href="#bib.bib32" title="" class="ltx_ref">32</a>]</cite>, while also improving model performance in case of the latter. The fundamental constraint of sequential computation, however, remains.</p>
+</div>
+<div id="S1.p3" class="ltx_para ltx_noindent">
+<p id="S1.p3.1" class="ltx_p">Attention mechanisms have become an integral part of compelling sequence modeling and transduction models in various tasks, allowing modeling of dependencies without regard to their distance in the input or output sequences <cite class="ltx_cite ltx_citemacro_citep">[<a href="#bib.bib2" title="" class="ltx_ref">2</a>, <a href="#bib.bib19" title="" class="ltx_ref">19</a>]</cite>. In all but a few cases <cite class="ltx_cite ltx_citemacro_citep">[<a href="#bib.bib27" title="" class="ltx_ref">27</a>]</cite>, however, such attention mechanisms are used in conjunction with a recurrent network.</p>
+</div>
+<div id="S1.p4" class="ltx_para ltx_noindent">
+<p id="S1.p4.1" class="ltx_p">In this work we propose the Transformer, a model architecture eschewing recurrence and instead relying entirely on an attention mechanism to draw global dependencies between input and output. The Transformer allows for significantly more parallelization and can reach a new state of the art in translation quality after being trained for as little as twelve hours on eight P100 GPUs.</p>
+</div>
+</section>
+<section id="S2" class="ltx_section">
+<h2 class="ltx_title ltx_title_section"><span class="ltx_tag ltx_tag_section">2 </span>Background</h2>
+
+<div id="S2.p1" class="ltx_para ltx_noindent">
+<p id="S2.p1.1" class="ltx_p">The goal of reducing sequential computation also forms the foundation of the Extended Neural GPU <cite class="ltx_cite ltx_citemacro_citep">[<a href="#bib.bib16" title="" class="ltx_ref">16</a>]</cite>, ByteNet <cite class="ltx_cite ltx_citemacro_citep">[<a href="#bib.bib18" title="" class="ltx_ref">18</a>]</cite> and ConvS2S <cite class="ltx_cite ltx_citemacro_citep">[<a href="#bib.bib9" title="" class="ltx_ref">9</a>]</cite>, all of which use convolutional neural networks as basic building block, computing hidden representations in parallel for all input and output positions. In these models, the number of operations required to relate signals from two arbitrary input or output positions grows in the distance between positions, linearly for ConvS2S and logarithmically for ByteNet. This makes it more difficult to learn dependencies between distant positions <cite class="ltx_cite ltx_citemacro_citep">[<a href="#bib.bib12" title="" class="ltx_ref">12</a>]</cite>. In the Transformer this is reduced to a constant number of operations, albeit at the cost of reduced effective resolution due to averaging attention-weighted positions, an effect we counteract with Multi-Head Attention as described in section <a href="#S3.SS2" title="3.2 Attention ‣ 3 Model Architecture ‣ Attention Is All You Need" class="ltx_ref"><span class="ltx_text ltx_ref_tag">3.2</span></a>.</p>
+</div>
+<div id="S2.p2" class="ltx_para ltx_noindent">
+<p id="S2.p2.1" class="ltx_p">Self-attention, sometimes called intra-attention is an attention mechanism relating different positions of a single sequence in order to compute a representation of the sequence. Self-attention has been used successfully in a variety of tasks including reading comprehension, abstractive summarization, textual entailment and learning task-independent sentence representations <cite class="ltx_cite ltx_citemacro_citep">[<a href="#bib.bib4" title="" class="ltx_ref">4</a>, <a href="#bib.bib27" title="" class="ltx_ref">27</a>, <a href="#bib.bib28" title="" class="ltx_ref">28</a>, <a href="#bib.bib22" title="" class="ltx_ref">22</a>]</cite>.</p>
+</div>
+<div id="S2.p3" class="ltx_para ltx_noindent">
+<p id="S2.p3.1" class="ltx_p">End-to-end memory networks are based on a recurrent attention mechanism instead of sequence-aligned recurrence and have been shown to perform well on simple-language question answering and language modeling tasks <cite class="ltx_cite ltx_citemacro_citep">[<a href="#bib.bib34" title="" class="ltx_ref">34</a>]</cite>.</p>
+</div>
+<div id="S2.p4" class="ltx_para ltx_noindent">
+<p id="S2.p4.1" class="ltx_p">To the best of our knowledge, however, the Transformer is the first transduction model relying entirely on self-attention to compute representations of its input and output without using sequence-aligned RNNs or convolution.
+In the following sections, we will describe the Transformer, motivate self-attention and discuss its advantages over models such as <cite class="ltx_cite ltx_citemacro_citep">[<a href="#bib.bib17" title="" class="ltx_ref">17</a>, <a href="#bib.bib18" title="" class="ltx_ref">18</a>]</cite> and <cite class="ltx_cite ltx_citemacro_citep">[<a href="#bib.bib9" title="" class="ltx_ref">9</a>]</cite>.</p>
+</div>
+</section>
+<section id="S3" class="ltx_section">
+<h2 class="ltx_title ltx_title_section"><span class="ltx_tag ltx_tag_section">3 </span>Model Architecture</h2>
+
+<section id="S3.SS2.SSS1" class="ltx_subsubsection">
+<h4 class="ltx_title ltx_title_subsubsection"><span class="ltx_tag ltx_tag_subsubsection">3.2.1 </span>Scaled Dot-Product Attention</h4>
+
+<div id="S3.SS2.SSS1.p1" class="ltx_para ltx_noindent">
+<p id="S3.SS2.SSS1.p1.1" class="ltx_p">We call our particular attention "Scaled Dot-Product Attention" (Figure <a href="#S3.F2" title="Figure 2 ‣ 3.2.2 Multi-Head Attention ‣ 3.2 Attention ‣ 3 Model Architecture ‣ Attention Is All You Need" class="ltx_ref"><span class="ltx_text ltx_ref_tag">2</span></a>). The input consists of queries and keys of dimension <math id="S3.SS2.SSS1.p1.m1" class="ltx_Math" alttext="d_{k}" display="inline" intent=":literal"><semantics><msub><mi>d</mi><mi>k</mi></msub><annotation encoding="application/x-tex">d_{k}</annotation></semantics></math>, and values of dimension <math id="S3.SS2.SSS1.p1.m2" class="ltx_Math" alttext="d_{v}" display="inline" intent=":literal"><semantics><msub><mi>d</mi><mi>v</mi></msub><annotation encoding="application/x-tex">d_{v}</annotation></semantics></math>. We compute the dot products of the query with all keys, divide each by <math id="S3.SS2.SSS1.p1.m3" class="ltx_Math" alttext="\sqrt{d_{k}}" display="inline" intent=":literal"><semantics><msqrt><msub><mi>d</mi><mi>k</mi></msub></msqrt><annotation encoding="application/x-tex">\sqrt{d_{k}}</annotation></semantics></math>, and apply a softmax function to obtain the weights on the values.</p>
+</div>
+<div id="S3.SS2.SSS1.p2" class="ltx_para ltx_noindent">
+<p id="S3.SS2.SSS1.p2.1" class="ltx_p">In practice, we compute the attention function on a set of queries simultaneously, packed together into a matrix <math id="S3.SS2.SSS1.p2.m1" class="ltx_Math" alttext="Q" display="inline" intent=":literal"><semantics><mi>Q</mi><annotation encoding="application/x-tex">Q</annotation></semantics></math>. The keys and values are also packed together into matrices <math id="S3.SS2.SSS1.p2.m2" class="ltx_Math" alttext="K" display="inline" intent=":literal"><semantics><mi>K</mi><annotation encoding="application/x-tex">K</annotation></semantics></math> and <math id="S3.SS2.SSS1.p2.m3" class="ltx_Math" alttext="V" display="inline" intent=":literal"><semantics><mi>V</mi><annotation encoding="application/x-tex">V</annotation></semantics></math>. We compute the matrix of outputs as:</p>
+</div>
+<div id="S3.SS2.SSS1.p3" class="ltx_para ltx_noindent">
+<table id="S3.E1" class="ltx_equation ltx_eqn_table">
+
+<tbody><tr class="ltx_equation ltx_eqn_row ltx_align_baseline">
+<td class="ltx_eqn_cell ltx_eqn_center_padleft"></td>
+<td class="ltx_eqn_cell ltx_align_center"><math id="S3.E1.m1" class="ltx_Math" alttext="\mathrm{Attention}(Q,K,V)=\mathrm{softmax}(\frac{QK^{T}}{\sqrt{d_{k}}})V" display="block" intent=":literal"><semantics><mrow><mrow><mi>Attention</mi><mo>⁡</mo><mrow><mo stretchy="false">(</mo><mi>Q</mi><mo>,</mo><mi>K</mi><mo>,</mo><mi>V</mi><mo stretchy="false">)</mo></mrow></mrow><mo>=</mo><mrow><mrow><mi>softmax</mi><mo>⁡</mo><mrow><mo stretchy="false">(</mo><mfrac><mrow><mi>Q</mi><mo lspace="0em" rspace="0em">​</mo><msup><mi>K</mi><mi>T</mi></msup></mrow><msqrt><msub><mi>d</mi><mi>k</mi></msub></msqrt></mfrac><mo stretchy="false">)</mo></mrow></mrow><mo lspace="0em" rspace="0em">​</mo><mi>V</mi></mrow></mrow><annotation encoding="application/x-tex">\mathrm{Attention}(Q,K,V)=\mathrm{softmax}(\frac{QK^{T}}{\sqrt{d_{k}}})V</annotation></semantics></math></td>
+<td class="ltx_eqn_cell ltx_eqn_center_padright"></td>
+<td rowspan="1" class="ltx_eqn_cell ltx_eqn_eqno ltx_align_middle ltx_align_right"><span class="ltx_tag ltx_tag_equation ltx_align_right">(1)</span></td></tr></tbody>
+</table>
+</div>
+<div id="S3.SS2.SSS1.p4" class="ltx_para ltx_noindent">
+<p id="S3.SS2.SSS1.p4.1" class="ltx_p">The two most commonly used attention functions are additive attention <cite class="ltx_cite ltx_citemacro_citep">[<a href="#bib.bib2" title="" class="ltx_ref">2</a>]</cite>, and dot-product (multiplicative) attention. Dot-product attention is identical to our algorithm, except for the scaling factor of <math id="S3.SS2.SSS1.p4.m1" class="ltx_Math" alttext="\frac{1}{\sqrt{d_{k}}}" display="inline" intent=":literal"><semantics><mfrac><mn>1</mn><msqrt><msub><mi>d</mi><mi>k</mi></msub></msqrt></mfrac><annotation encoding="application/x-tex">\frac{1}{\sqrt{d_{k}}}</annotation></semantics></math>. Additive attention computes the compatibility function using a feed-forward network with a single hidden layer. While the two are similar in theoretical complexity, dot-product attention is much faster and more space-efficient in practice, since it can be implemented using highly optimized matrix multiplication code.</p>
+</div>
+<div id="S3.SS2.SSS1.p5" class="ltx_para ltx_noindent">
+<p id="S3.SS2.SSS1.p5.1" class="ltx_p">While for small values of <math id="S3.SS2.SSS1.p5.m1" class="ltx_Math" alttext="d_{k}" display="inline" intent=":literal"><semantics><msub><mi>d</mi><mi>k</mi></msub><annotation encoding="application/x-tex">d_{k}</annotation></semantics></math> the two mechanisms perform similarly, additive attention outperforms dot product attention without scaling for larger values of <math id="S3.SS2.SSS1.p5.m2" class="ltx_Math" alttext="d_{k}" display="inline" intent=":literal"><semantics><msub><mi>d</mi><mi>k</mi></msub><annotation encoding="application/x-tex">d_{k}</annotation></semantics></math> <cite class="ltx_cite ltx_citemacro_citep">[<a href="#bib.bib3" title="" class="ltx_ref">3</a>]</cite>. We suspect that for large values of <math id="S3.SS2.SSS1.p5.m3" class="ltx_Math" alttext="d_{k}" display="inline" intent=":literal"><semantics><msub><mi>d</mi><mi>k</mi></msub><annotation encoding="application/x-tex">d_{k}</annotation></semantics></math>, the dot products grow large in magnitude, pushing the softmax function into regions where it has extremely small gradients <span id="footnote1" class="ltx_note ltx_role_footnote"><sup class="ltx_note_mark">1</sup><span class="ltx_note_outer"><span class="ltx_note_content"><sup class="ltx_note_mark">1</sup>
+                <span class="ltx_tag ltx_tag_note">1</span>
+                
+                
+                
+              To illustrate why the dot products get large, assume that the components of <math id="footnote1.m1" class="ltx_Math" alttext="q" display="inline" intent=":literal"><semantics><mi>q</mi><annotation encoding="application/x-tex">q</annotation></semantics></math> and <math id="footnote1.m2" class="ltx_Math" alttext="k" display="inline" intent=":literal"><semantics><mi>k</mi><annotation encoding="application/x-tex">k</annotation></semantics></math> are independent random variables with mean <math id="footnote1.m3" class="ltx_Math" alttext="0" display="inline" intent=":literal"><semantics><mn>0</mn><annotation encoding="application/x-tex">0</annotation></semantics></math> and variance <math id="footnote1.m4" class="ltx_Math" alttext="1" display="inline" intent=":literal"><semantics><mn>1</mn><annotation encoding="application/x-tex">1</annotation></semantics></math>. Then their dot product, <math id="footnote1.m5" class="ltx_Math" alttext="q\cdot k=\sum_{i=1}^{d_{k}}q_{i}k_{i}" display="inline" intent=":literal"><semantics><mrow><mrow><mi>q</mi><mo lspace="0.222em" rspace="0.222em">⋅</mo><mi>k</mi></mrow><mo rspace="0.111em">=</mo><mrow><msubsup><mo>∑</mo><mrow><mi>i</mi><mo>=</mo><mn>1</mn></mrow><msub><mi>d</mi><mi>k</mi></msub></msubsup><mrow><msub><mi>q</mi><mi>i</mi></msub><mo lspace="0em" rspace="0em">​</mo><msub><mi>k</mi><mi>i</mi></msub></mrow></mrow></mrow><annotation encoding="application/x-tex">q\cdot k=\sum_{i=1}^{d_{k}}q_{i}k_{i}</annotation></semantics></math>, has mean <math id="footnote1.m6" class="ltx_Math" alttext="0" display="inline" intent=":literal"><semantics><mn>0</mn><annotation encoding="application/x-tex">0</annotation></semantics></math> and variance <math id="footnote1.m7" class="ltx_Math" alttext="d_{k}" display="inline" intent=":literal"><semantics><msub><mi>d</mi><mi>k</mi></msub><annotation encoding="application/x-tex">d_{k}</annotation></semantics></math>.</span></span></span>. To counteract this effect, we scale the dot products by <math id="S3.SS2.SSS1.p5.m4" class="ltx_Math" alttext="\frac{1}{\sqrt{d_{k}}}" display="inline" intent=":literal"><semantics><mfrac><mn>1</mn><msqrt><msub><mi>d</mi><mi>k</mi></msub></msqrt></mfrac><annotation encoding="application/x-tex">\frac{1}{\sqrt{d_{k}}}</annotation></semantics></math>.</p>
+</div>
+</section>
+</section>
+<section id="bib" class="ltx_bibliography">
+<h2 class="ltx_title ltx_title_bibliography">References</h2>
+
+<ul class="ltx_biblist">
+      
+<li id="bib.bib1" class="ltx_bibitem"><span class="ltx_tag ltx_role_refnum ltx_tag_bibitem">[1]</span>
+<span class="ltx_bibblock">
+</span></li></ul></section>
+</article></div></div>
+<footer class="arxiv-html-footer"><div class="ltx_page_logo">Experimental support, please <a href="./1706.03762v7/__stdout.txt" class="ltx_ref">view the build logs</a> for errors. Generated by LaTeXML.</div></footer>
+</body></html>

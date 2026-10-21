@@ -12,21 +12,24 @@
   "scripts": {
     "dev": "vite",
     "lint": "oxlint",
-    "typecheck": "tsc --noEmit -p tsconfig.app.json && tsc --noEmit -p tsconfig.node.json",
+    "typecheck": "tsc --noEmit -p tsconfig.app.json && tsc --noEmit -p tsconfig.node.json && tsc --noEmit -p tsconfig.worker.json",
     "test": "vitest run",
     "build": "vite build",
     "preview": "vite preview",
     "smoke": "node scripts/smoke.mjs",
     "e2e": "node scripts/e2e.mjs",
     "check:size": "node scripts/check-size.mjs",
-    "check": "pnpm lint && pnpm typecheck && pnpm test"
+    "check": "pnpm lint && pnpm typecheck && pnpm test",
+    "types:worker": "wrangler types --strict-vars=false"
   },
   "dependencies": {
+    "htmlparser2": "12.0.0",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
     "valibot": "^1.5.0"
   },
   "devDependencies": {
+    "@cloudflare/vite-plugin": "1.64.0",
     "@types/node": "^22",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
@@ -37,6 +40,7 @@
     "playwright-core": "^1.64.1",
     "typescript": "^7.0.2",
     "vite": "^8.3.4",
-    "vitest": "^5.0.5"
+    "vitest": "^5.0.5",
+    "wrangler": "4.151.0"
   }
 }
