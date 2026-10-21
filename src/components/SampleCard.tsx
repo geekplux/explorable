@@ -25,3 +25,18 @@ export function SampleCards() {
     </ul>
   );
 }
+
+/** Compact sample links for the error and search states. */
+export function MiniCards({ docs = samples }: { docs?: readonly ExplorableDoc[] }) {
+  return (
+    <ul className="mini-cards">
+      {docs.map((doc) => (
+        <li key={doc.id} className="mini-card">
+          <img src={thumbs[`../samples/thumbs/${doc.id}.svg`]} alt="" width={96} height={54} />
+          <a href={`/s/${doc.id}`}>{doc.title}</a>
+          <span className="card-source">{sourceChip(doc.source)}</span>
+        </li>
+      ))}
+    </ul>
+  );
+}

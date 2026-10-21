@@ -91,8 +91,8 @@ circle.xfig-knob-hint { fill: none; stroke: var(--ink-2); stroke-width: 1.5; str
 .xfig-switch[aria-checked="true"] .xfig-switch-track { background: var(--ink); border-color: var(--ink); }
 .xfig-switch[aria-checked="true"] .xfig-switch-track::after { transform: translateX(14px); background: var(--paper); }
 .xfig-switch-state { min-width: 1.6em; font-family: var(--font-mono); font-weight: 700; }
-.xfig-control { display: flex; flex: 1 1 18rem; align-items: center; gap: var(--space-3); font: .875rem var(--font-ui); }
-.xfig-control input[type=range] { flex: 1; height: 44px; margin: 0; appearance: none; background: transparent; cursor: pointer; }
+.xfig-control { display: flex; flex: 1 1 18rem; flex-wrap: wrap; min-width: 0; align-items: center; gap: var(--space-3); font: .875rem var(--font-ui); }
+.xfig-control input[type=range] { flex: 1 1 8rem; min-width: 0; height: 44px; margin: 0; appearance: none; background: transparent; cursor: pointer; }
 .xfig-control input::-webkit-slider-runnable-track { height: 4px; border-radius: 2px; background: var(--ink-3); }
 .xfig-control input::-moz-range-track { height: 4px; border-radius: 2px; background: var(--ink-3); }
 .xfig-control input::-webkit-slider-thumb { appearance: none; width: 20px; height: 20px; margin-top: -8px; border: 2.5px solid var(--live); border-radius: 50%; background: var(--paper); }
