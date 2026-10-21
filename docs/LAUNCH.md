@@ -23,7 +23,7 @@
 >
 > It is MIT-licensed, React + Vite and one Cloudflare Worker. I'd love to hear which papers break it.
 >
-> Demo: <link> · Code: https://github.com/geekplux/explorable
+> Demo: https://explorable.geekplux.org · Code: https://github.com/geekplux/explorable
 
 ### X thread (DRAFT — do not post)
 
@@ -31,7 +31,7 @@
 2. Why attention divides by √d, as something you can touch: drag the temperature and watch six softmax bars collapse into one spike, with the entropy readout updating every frame. [short clip]
 3. The rule: one AI call per new link, at most. The model picks the idea and the figures as JSON; it never writes code that runs. The figures come from a small, tested kit.
 4. Samples work offline with no key. Every knob works from the keyboard, every figure has a live text description and a data table, and colour never carries meaning alone.
-5. For coding agents: one command installs the /explorable skill, which builds a standalone offline HTML explorable for any concept. MIT. <link>
+5. For coding agents: one command installs the /explorable skill, which builds a standalone offline HTML explorable for any concept. MIT. https://github.com/geekplux/explorable
 
 ## 2. Demo scenarios
 
@@ -60,7 +60,7 @@ Where the others win: a hand-built notebook by a skilled author is richer and mo
 
 ## 4. Pre-launch checklist
 
-- [ ] Deployed with Sean's approval (`docs/DEPLOY.md`), and the live demo link replaces "link coming soon" in the README and in these drafts.
+- [x] Deployed (Workers Builds from `main`), and the live demo link, https://explorable.geekplux.org, is in the README and in these drafts.
 - [ ] Repository is public; the description and topics are set (explorable-explanations, interactive, visualization, react, vite, cloudflare-workers, agent-skill).
 - [ ] `docs/assets/social-preview.png` uploaded by hand in the repository settings (Settings → General → Social preview).
 - [ ] `ci/github-workflow.yml` moved to `.github/workflows/ci.yml` (needs a token with workflow scope) and green on `main`.

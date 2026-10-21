@@ -2,6 +2,8 @@
 
 explorable is one Cloudflare Worker with Static Assets: the built app in `dist/client`, the API in `worker/`, a KV namespace for the cache, Workers AI for the one plan call per new link, and a rate limiter. Local development (`pnpm dev`, `pnpm preview`, the tests and the harness) never needs any of this.
 
+Production (https://explorable.geekplux.org) is deployed by **Cloudflare Workers Builds** (Git integration): every merge to `main` builds with the production config and deploys. Nobody deploys by hand; the steps below are for forks and first-time setup.
+
 The local config at the top of `wrangler.jsonc` is safe by design: no AI, a simulated KV namespace, debug routes on. Deploys use the `env.production` block instead, which `pnpm build:prod` bakes into `dist/explorable/wrangler.json`.
 
 ## Prerequisites
@@ -14,7 +16,7 @@ The local config at the top of `wrangler.jsonc` is safe by design: no AI, a simu
 
 1. Log in: `pnpm exec wrangler login`.
 2. Create the cache namespace: `pnpm exec wrangler kv namespace create EXPLORABLE_CACHE`. It prints an `id`.
-3. Paste that id into `wrangler.jsonc`, under `env.production.kv_namespaces`, in place of `REPLACE_WITH_KV_ID`. If wrangler offers to edit the config for you, check that the id lands in `env.production` and not at the top level. The id is not a secret, so it can be committed.
+3. The committed id under `env.production.kv_namespaces`, `06957ddddaad40bb86bfa7df7b6edd75`, is the production namespace (it replaced the original `REPLACE_WITH_KV_ID` placeholder). A fork puts its own id there instead. If wrangler offers to edit the config for you, check that the id lands in `env.production` and not at the top level. The id is not a secret, so it can be committed.
 4. Optional: change `AI_MODEL` in `env.production.vars` (default `@cf/meta/llama-3.3-70b-instruct-fp8-fast`). Leave `EXPLORABLE_DEBUG` at `"0"`; `"1"` exposes the raw `/api/extract` debug route.
 
 ## Check, then deploy
@@ -28,7 +30,7 @@ pnpm run check:deploy
 
 The binding list should show `EXPLORABLE_CACHE` (with your id), `AI`, `EXPLAIN_LIMITER (10 requests/60s)`, `ASSETS`, `AI_MODEL` and `EXPLORABLE_DEBUG ("0")`. The dry-run bundle goes to `.wrangler/dry-run/`, which git ignores.
 
-Then deploy:
+Production deploys itself from `main`. For a fork without Git integration, deploy with:
 
 ```sh
 pnpm build:prod && pnpm exec wrangler deploy
@@ -36,7 +38,7 @@ pnpm build:prod && pnpm exec wrangler deploy
 
 Always run `pnpm build:prod` right before deploying. `wrangler deploy` uses whatever the last build wrote to `dist/` (via `.wrangler/deploy/config.json`), and a plain `pnpm build` writes the local config, which has debug routes on and a fake KV id.
 
-The Worker is named `explorable-production` (wrangler appends the environment name), so it is served at `https://explorable-production.<your-subdomain>.workers.dev` until you add a custom domain. Check it with `curl https://<host>/api/health`, which should return `{"ok":true,"ai":true,"kv":true}`.
+The Worker is named `explorable-production` (wrangler appends the environment name), so it is served at `https://explorable-production.<your-subdomain>.workers.dev` until you add a custom domain (production uses https://explorable.geekplux.org). Check it with `curl https://explorable.geekplux.org/api/health`, which should return `{"ok":true,"ai":true,"kv":true}`.
 
 What ships with it:
 

@@ -174,12 +174,13 @@ describe('contributor docs', () => {
     expect(missing).toEqual([]);
   });
 
-  it('DEPLOY.md has the anchors the app and README link to, and the placeholder it documents', () => {
+  it('DEPLOY.md has the anchors the app and README link to, and names the committed production KV id', () => {
     const deploy = readFileSync('docs/DEPLOY.md', 'utf8');
     expect(deploy).toMatch(/^## Self-host without AI$/m); // #self-host-without-ai (src/components/states/ErrorState.tsx)
     expect(deploy).toContain('pnpm build:prod && pnpm exec wrangler deploy');
-    expect(readFileSync('wrangler.jsonc', 'utf8')).toContain('REPLACE_WITH_KV_ID');
-    expect(deploy).toContain('REPLACE_WITH_KV_ID');
+    const id = /"binding": "EXPLORABLE_CACHE", "id": "([0-9a-f]{32})"/.exec(readFileSync('wrangler.jsonc', 'utf8'))?.[1];
+    expect(id).toBe('06957ddddaad40bb86bfa7df7b6edd75');
+    expect(deploy).toContain(id);
   });
 
   it('pending paths are still missing (drop them from PENDING once they exist)', () => {
@@ -190,7 +191,7 @@ describe('contributor docs', () => {
     const headings = readFileSync('README.md', 'utf8').split('\n').filter((l) => l.startsWith('## '));
     const top = readFileSync('README.md', 'utf8').split('## ')[0]!;
     expect(top).toContain('docs/assets/hero.png');
-    expect(top).toMatch(/Live demo: link coming soon/);
+    expect(top).toContain('Live demo: https://explorable.geekplux.org');
     expect(headings[0]).toBe('## Quick start');
   });
 

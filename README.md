@@ -4,11 +4,11 @@
 
 <img src="docs/assets/hero.png" width="560" alt="Figure 1 of the attention sample, mid-drag: the temperature knob is at 0.50, the bar for &quot;cat&quot; has grown to 0.82 and is marked top, and the readout says top weight 0.82, entropy 1.01 bits.">
 
-**Live demo: link coming soon.** &nbsp; Licence: MIT · Samples need no key and work offline · At most one AI call per new link · No tracking
+**Live demo: https://explorable.geekplux.org** &nbsp; Licence: MIT · Samples need no key and work offline · At most one AI call per new link · No tracking
 
 ## Quick start
 
-**1. Try it in the browser.** Open the live demo (link above, coming soon), click *Why attention divides by √d* and drag the vermilion knob. No install, no account, no key.
+**1. Try it in the browser.** Open [the live demo](https://explorable.geekplux.org), click *Why attention divides by √d* and drag the vermilion knob. No install, no account, no key.
 
 **2. Run it locally.** You need [pnpm](https://pnpm.io) 9; pnpm fetches the pinned Node 22 itself.
 
