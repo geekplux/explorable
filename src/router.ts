@@ -1,11 +1,17 @@
 import { useSyncExternalStore } from 'react';
 
-export type Route = { name: 'gallery' } | { name: 'sample'; slug: string } | { name: 'not-found' };
+export type Route =
+  | { name: 'gallery' }
+  | { name: 'sample'; slug: string }
+  | { name: 'explain'; url: string }
+  | { name: 'not-found' };
 
-/** Map a pathname to a route. Slugs are lowercase letters, digits and dashes. */
-export function matchRoute(pathname: string): Route {
+/** Map a pathname (and query) to a route. Slugs are lowercase letters, digits and dashes. */
+export function matchRoute(pathname: string, search = ''): Route {
   const path = pathname.replace(/\/+$/, '') || '/';
   if (path === '/') return { name: 'gallery' };
+  const url = new URLSearchParams(search).get('url')?.trim();
+  if (path === '/x' && url) return { name: 'explain', url };
   const sample = /^\/s\/([a-z0-9-]+)$/.exec(path);
   if (sample?.[1]) return { name: 'sample', slug: sample[1] };
   return { name: 'not-found' };
@@ -52,8 +58,13 @@ export function interceptLinks(event: MouseEvent): void {
   navigate(path);
 }
 
-const getPathname = () => window.location.pathname;
+const getLocation = () => window.location.pathname + window.location.search;
 
 export function useRoute(): Route {
-  return matchRoute(useSyncExternalStore(subscribe, getPathname));
+  const location = useSyncExternalStore(subscribe, getLocation);
+  const q = location.indexOf('?');
+  return q < 0 ? matchRoute(location) : matchRoute(location.slice(0, q), location.slice(q));
 }
+
+/** The result route for a source URL: `/x?url=<encoded>`. */
+export const explainPath = (url: string): string => `/x?url=${encodeURIComponent(url)}`;

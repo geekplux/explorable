@@ -1,6 +1,6 @@
 // @vitest-environment happy-dom
 import { afterEach, describe, expect, it } from 'vitest';
-import { internalPath, interceptLinks, matchRoute } from './router.ts';
+import { explainPath, internalPath, interceptLinks, matchRoute } from './router.ts';
 
 describe('matchRoute', () => {
   it('matches the gallery with or without a trailing slash', () => {
@@ -11,6 +11,14 @@ describe('matchRoute', () => {
   it('matches sample slugs', () => {
     expect(matchRoute('/s/attention')).toEqual({ name: 'sample', slug: 'attention' });
     expect(matchRoute('/s/bloom-filter/')).toEqual({ name: 'sample', slug: 'bloom-filter' });
+  });
+
+  it('matches /x?url= and round-trips explainPath', () => {
+    const path = explainPath('https://arxiv.org/abs/1706.03762');
+    expect(path).toBe('/x?url=https%3A%2F%2Farxiv.org%2Fabs%2F1706.03762');
+    expect(matchRoute('/x', path.slice(2))).toEqual({ name: 'explain', url: 'https://arxiv.org/abs/1706.03762' });
+    expect(matchRoute('/x', '?url=%20')).toEqual({ name: 'not-found' });
+    expect(matchRoute('/x')).toEqual({ name: 'not-found' });
   });
 
   it('sends everything else to not-found', () => {
