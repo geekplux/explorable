@@ -80,7 +80,16 @@
 .loading-link { margin: 0 0 var(--space-3); font: .9375rem/1.4 var(--font-ui); color: var(--ink-2); }
 .loading-url { font: 400 .9em var(--font-mono); overflow-wrap: anywhere; }
 .loading-row { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-3); padding-bottom: var(--space-4); border-bottom: 1px solid var(--rule); font-family: var(--font-ui); }
-.loading-stage { font-size: 1rem; }
+.loading-steps { list-style: none; margin: 0 0 var(--space-4); padding: 0; display: grid; gap: var(--space-2); font: 1rem/1.4 var(--font-ui); color: var(--ink-2); }
+.loading-step { display: flex; align-items: center; gap: var(--space-2); }
+/* The step is told by shape and weight, not colour: ✓ done, a ring and bold for the current step, an open dot next. */
+.loading-mark { flex: none; display: inline-grid; place-items: center; width: 1.125rem; height: 1.125rem; border-radius: 50%; font-size: .8125rem; line-height: 1; }
+.loading-step.is-next .loading-mark { width: .5rem; height: .5rem; margin-inline: .3125rem; border: 1px solid var(--ink-2); }
+.loading-step.is-current { color: var(--ink); font-weight: 600; }
+.loading-step.is-current .loading-mark { border: 2px solid var(--live-ink); }
+.loading-expect { flex: 1 1 18rem; margin: 0; font-size: .9375rem; color: var(--ink-2); }
+.loading-seconds { font-weight: 400; color: var(--ink-2); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.loading-seconds::before { content: '·'; margin-inline: .1em .4em; }
 .skeleton { display: grid; gap: var(--space-3); margin-top: var(--space-5); }
 .bar { display: block; height: .9rem; border-radius: 4px; background: var(--rule); animation: shimmer 1.6s var(--ease) infinite alternate; }
 .bar.w90 { width: 90%; height: 1.6rem; } .bar.w70 { width: 70%; } .bar.w100 { width: 100%; } .bar.w95 { width: 95%; } .bar.w60 { width: 60%; }

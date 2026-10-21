@@ -9,7 +9,7 @@ import valid from '../fixtures/ai/valid.json';
 import worker from '../index';
 import { MAX_SOURCE_CHARS } from '../plan/prompt';
 import { URLS, fakeAi, fakeKv, serveFixtures } from '../testing';
-import { type ExplainEnv, explain, unavailable } from './explain';
+import { type ExplainEnv, STAGES, TICK_MS, explain, inflightCount, unavailable } from './explain';
 
 type Body = { ok: boolean; cache?: string; mode?: string; doc?: any; error?: { code: string; message: string; hint: string } };
 
@@ -208,8 +208,89 @@ describe('router', () => {
   it('routes /api/explain through the Worker entry', async () => {
     vi.stubGlobal('fetch', vi.fn<() => Promise<Response>>(async () => new Response('missing', { status: 404 })));
     const env = { ASSETS: { fetch: vi.fn<() => Promise<Response>>() }, EXPLORABLE_CACHE: fakeKv(), EXPLORABLE_DEBUG: '0' } as unknown as Env;
-    const res = await worker.fetch(new Request('http://localhost/api/explain?url=https%3A%2F%2Fnotes.example.org%2Fx') as Parameters<typeof worker.fetch>[0], env);
+    const res = await worker.fetch(new Request('http://localhost/api/explain?url=https%3A%2F%2Fnotes.example.org%2Fx') as Parameters<typeof worker.fetch>[0], env, { waitUntil: () => {} } as unknown as ExecutionContext);
     expect(res.headers.get('x-explorable-cache')).toBe('miss');
     expect(((await res.json()) as Body).error?.code).toBe('FETCH_FAILED');
+  });
+});
+
+/** Reads an NDJSON response into its parsed lines. */
+async function lines(res: Response) {
+  const text = await res.text();
+  return text.split('\n').filter(Boolean).map((l) => JSON.parse(l) as { type: string; stage?: string; ok?: boolean; cache?: string; mode?: string; error?: { code: string } });
+}
+const streamed = (url: string) =>
+  new Request(`http://localhost/api/explain?url=${encodeURIComponent(url)}`, { headers: { accept: 'application/x-ndjson, application/json' } });
+
+describe('streamed progress (Accept: application/x-ndjson)', () => {
+  it('streams real stages in order, then the same result body', async () => {
+    const ai = fakeAi(valid);
+    const { env, fetchFn } = setup({ AI: ai });
+    const res = await explain(streamed(URLS.attention), env, fetchFn);
+    expect(res.headers.get('content-type')).toBe('application/x-ndjson; charset=utf-8');
+    expect(res.headers.get('x-explorable-cache')).toBe('miss');
+    const out = await lines(res);
+    expect(out.filter((l) => l.type === 'stage').map((l) => l.stage)).toEqual([...STAGES]);
+    expect(out.at(-1)).toMatchObject({ type: 'result', ok: true, cache: 'miss', mode: 'ai' });
+    // A hit is instant and stays plain JSON.
+    const hit = await explain(streamed(URLS.attention), env, fetchFn);
+    expect(hit.headers.get('content-type')).toContain('application/json');
+    expect(await hit.json()).toMatchObject({ ok: true, cache: 'hit' });
+    expect(ai.run).toHaveBeenCalledOnce();
+  });
+
+  it('ends with an error result line, and still caches the failure', async () => {
+    const { env, fetchFn, kv } = setup({ AI: fakeAi(invalidJson) });
+    const out = await lines(await explain(streamed(URLS.attention), env, fetchFn));
+    expect(out.at(-1)).toMatchObject({ type: 'result', ok: false, error: { code: 'PLAN_INVALID' } });
+    expect(kv.store.size).toBe(1);
+  });
+
+  it('match mode (no model) skips planning', async () => {
+    const { env, fetchFn } = setup();
+    const out = await lines(await explain(streamed(URLS.attention), env, fetchFn));
+    expect(out.filter((l) => l.type === 'stage').map((l) => l.stage)).toEqual(['fetching', 'reading', 'composing']);
+    expect(out.at(-1)).toMatchObject({ type: 'result', ok: true, mode: 'match' });
+  });
+
+  it('sends keep-alive ticks while the model is busy', async () => {
+    vi.useFakeTimers();
+    try {
+      let finish!: (v: unknown) => void;
+      const ai = { run: vi.fn<(model: string, input: Record<string, unknown>) => Promise<unknown>>(() => new Promise((r) => (finish = r))) };
+      const { env, fetchFn } = setup({ AI: ai });
+      const res = await explain(streamed(URLS.attention), env, fetchFn);
+      const body = lines(res);
+      await vi.waitFor(() => expect(ai.run).toHaveBeenCalled());
+      await vi.advanceTimersByTimeAsync(TICK_MS * 2);
+      finish(structuredClone(valid));
+      const out = await body;
+      expect(out.filter((l) => l.type === 'tick').length).toBeGreaterThanOrEqual(2);
+      expect(out.at(-1)).toMatchObject({ type: 'result', ok: true });
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+});
+
+describe('concurrent misses for the same link', () => {
+  it('share one fetch and one model call; the joiner skips the limiter', async () => {
+    let finish!: (v: unknown) => void;
+    const ai = { run: vi.fn<(model: string, input: Record<string, unknown>) => Promise<unknown>>(() => new Promise((r) => (finish = r))) };
+    const gate = { limit: vi.fn<() => Promise<{ success: boolean }>>(async () => ({ success: true })) };
+    const { env, fetchFn } = setup({ AI: ai, EXPLAIN_LIMITER: gate });
+    const first = explain(new Request(`http://localhost/api/explain?url=${encodeURIComponent(URLS.attention)}`), env, fetchFn);
+    await vi.waitFor(() => expect(ai.run).toHaveBeenCalledOnce());
+    const second = explain(streamed('https://arxiv.org/abs/1706.03762v7'), env, fetchFn);
+    const joined = lines(await second);
+    expect(inflightCount()).toBe(1);
+    finish(structuredClone(valid));
+    expect(await (await first).json()).toMatchObject({ ok: true, cache: 'miss' });
+    const out = await joined;
+    expect(out[0]).toMatchObject({ type: 'stage', stage: 'planning' });
+    expect(out.at(-1)).toMatchObject({ type: 'result', ok: true, cache: 'miss' });
+    expect(ai.run).toHaveBeenCalledOnce();
+    expect(gate.limit).toHaveBeenCalledOnce();
+    expect(inflightCount()).toBe(0);
   });
 });

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { STAGES, readExplain, stageAt } from './explain.ts';
+import { STAGES, ndjsonLines, readExplain, stageAt, stageIndex } from './explain.ts';
 import { classifyInput } from './input.ts';
 import { searchSamples } from './search.ts';
 import attention from '../samples/attention.json';
@@ -50,10 +50,26 @@ describe('readExplain', () => {
   });
 });
 
-describe('stageAt', () => {
-  it('moves through the stages at 1.5 s and 6 s', () => {
-    expect([0, 1499, 1500, 5999, 6000, 29_000].map((ms) => STAGES[stageAt(ms)])).toEqual([
-      'Fetching the article…', 'Fetching the article…', 'Finding the core idea…', 'Finding the core idea…', 'Assembling live figures…', 'Assembling live figures…',
+describe('stages', () => {
+  it('match the Worker’s stream order', () => {
+    expect(STAGES.map((s) => s.id)).toEqual(['fetching', 'reading', 'planning', 'composing']);
+    expect([stageIndex('planning'), stageIndex('nope')]).toEqual([2, -1]);
+  });
+
+  it('fall back to an honest timeline (1.5 s, 3 s) that never claims "composing"', () => {
+    expect([0, 1499, 1500, 2999, 3000, 60_000].map((ms) => STAGES[stageAt(ms)]!.id)).toEqual([
+      'fetching', 'fetching', 'reading', 'reading', 'planning', 'planning',
     ]);
+  });
+});
+
+describe('ndjsonLines', () => {
+  it('splits lines across chunks, including multi-byte characters', async () => {
+    const bytes = new TextEncoder().encode('{"type":"stage","stage":"fetching"}\n{"a":"√d"}\n\n{"type":"result"}');
+    const chunks = [bytes.slice(0, 10), bytes.slice(10, 41), bytes.slice(41, 42), bytes.slice(42)];
+    const body = new ReadableStream<Uint8Array>({ start(c) { chunks.forEach((x) => c.enqueue(x)); c.close(); } });
+    const out: string[] = [];
+    for await (const line of ndjsonLines(body)) out.push(line);
+    expect(out).toEqual(['{"type":"stage","stage":"fetching"}', '{"a":"√d"}', '{"type":"result"}']);
   });
 });

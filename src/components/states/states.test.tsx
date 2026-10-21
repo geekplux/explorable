@@ -26,6 +26,21 @@ describe('LoadingEssay', () => {
     expect(h1?.textContent).toBe('Reading arxiv.org');
     expect(host.querySelector('.loading-url')?.textContent).toBe('https://arxiv.org/abs/1706.03762?x=1');
   });
+
+  it('marks the current step, says what to expect, and announces only the step', () => {
+    vi.useFakeTimers();
+    act(() => root.render(<LoadingEssay url="https://arxiv.org/abs/1706.03762" stage={2} onCancel={() => {}} />));
+    const steps = [...host.querySelectorAll('.loading-step')];
+    expect(steps.map((s) => s.className.replace('loading-step ', ''))).toEqual(['is-done', 'is-done', 'is-current', 'is-next']);
+    expect(steps[2]?.getAttribute('aria-current')).toBe('step');
+    expect(host.querySelector('.loading-expect')?.textContent).toContain('New links usually take 15–30 seconds. Links someone has opened before are instant.');
+    const live = host.querySelector('[aria-live="polite"]');
+    expect(live?.textContent).toBe('Finding the core idea and writing the essay…');
+    expect(host.querySelector('.loading-seconds')?.getAttribute('aria-hidden')).toBe('true');
+    act(() => vi.advanceTimersByTime(36_000));
+    expect(host.querySelector('.loading-expect')?.textContent).toMatch(/^Taking longer than usual/);
+    expect(live?.textContent).toMatch(/taking longer than usual; it is still working\.$/);
+  });
 });
 
 describe('SearchResults', () => {

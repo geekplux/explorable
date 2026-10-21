@@ -6,14 +6,14 @@ import { type ExplainEnv, explain } from './routes/explain';
 import { normaliseUrl } from './url';
 
 export default {
-  async fetch(request, env): Promise<Response> {
+  async fetch(request, env, ctx): Promise<Response> {
     const { pathname, searchParams } = new URL(request.url);
     if (!pathname.startsWith('/api/')) return env.ASSETS.fetch(request);
     try {
       if (pathname === '/api/health') {
         return json({ ok: true, ai: 'AI' in env && Boolean(env.AI), kv: Boolean(env.EXPLORABLE_CACHE) });
       }
-      if (pathname === '/api/explain') return explain(request, env as unknown as ExplainEnv);
+      if (pathname === '/api/explain') return explain(request, env as unknown as ExplainEnv, undefined, ctx);
       // Debug-only: raw extraction for a URL, enabled by EXPLORABLE_DEBUG=1 (local dev).
       if (pathname === '/api/extract' && env.EXPLORABLE_DEBUG === '1') {
         return json({ ok: true, extracted: await extract(normaliseUrl(searchParams.get('url') ?? '')) });

@@ -24,6 +24,21 @@ export const clean = (s: string): string =>
   // oxlint-disable-next-line no-control-regex -- stripping control characters is the point
   s.replace(/[\u0000-\u001f\u007f-\u009f‪-‮⁦-⁩]/g, ' ').replace(/\s+/g, ' ').trim();
 
+/**
+ * Characters of scripts the essay is never written in (Han, kana, Hangul, CJK and
+ * full-width punctuation). The prompt asks for English only; this catches a stray
+ * one anyway, as in "false positive 率".
+ */
+const FOREIGN = /[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}\p{Script=Hangul}\u3000-\u303f\uff00-\uffef]+/gu;
+
+/** Model-written prose: `clean`, minus stray CJK characters (and the gap they leave before punctuation). */
+export const prose = (s: string): string => {
+  const out = clean(s);
+  if (!FOREIGN.test(out)) return out;
+  FOREIGN.lastIndex = 0;
+  return clean(out.replace(FOREIGN, ' ')).replace(/\s+([.,;:!?)\]])/g, '$1').replace(/([([])\s+/g, '$1');
+};
+
 export function slugify(s: string, fallback: string): string {
   const slug = s.toLowerCase().normalize('NFKD').replace(/[^a-z0-9]+/g, '-').slice(0, 48).replace(/^-+|-+$/g, '');
   return slug || fallback;
@@ -81,7 +96,7 @@ function registryFigure(f: PlanFigure, m: ModelDef, base: Omit<FigureSpec, 'kind
   const outputs = Object.keys(m.outputs);
   const kind = m.kinds[0]!;
   const options = kindOptions(m, kind, controls);
-  if (kind === 'bars' && f.labels) options.labels = f.labels.map(clean);
+  if (kind === 'bars' && f.labels) options.labels = f.labels.map(prose);
   return { ...base, kind, model: { id: m.id, params }, controls, readouts: pick(f.readouts, outputs, outputs.slice(0, 1)), options };
 }
 
@@ -98,9 +113,9 @@ function curveFigure(f: PlanFigure, base: Omit<FigureSpec, 'kind' | 'model' | 'c
     model: {
       id: EXPR_CURVE,
       expr: c.expr,
-      x: { name: 'x', label: clean(c.x.label), min: c.x.min, max: c.x.max, ...(c.x.scale && { scale: c.x.scale }) },
-      y: { label: clean(c.y.label), ...(c.y.min !== undefined && { min: c.y.min }), ...(c.y.max !== undefined && { max: c.y.max }) },
-      params: c.vars.map((v) => ({ name: v.name, label: clean(v.label), min: v.min, max: v.max, default: start(v.name, v.min, v.max) })),
+      x: { name: 'x', label: prose(c.x.label), min: c.x.min, max: c.x.max, ...(c.x.scale && { scale: c.x.scale }) },
+      y: { label: prose(c.y.label), ...(c.y.min !== undefined && { min: c.y.min }), ...(c.y.max !== undefined && { max: c.y.max }) },
+      params: c.vars.map((v) => ({ name: v.name, label: prose(v.label), min: v.min, max: v.max, default: start(v.name, v.min, v.max) })),
     },
     controls: pick(f.controls, names, ['x']),
     readouts: pick(f.readouts, ['x', 'y'], ['x', 'y']),
@@ -124,13 +139,13 @@ export function assemblePlan(plan: Plan, ex: Extracted, { model, now = new Date(
   const used = new Set<string>();
   const sections: ExplorableDoc['sections'] = plan.sections.map((s, i) => ({
     id: uniqueId(slugify(s.heading, `section-${i + 1}`), used),
-    heading: clean(s.heading),
-    paragraphs: s.paragraphs.map(clean),
+    heading: prose(s.heading),
+    paragraphs: s.paragraphs.map(prose),
   }));
   let figures = 0;
   for (const f of plan.figures) {
     const m = f.model === EXPR_CURVE ? undefined : getModel(f.model);
-    const base = { id: '', title: clean(f.title), caption: clean(f.caption), alt: clean(f.alt) };
+    const base = { id: '', title: prose(f.title), caption: prose(f.caption), alt: prose(f.alt) };
     const spec = m ? registryFigure(f, m, base) : curveFigure(f, base);
     // One figure per section: the asked-for one, else the next free one, else any free one.
     const at = Math.min(f.section, sections.length - 1);
@@ -142,12 +157,12 @@ export function assemblePlan(plan: Plan, ex: Extracted, { model, now = new Date(
   const result = parseDoc({
     schema: 1,
     id: slugify(plan.title, 'explorable'),
-    title: clean(plan.title),
-    dek: clean(plan.dek),
+    title: prose(plan.title),
+    dek: prose(plan.dek),
     source: sourceOf(ex),
     provenance: { mode: 'ai', model, generatedAt: now.toISOString() },
     sections,
-    takeaway: clean(plan.takeaway),
+    takeaway: prose(plan.takeaway),
   });
   if (!result.ok) throw new ApiError('PLAN_INVALID', 'The assembled essay did not pass validation.');
   return result.doc;

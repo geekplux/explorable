@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { DOC_TTL, ERROR_TTL, cacheKeys, readCache, sha256Hex, writeDoc, writeError } from './cache';
+import { DOC_TTL, ERROR_TTL, TRANSIENT_ERROR_TTL, cacheKeys, readCache, sha256Hex, writeDoc, writeError } from './cache';
 import { ApiError } from './errors';
 import { PROMPT_VERSION } from './plan/prompt';
 import { fakeKv } from './testing';
@@ -30,6 +30,14 @@ describe('cache', () => {
     await writeError(other, keys, new ApiError('RATE_LIMITED', 'slow down'));
     await writeError(other, keys, new TypeError('bug'));
     expect(other.store.size).toBe(0);
+  });
+
+  it('keeps a failed model call (AI_UNAVAILABLE) for only a minute', async () => {
+    const kv = fakeKv();
+    const keys = await cacheKeys('x');
+    await writeError(kv, keys, new ApiError('AI_UNAVAILABLE', 'model down'));
+    expect(kv.store.get(keys.error)?.ttl).toBe(TRANSIENT_ERROR_TTL);
+    expect(TRANSIENT_ERROR_TTL).toBe(60);
   });
 
   it('reads a cached failure back as an ApiError, and treats KV errors or junk as a miss', async () => {

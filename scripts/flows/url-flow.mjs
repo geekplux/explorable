@@ -7,7 +7,8 @@ import { blocking } from '../lib/axe.mjs';
 export const pageOptions = { allowApi: true, apiErrors: true };
 
 const URL_IN = 'https://arxiv.org/abs/1706.03762';
-const STAGES = ['Fetching the article…', 'Finding the core idea…', 'Assembling live figures…'];
+// A plain JSON answer (no streamed stages) falls back to the honest timeline: it never claims "composing".
+const STAGES = ['Fetching the article…', 'Reading the text…', 'Finding the core idea and writing the essay…'];
 const sample = (id) => JSON.parse(readFileSync(`src/samples/${id}.json`, 'utf8'));
 const aiDoc = { ...sample('attention'), provenance: { mode: 'ai', model: '@cf/meta/llama-3.3-70b-instruct-fp8-fast', generatedAt: '2026-10-21T00:00:00.000Z' } };
 const matchDoc = { ...sample('bloom-filter'), provenance: { mode: 'match', generatedAt: '2026-10-21T00:00:00.000Z' } };
@@ -104,6 +105,16 @@ export default async function urlFlow(ctx) {
   await page.setViewportSize({ width: 320, height: 700 });
   await fits(page, assert, 'result');
   await page.setViewportSize({ width: 1280, height: 800 });
+
+  // A streaming Worker: NDJSON stage lines, keep-alive ticks, then the result line.
+  await page.unroute('**/api/explain**');
+  await page.route('**/api/explain**', (route) => {
+    const lines = [{ type: 'stage', stage: 'fetching' }, { type: 'stage', stage: 'reading' }, { type: 'tick' }, { type: 'stage', stage: 'planning' }, { type: 'stage', stage: 'composing' }, { type: 'result', ok: true, doc: aiDoc, cache: 'miss', mode: 'ai' }];
+    return route.fulfill({ status: 200, contentType: 'application/x-ndjson; charset=utf-8', body: lines.map((l) => JSON.stringify(l)).join('\n') + '\n' }).catch(() => {});
+  });
+  await page.goto(`${baseURL}/x?url=${encodeURIComponent('https://arxiv.org/abs/1706.03762v2')}`);
+  await page.locator('.essay-takeaway').waitFor();
+  assert.ok(api.some((u) => u.includes('1706.03762v2')), 'the streamed answer renders the essay');
 
   // Match mode.
   await mock(page, 200, { ok: true, doc: matchDoc, cache: 'hit', mode: 'match' });

@@ -16,7 +16,7 @@ const COPY: Record<ErrorCode, [string, string, boolean?]> = {
   NO_FIGURE: ['No live figure fits this idea yet', 'The figure kit has no tested model for this core idea. The samples show what works today.'],
   RATE_LIMITED: ['Too many new links at once', 'Wait a minute, then try again. Links explained before open instantly.', true],
   INTERNAL: ['Something broke on our side', 'It isn’t your link. Try again in a moment.', true],
-  TIMEOUT: ['That took too long', 'No answer after 30 seconds. Try again: the work may finish and be saved meanwhile.', true],
+  TIMEOUT: ['That took too long', 'The answer didn’t arrive in time. Try again: the work may finish and be saved meanwhile.', true],
   NETWORK: ['Couldn’t reach explorable', 'The request didn’t get through. Check your connection and try again.', true],
   OFFLINE: ['You’re offline', 'Explaining a link needs the network. The samples below still work offline.', true],
 };
