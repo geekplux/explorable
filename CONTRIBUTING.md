@@ -22,7 +22,7 @@ No account and no API key are needed. The built-in samples work offline. Locally
 | `pnpm check` | lint (oxlint), typecheck (`tsc --noEmit` for the app, the Node scripts and the Worker) and unit tests (Vitest). Run it before every push. |
 | `pnpm test` | Vitest only. `pnpm test registry` runs only the matching files. |
 | `pnpm build` | production build of the app and the Worker into `dist/`. |
-| `pnpm build:kit` | rebuilds the skill's prebuilt kit bundle in `skills/explorable/kit/dist/`. Commit the result whenever you change `skills/explorable/kit/src/`: CI checks that it is fresh. |
+| `pnpm build:kit` | rebuilds the skill's prebuilt kit bundle in `skills/explorable/kit/dist/`. Whenever you change `skills/explorable/kit/src/`, run it, rebuild the example pages (`node skills/explorable/scripts/build.mjs <spec>` for each `skills/explorable/examples/*/explorable.json`) and commit both: CI checks they are fresh. |
 | `pnpm smoke` | the harness: builds, then screenshots `/` and every sample at 1280, 800 and 390 px, checking fonts, overflow and console errors. Shots land in `test-results/smoke/`. |
 | `pnpm e2e <flow…>` | runs the browser flows in `scripts/flows/` (for example `pnpm e2e gallery keyboard`), with axe and colour-vision helpers. |
 | `pnpm check:size` | bundle size budget for the app. |

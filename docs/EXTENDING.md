@@ -12,7 +12,7 @@ Four guides: [add a model](#add-a-model), [add a figure kind](#add-a-figure-kind
 | `src/samples/` | the built-in samples and their thumbnails |
 | `worker/plan/` | the AI plan: the model catalogue, the prompt and the assembly into a doc |
 
-The kit is shared by the app and the skill. The skill runs from the prebuilt bundle in `skills/explorable/kit/dist/`, so every kit change ends with `pnpm build:kit` and a commit of that folder. The skill's own references (`skills/explorable/references/`) describe the same contracts for spec authors; keep them in step.
+The kit is shared by the app and the skill. The skill runs from the prebuilt bundle in `skills/explorable/kit/dist/`, so every kit change ends with `pnpm build:kit`, a rebuild of the example pages (step 4 of the first guide) and a commit of both. The skill's own references (`skills/explorable/references/`) describe the same contracts for spec authors; keep them in step.
 
 ## Add a model
 
@@ -113,11 +113,12 @@ import { coinFlips } from '../models/coin-flips.ts';
 export const BUILT_IN_MODELS = [softmaxTemperature, attentionScaling, bloomFilter, diffusionForward, coinFlips] as unknown as readonly ModelDef[];
 ```
 
-**4. Run the checks and rebuild the skill bundle.**
+**4. Run the checks, then rebuild the skill bundle and the example pages** (they inline the bundle, and a test checks they are fresh):
 
 ```sh
 pnpm check
 pnpm build:kit
+for spec in skills/explorable/examples/*/explorable.json; do node skills/explorable/scripts/build.mjs "$spec"; done
 node --test skills/explorable/scripts/*.test.mjs
 ```
 
@@ -154,7 +155,7 @@ Checklist:
 - [ ] `models/<id>.ts` registers a pure, seeded model; defaults sit inside their ranges (`registerModel` throws otherwise)
 - [ ] `models/<id>.test.ts` pins values and checks determinism, finite outputs at every stop and `describe`
 - [ ] added to `BUILT_IN_MODELS`
-- [ ] `pnpm check` passes; `pnpm build:kit` output committed; skill tests pass
+- [ ] `pnpm check` passes; `pnpm build:kit` output and rebuilt example pages committed; skill tests pass
 - [ ] a spec using it builds and ends in `audit passed`
 - [ ] `references/models.md` row; planner entry only with a template sample
 
@@ -227,7 +228,7 @@ it('draws the output and lists it in the data table', () => {
 ```
 
 6. Check it in a browser: a flow in `scripts/flows/` that drags and keys through the figure, with shots at 1280, 390 and 320 px, `cvd('protan' | 'deutan' | 'tritan')` shots and a clean `axe()`.
-7. Document its options in `skills/explorable/references/figure-kinds.md`, then `pnpm build:kit`.
+7. Document its options in `skills/explorable/references/figure-kinds.md`, then rebuild the bundle and the examples as in step 4 of [add a model](#add-a-model).
 
 Checklist:
 
@@ -235,7 +236,7 @@ Checklist:
 - [ ] meaning carried by shape, line style or words, not hue alone; at most 3 hue-coded series
 - [ ] any knob made with `createHandle` (see `figures/bars.ts`), so it is a keyboard `role="slider"` with 44 px targets
 - [ ] a happy-dom test, an e2e flow with CVD shots and a clean axe run
-- [ ] `references/figure-kinds.md` updated; `pnpm build:kit` output committed
+- [ ] `references/figure-kinds.md` updated; bundle and example pages rebuilt and committed
 
 ## Add a sample
 
@@ -280,10 +281,10 @@ it('tanh compiles to Math.tanh, takes one argument and is a built-in name', () =
 ```
 
 3. List it in the functions row of `skills/explorable/references/expressions.md`, and in the EXPR RULES of `worker/plan/prompt.ts` and `docs/design/prompt.md`; bump `PROMPT_VERSION`.
-4. `pnpm check`, `pnpm build:kit`, then the skill tests.
+4. `pnpm check`, then rebuild the bundle and the examples and run the skill tests, as in step 4 of [add a model](#add-a-model).
 
 Checklist:
 
 - [ ] `FUNCS` entry with the right arity
 - [ ] a test against `Math`, the arity error and `badName`
-- [ ] references, prompt and prompt spec updated; `PROMPT_VERSION` bumped; `pnpm build:kit` output committed
+- [ ] references, prompt and prompt spec updated; `PROMPT_VERSION` bumped; bundle and example pages rebuilt and committed

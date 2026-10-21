@@ -12,7 +12,7 @@
 - [ ] Colour-vision safe: no meaning carried by colour alone, at most 3 hue-coded series, palette checks pass
 - [ ] Keyboard: every new control is reachable and operable, with visible focus; reduced motion respected
 - [ ] A line in the `Unreleased` section of `CHANGELOG.md`
-- [ ] If `skills/explorable/kit/src/` changed: `pnpm build:kit` and `node --test skills/explorable/scripts/*.test.mjs`
+- [ ] If `skills/explorable/kit/src/` changed: `pnpm build:kit`, examples rebuilt, and `node --test skills/explorable/scripts/*.test.mjs`
 
 ## Size
 
