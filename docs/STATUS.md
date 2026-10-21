@@ -2,7 +2,7 @@ STATE: IN-PROGRESS
 
 # Status
 
-- Current phase: Phase 11 (`phase-11-skill-build-audit`), starting
+- Current phase: Phase 12 (`phase-12-skill-docs-evals`), starting
 - Plan: docs/PLAN.md (15 phases, committed on main)
 - Blockers: none
 
@@ -18,8 +18,8 @@ STATE: IN-PROGRESS
 | 8 | phase-8-worker-extract | https://github.com/geekplux/explorable/pull/9 | PR open (verified PASS) | 2 |
 | 9 | phase-9-worker-plan-cache | https://github.com/geekplux/explorable/pull/10 | PR open (verified PASS) | 1 |
 | 10 | phase-10-url-flow-ui | https://github.com/geekplux/explorable/pull/11 | PR open (verified PASS) | 1 |
-| 11 | phase-11-skill-build-audit | - | in progress | 0 |
-| 12 | phase-12-skill-docs-evals | - | pending | 0 |
+| 11 | phase-11-skill-build-audit | https://github.com/geekplux/explorable/pull/12 | PR open (verified PASS) | 4 |
+| 12 | phase-12-skill-docs-evals | - | in progress | 0 |
 | 13 | phase-13-oss-hygiene | - | pending | 0 |
 | 14 | phase-14-readme-launch | - | pending | 0 |
 | 15 | phase-15-deploy-prep | - | pending | 0 |
@@ -29,4 +29,4 @@ STATE: IN-PROGRESS
 - Move `ci/github-workflow.yml` to `.github/workflows/` (needs `workflow` token scope).
 - Upload the social preview image in GitHub repo settings (manual).
 
-Last updated: 2026-10-21 05:04 UTC
+Last updated: 2026-10-21 08:05 UTC
