@@ -201,10 +201,11 @@ export const mountCurve: FigureMount = (el, { spec, model, setParam }) => {
     series
       .map((d, i) => {
         const [t, s] = [endLabels[i]!, nums(out[d.id])];
-        const hide = textWidth(t) > (g.R - g.L) / 2 && (series.length > 1 || t.textContent === yTitle);
-        t.classList.toggle('is-hidden', hide);
         const [a, b] = [(g.R - 8 - textWidth(t) - g.L) / (g.R - g.L), (g.R - g.L - 8) / (g.R - g.L)];
         const ys = Array.from({ length: 9 }, (_, j) => yAt(s, a + ((b - a) * j) / 8)).filter(Number.isFinite).map(py);
+        // No finite point under the label's span means no line there to label (and no finite place to put it).
+        const hide = !ys.length || (textWidth(t) > (g.R - g.L) / 2 && (series.length > 1 || t.textContent === yTitle));
+        t.classList.toggle('is-hidden', hide);
         return { t, hide, end: py(lastFinite(s)), hi: Math.min(...ys), lo: Math.max(...ys) };
       })
       .toSorted((u, v) => u.end - v.end)
@@ -218,6 +219,14 @@ export const mountCurve: FigureMount = (el, { spec, model, setParam }) => {
     markers.forEach((id, i) => {
       const m = markerEls[i]!;
       const xv = Number(out[id]);
+      // A marker with no finite position (ln 2 / k at k = 0) has nowhere to go: hide its line, dot and label rather than write NaN.
+      m.text.classList.toggle('is-hidden', !Number.isFinite(xv));
+      if (!Number.isFinite(xv)) {
+        m.text.textContent = '';
+        m.line.setAttribute('d', '');
+        m.dot.setAttribute('d', '');
+        return;
+      }
       const side = xv < xDef.min ? -1 : xv > xDef.max ? 1 : 0;
       const mpos = toPos(xDef, xv);
       const [mx, row] = [px(mpos), g.top - 15];
@@ -228,7 +237,7 @@ export const mountCurve: FigureMount = (el, { spec, model, setParam }) => {
       m.dot.setAttribute('d', side ? `M${f1(mx - 4 * side)} ${row - 9}l${8 * side} 5l${-8 * side} 5z` : Number.isFinite(mv) ? SHAPES[0]!(mx, py(mv), 4) : '');
       rowLabel(m.text, mx, side);
     });
-    const name = `${spec.title}: line chart of ${series.map((d) => fillTemplate(d.spoken, model, p, out)).join(' and ')}${markerEls.map((m) => `; ${m.text.textContent}`).join('')}`;
+    const name = `${spec.title}: line chart of ${series.map((d) => fillTemplate(d.spoken, model, p, out)).join(' and ')}${markerEls.filter((m) => m.text.textContent).map((m) => `; ${m.text.textContent}`).join('')}`;
     if (plot.getAttribute('aria-label') !== name) plot.setAttribute('aria-label', name);
     for (const [d, at] of atKnob) {
       const v = yAt(nums(out[d.id]), pos);

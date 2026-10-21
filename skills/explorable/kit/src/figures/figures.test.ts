@@ -33,6 +33,7 @@ const readout = () => $('.xfig-readout').textContent;
 /** Which direct curve labels are hidden, in DOM order. */
 const hidden = () => [...root.querySelectorAll('.xfig-series-label, .xfig-ref-label')].map((t) => t.classList.contains('is-hidden'));
 const marker = () => $('.xfig-marker-label').textContent;
+const curveSvg = () => $('svg.xfig-curve').outerHTML;
 const sw = () => $<HTMLButtonElement>('[role="switch"]');
 /** x of a `translate(x y)` transform. */
 const x = (t: string) => Number(/translate\(([\d.]+)/.exec(t)![1]);
@@ -359,6 +360,47 @@ describe('curve: direct labels on a narrow plot', () => {
     destroy();
     mount(newtonDoc, 'fig-half-life');
     expect(hidden()).toEqual([false]);
+  });
+});
+
+/** Newton Fig 1 with k in [−0.1, 0.1] and the given marker expression. */
+function cooling(markerExpr: string) {
+  const doc = structuredClone(newtonDoc);
+  const f = doc.sections.find((s) => s.figure?.id === 'fig-cooling')!.figure!;
+  Object.assign(f.model.params.find((p) => p.name === 'k')!, { min: -0.1, max: 0.1, step: 0.01 });
+  f.options.markerExpr = markerExpr;
+  mount(doc, 'fig-cooling');
+}
+/** The marker is hidden: no line, no dot, an empty hidden label, and nothing non-finite anywhere in the SVG. */
+function gone() {
+  expect($('.xfig-marker-line').getAttribute('d')).toBe('');
+  expect($('.xfig-meet').getAttribute('d')).toBe('');
+  expect(marker()).toBe('');
+  expect($('.xfig-marker-label').classList.contains('is-hidden')).toBe(true);
+  expect(curveSvg()).not.toMatch(/NaN|Infinity/);
+  expect(readout()).not.toMatch(/NaN|Infinity/);
+}
+
+describe('curve: a marker with no finite position', () => {
+  it('hides the line, dot and label at ±∞ (ln 2 / k at k = 0) and shows them again after', () => {
+    cooling('ln(2)/k');
+    expect(marker()).toBe('gap halves at 13.9 min');
+    for (let i = 0; i < 5; i++) key($('#fig-cooling-k'), 'ArrowLeft');
+    gone();
+    expect($('svg.xfig-curve [role="img"]').getAttribute('aria-label')).not.toMatch(/gap halves|; $/);
+    key($('#fig-cooling-k'), 'ArrowLeft');
+    expect(marker()).toMatch(/\(off the chart\)$/);
+    expect(curveSvg()).not.toMatch(/NaN|Infinity/);
+    for (let i = 0; i < 6; i++) key($('#fig-cooling-k'), 'ArrowRight');
+    expect(marker()).toBe('gap halves at 13.9 min');
+    expect($('.xfig-marker-label').classList.contains('is-hidden')).toBe(false);
+  });
+
+  it('hides it at NaN (0 / (T0 − 70) at T0 = 70)', () => {
+    cooling('ln(2)/k + 0/(T0-70)');
+    for (let i = 0; i < 20; i++) key($('#fig-cooling-T0'), 'ArrowLeft');
+    expect($('#fig-cooling-T0').getAttribute('aria-valuetext')).toMatch(/^70\b/);
+    gone();
   });
 });
 

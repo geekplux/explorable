@@ -45,15 +45,17 @@ function auditFigure(fig) {
     }
   }
   const o = fig.options ?? {};
-  // Labels carry meaning (never colour alone), so a label the figure shows may not be blank.
+  // Labels carry meaning (never colour alone), so a label the figure shows must have a visible letter or digit:
+  // not blank, not only zero-width characters, not only punctuation such as "-".
   for (const key of LABEL_KEYS) {
     if (o[key] === undefined) continue;
-    const blank = [o[key]].flat().map((v, i) => (typeof v === 'string' && !v.trim() ? i : -1)).filter((i) => i >= 0);
+    const blank = [o[key]].flat().map((v, i) => (typeof v === 'string' && !SAYS.test(v.replace(INVISIBLE, '')) ? i : -1)).filter((i) => i >= 0);
     for (const i of blank) out.push(`options.${key}${Array.isArray(o[key]) ? `[${i}]` : ''} is empty; every label must say what it marks`);
   }
-  // Every number the figure shows must be finite at the defaults and at each end of every control:
-  // the readouts, the marker and reference outputs, and every output a label or `describe` fills in.
-  const states = [base, ...fig.controls.filter((c) => defs[c]).flatMap((c) => [{ ...base, [c]: defs[c].min }, { ...base, [c]: defs[c].max }])];
+  // Every number the figure shows must be finite wherever a reader can put it: at the defaults and at every
+  // stop of every control (the others held at their defaults). That covers the readouts, the marker and
+  // reference outputs, and every output a label or `describe` fills in.
+  const states = [base, ...fig.controls.filter((c) => defs[c]).flatMap((c) => stops(defs[c]).map((v) => ({ ...base, [c]: v })))];
   const results = states.map((p) => [p, model.compute(p)]);
   const values = results[0][1];
   const shown = new Map(); // output id -> how the problem names it
@@ -81,6 +83,24 @@ function auditFigure(fig) {
     if (bad) out.push(`${name} is not a finite number at ${stateText(bad[0], base)}`);
   }
   return out;
+}
+
+/** Whitespace and invisible format characters, stripped before a label is measured (as the schema's text() does). */
+const INVISIBLE = /[\p{Cf}\s]/gu;
+/** A label says something when it has at least one letter or digit. */
+const SAYS = /[\p{L}\p{N}]/u;
+
+/** Most stops checked per control; a finer grid is sampled evenly, always with both ends. */
+const MAX_STOPS = 65;
+const decimals = (step) => (String(step).split('.')[1] ?? '').length;
+/** A value on the control's grid, rounded as the runtime's snap() rounds it (so k = 0 is exactly 0). */
+const onGrid = (def, i) => Math.min(def.max, Math.max(def.min, Number((def.min + i * def.step).toFixed(decimals(def.step)))));
+
+/** Every value a control can take (its step grid and both ends), or an even sample of at most MAX_STOPS + 2 of them. */
+function stops(def) {
+  const n = def.step > 0 ? Math.floor((def.max - def.min) / def.step + 1e-9) : 0;
+  const idx = n + 1 <= MAX_STOPS ? Array.from({ length: n + 1 }, (_, i) => i) : Array.from({ length: MAX_STOPS }, (_, j) => Math.round((j * n) / (MAX_STOPS - 1)));
+  return [...new Set([def.min, ...idx.map((i) => onGrid(def, i)), def.max])];
 }
 
 /** The option keys that hold labels (strings or string lists) the figure shows. */

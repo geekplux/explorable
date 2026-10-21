@@ -63,6 +63,29 @@ describe('audit: failing fixtures', () => {
     const problems = auditSpec(doc);
     assert.ok(problems.includes('figure "fig-cooling": marker is not a finite number at k = 0'), problems.join('\n'));
   });
+  it('marker that is not finite inside a control\'s range (k steps through 0)', () => {
+    const doc = newton();
+    Object.assign(fig(doc).model.params.find((p) => p.name === 'k'), { min: -0.1, max: 0.1, step: 0.01 });
+    assert.equal(fig(doc).options.markerExpr, 'ln(2)/k');
+    const problems = auditSpec(doc);
+    assert.ok(problems.includes('figure "fig-cooling": marker is not a finite number at k = 0'), problems.join('\n'));
+  });
+  it('marker that is NaN at one interior stop (T0 steps through 70)', () => {
+    const doc = newton();
+    fig(doc).options.markerExpr = 'ln(2)/k + 0/(T0-70)';
+    const problems = auditSpec(doc);
+    assert.ok(problems.includes('figure "fig-cooling": marker is not a finite number at T0 = 70'), problems.join('\n'));
+  });
+  it('a fine grid is sampled, ends included, and stays fast', () => {
+    const doc = newton();
+    // 6001 stops for T0: sampled, but its far end (T0 = 100) is always checked.
+    Object.assign(fig(doc).model.params.find((p) => p.name === 'T0'), { step: 0.01 });
+    fig(doc).options.markerExpr = 'ln(2)/k + 0/(T0-100)';
+    const t = performance.now();
+    const problems = auditSpec(doc);
+    assert.ok(problems.includes('figure "fig-cooling": marker is not a finite number at T0 = 100'), problems.join('\n'));
+    assert.ok(performance.now() - t < 1000, 'audit took over 1 s');
+  });
   it('reference curve that is not finite at the end of a control', () => {
     const doc = newton();
     fig(doc).options.refExpr = 'Ta/(T0 - 40)';
@@ -83,6 +106,20 @@ describe('audit: failing fixtures', () => {
     fails(problems, /figure "fig-cooling": options\.seriesLabels\[1\] is empty/);
     fails(problems, /figure "fig-cooling": options\.refLabel is empty/);
     fails(problems, /figure "fig-cooling": options\.markerLabel is empty/);
+  });
+  it('a zero-width space pads an alt to 40 characters', () => {
+    const doc = newton();
+    fig(doc).alt = `Chart.${'\u200B'.repeat(50)}`;
+    fails(auditSpec(doc), /figure\.alt: must be at least 40 characters/);
+  });
+  it('labels that are only zero-width or punctuation', () => {
+    const doc = newton();
+    Object.assign(fig(doc).options, { seriesLabels: ['\u200B', 'room'], markerLabel: '-', refLabel: '\u200B \u2060' });
+    const problems = auditSpec(doc);
+    fails(problems, /figure "fig-cooling": options\.seriesLabels\[0\] is empty/);
+    fails(problems, /figure "fig-cooling": options\.markerLabel is empty/);
+    fails(problems, /figure "fig-cooling": options\.refLabel is empty/);
+    assert.ok(!problems.some((p) => /seriesLabels\[1\]/.test(p)), problems.join('\n'));
   });
   it('unknown model', () => {
     const doc = bloom();

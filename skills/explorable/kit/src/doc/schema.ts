@@ -9,11 +9,13 @@ export const FIGURE_KINDS = ['bars', 'bits', 'histogram', 'curve'] as const;
 
 const slug = (what: string) =>
   v.pipe(v.string(), v.regex(/^[a-z0-9][a-z0-9-]*$/, `${what} must be lowercase letters, digits and dashes`));
-/** A string whose trimmed length is at least `min` (so padding never counts) and whose length is at most `max`. */
+/** Whitespace and invisible format characters (zero-width space, joiners, bidi marks): never counted as text. */
+const INVISIBLE = /[\p{Cf}\s]/gu;
+/** A string with at least `min` visible characters (padding and zero-width characters never count) and at most `max` in all. */
 const text = (max: number, min = 1) =>
   v.pipe(
     v.string(),
-    v.check((s) => s.trim().length >= min, min === 1 ? 'must not be empty' : `must be at least ${min} characters`),
+    v.check((s) => s.replace(INVISIBLE, '').length >= min, min === 1 ? 'must not be empty' : `must be at least ${min} characters`),
     v.maxLength(max, `must be at most ${max} characters`),
   );
 const list = <T extends v.GenericSchema>(item: T, min: number, max: number) =>
