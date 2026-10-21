@@ -4,6 +4,8 @@ node_modules/
 
 # builds
 dist/
+# the prebuilt skill bundle is committed (D5); CI checks it is fresh
+!skills/explorable/kit/dist/
 dist-ssr/
 build/
 out/

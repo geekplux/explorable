@@ -15,6 +15,7 @@
     "typecheck": "tsc --noEmit -p tsconfig.app.json && tsc --noEmit -p tsconfig.node.json && tsc --noEmit -p tsconfig.worker.json",
     "test": "vitest run",
     "build": "vite build",
+    "build:kit": "vite build -c vite.kit.config.ts",
     "preview": "vite preview",
     "smoke": "node scripts/smoke.mjs",
     "e2e": "node scripts/e2e.mjs",
