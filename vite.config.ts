@@ -20,6 +20,7 @@ export default defineConfig({
       'src/**/*.test.{ts,tsx}',
       'skills/explorable/kit/{src,react}/**/*.test.{ts,tsx}',
       'worker/**/*.test.ts',
+      'scripts/**/*.test.ts',
     ],
     // Shared, RAM-tight machine: few forked workers. DOM tests opt in per file
     // with `// @vitest-environment happy-dom`.
