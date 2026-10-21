@@ -1,0 +1,146 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`/api/explain with a model > sends one JSON-Mode request with capped source text (request shape) 1`] = `
+{
+  "keys": [
+    "max_tokens",
+    "messages",
+    "response_format",
+    "temperature",
+  ],
+  "max_tokens": 1800,
+  "model": "@cf/test/model",
+  "response_format": {
+    "required": [
+      "coreIdea",
+      "title",
+      "dek",
+      "takeaway",
+      "sections",
+      "figures",
+    ],
+    "schemaType": "object",
+    "type": "json_schema",
+  },
+  "roles": [
+    "system",
+    "user",
+  ],
+  "temperature": 0.2,
+  "userHead": [
+    "SOURCE: arxiv | Attention Is All You Need | https://arxiv.org/abs/1706.03762",
+    "HINTS: attention-scaling, softmax-temperature",
+    "<<<ARTICLE",
+  ],
+}
+`;
+
+exports[`error codes (docs/PLAN.md §5.6) > AI_UNAVAILABLE has a stable { code, message, hint } 1`] = `
+{
+  "error": {
+    "code": "AI_UNAVAILABLE",
+    "hint": "Found “Why ropes beat strings for big edits”. A rope stores text as a balanced tree of short chunks, so an edit in the middle touches only a few nodes. The built-in samples still work.",
+    "message": "No model is configured here, and this page matches no built-in explorable.",
+  },
+  "status": 503,
+}
+`;
+
+exports[`error codes (docs/PLAN.md §5.6) > BLOCKED_URL has a stable { code, message, hint } 1`] = `
+{
+  "error": {
+    "code": "BLOCKED_URL",
+    "hint": "Only public http(s) pages on the default port can be fetched.",
+    "message": "Private or local addresses are not allowed.",
+  },
+  "status": 400,
+}
+`;
+
+exports[`error codes (docs/PLAN.md §5.6) > FETCH_FAILED has a stable { code, message, hint } 1`] = `
+{
+  "error": {
+    "code": "FETCH_FAILED",
+    "hint": "The page could not be reached. Try again, or pick a built-in sample.",
+    "message": "The page answered HTTP 404.",
+  },
+  "status": 502,
+}
+`;
+
+exports[`error codes (docs/PLAN.md §5.6) > INTERNAL has a stable { code, message, hint } 1`] = `
+{
+  "error": {
+    "code": "INTERNAL",
+    "hint": "Something went wrong on our side.",
+    "message": "Unexpected error",
+  },
+  "status": 500,
+}
+`;
+
+exports[`error codes (docs/PLAN.md §5.6) > INVALID_URL has a stable { code, message, hint } 1`] = `
+{
+  "error": {
+    "code": "INVALID_URL",
+    "hint": "Paste a full link, such as https://arxiv.org/abs/1706.03762.",
+    "message": "That does not look like a link.",
+  },
+  "status": 400,
+}
+`;
+
+exports[`error codes (docs/PLAN.md §5.6) > NO_FIGURE has a stable { code, message, hint } 1`] = `
+{
+  "error": {
+    "code": "NO_FIGURE",
+    "hint": "No interactive figure fits this idea yet.",
+    "message": "None of the planned figures could be built from the kit.",
+  },
+  "status": 422,
+}
+`;
+
+exports[`error codes (docs/PLAN.md §5.6) > PLAN_INVALID has a stable { code, message, hint } 1`] = `
+{
+  "error": {
+    "code": "PLAN_INVALID",
+    "hint": "The model returned an unusable plan. Try again later.",
+    "message": "The model reply was not valid JSON.",
+  },
+  "status": 502,
+}
+`;
+
+exports[`error codes (docs/PLAN.md §5.6) > RATE_LIMITED has a stable { code, message, hint } 1`] = `
+{
+  "error": {
+    "code": "RATE_LIMITED",
+    "hint": "Too many new links at once. Wait a minute and try again.",
+    "message": "Too many new links from this address in the last minute.",
+  },
+  "status": 429,
+}
+`;
+
+exports[`error codes (docs/PLAN.md §5.6) > TOO_LITTLE_TEXT has a stable { code, message, hint } 1`] = `
+{
+  "error": {
+    "code": "TOO_LITTLE_TEXT",
+    "hint": "The page has too little readable text. Try the article page itself.",
+    "message": "Only 63 characters of readable text were found (at least 600 are needed).",
+  },
+  "status": 422,
+}
+`;
+
+exports[`error codes (docs/PLAN.md §5.6) > UNSUPPORTED_CONTENT has a stable { code, message, hint } 1`] = `
+{
+  "error": {
+    "code": "UNSUPPORTED_CONTENT",
+    "hint": "Use an arXiv paper or an HTML article (PDFs work only on arXiv).",
+    "message": "PDFs are only supported on arXiv.",
+  },
+  "status": 415,
+}
+`;

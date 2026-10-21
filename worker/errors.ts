@@ -14,6 +14,7 @@ const CODES = {
 } as const;
 
 export type ErrorCode = keyof typeof CODES;
+export const isErrorCode = (code: unknown): code is ErrorCode => typeof code === 'string' && Object.hasOwn(CODES, code);
 
 export class ApiError extends Error {
   readonly code: ErrorCode;
@@ -28,11 +29,11 @@ export class ApiError extends Error {
   }
 }
 
-export const json = (body: unknown, status = 200): Response =>
-  Response.json(body, { status, headers: { 'cache-control': 'no-store' } });
+export const json = (body: unknown, status = 200, headers: Record<string, string> = {}): Response =>
+  Response.json(body, { status, headers: { 'cache-control': 'no-store', ...headers } });
 
 /** `{ ok: false, error: { code, message, hint } }`; unknown errors become INTERNAL. */
-export function errorResponse(error: unknown): Response {
+export function errorResponse(error: unknown, headers?: Record<string, string>): Response {
   const e = error instanceof ApiError ? error : new ApiError('INTERNAL', 'Unexpected error');
-  return json({ ok: false, error: { code: e.code, message: e.message, hint: e.hint } }, e.status);
+  return json({ ok: false, error: { code: e.code, message: e.message, hint: e.hint } }, e.status, headers);
 }
