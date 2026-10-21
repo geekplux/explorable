@@ -21,9 +21,10 @@
   "env": {
     "production": {
       "ai": { "binding": "AI" },
-      // REPLACE_WITH_KV_ID: paste the id printed by
+      // Production KV namespace, created with
       // `pnpm exec wrangler kv namespace create EXPLORABLE_CACHE` (docs/DEPLOY.md).
-      "kv_namespaces": [{ "binding": "EXPLORABLE_CACHE", "id": "REPLACE_WITH_KV_ID" }],
+      // Forks: replace this id with your own namespace id (it was REPLACE_WITH_KV_ID).
+      "kv_namespaces": [{ "binding": "EXPLORABLE_CACHE", "id": "06957ddddaad40bb86bfa7df7b6edd75" }],
       // 10 uncached explains per 60 s per client IP; cache hits are never limited.
       "ratelimits": [{ "name": "EXPLAIN_LIMITER", "namespace_id": "1001", "simple": { "limit": 10, "period": 60 } }],
       // PROMPT_VERSION is a code constant (worker/plan/prompt.ts), not a var.
