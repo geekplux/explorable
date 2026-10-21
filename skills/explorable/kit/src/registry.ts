@@ -4,7 +4,7 @@
  */
 import type { FigureKind } from './doc/schema.ts';
 import { format, isFormat, type Format } from './format.ts';
-import { showValue } from './runtime/controls.ts';
+import { showValue } from './runtime/values.ts';
 
 export type { FigureKind };
 

@@ -11,7 +11,7 @@ import { badName } from '../expr/parser.ts';
 import { validateExpr } from '../expr/validate.ts';
 import { isFormat } from '../format.ts';
 import { fillTemplate, type ModelDef, type ParamDef } from '../registry.ts';
-import { fromPos } from '../runtime/controls.ts';
+import { fromPos } from '../runtime/values.ts';
 
 /** Points per drawn curve, evenly spaced along the x track. */
 export const CURVE_POINTS = 201;

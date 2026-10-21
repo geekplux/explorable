@@ -4,7 +4,7 @@
  * range (other names at their defaults) are finite.
  */
 import type { ParamDef } from '../registry.ts';
-import { fromPos } from '../runtime/controls.ts';
+import { fromPos } from '../runtime/values.ts';
 import { compileExpr, type Compiled } from './compile.ts';
 import { ExprError } from './lexer.ts';
 
