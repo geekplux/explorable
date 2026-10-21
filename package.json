@@ -23,6 +23,7 @@
     "types:worker": "wrangler types --strict-vars=false"
   },
   "dependencies": {
+    "@valibot/to-json-schema": "^1",
     "htmlparser2": "12.0.0",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",

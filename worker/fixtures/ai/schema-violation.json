@@ -1,0 +1,75 @@
+{
+ "response": {
+  "coreIdea": "Dot products of wider random vectors spread out like √d_k, so attention divides them by √d_k to keep the softmax soft.",
+  "title": "Why attention divides by √d_k",
+  "dek": "A dot product of two d_k-wide random vectors has a spread of about √d_k. Divide by √d_k and the softmax stays soft at any width.",
+  "sections": [
+   {
+    "heading": "Scores from dot products",
+    "paragraphs": [
+     "Each query is compared with every key by a dot product, `q·k`. A softmax turns those scores into weights that add up to 1."
+    ]
+   }
+  ],
+  "figures": [
+   {
+    "section": 1,
+    "model": "made-up-model",
+    "title": "Scaling keeps attention soft",
+    "caption": "Attention weights over eight keys for one random query. Drag d_k, then divide by √d_k.",
+    "alt": "Bar chart of attention weights over eight keys at width 4, fairly even. As d_k grows without scaling, one bar takes almost all the weight; with scaling the bars stay spread.",
+    "params": [
+     {
+      "name": "dk",
+      "value": 4
+     },
+     {
+      "name": "scaled",
+      "value": 0
+     }
+    ],
+    "controls": [
+     "dk",
+     "scaled"
+    ],
+    "readouts": [
+     "sd",
+     "top"
+    ]
+   },
+   {
+    "section": 2,
+    "model": "expr-curve",
+    "title": "Spread grows like √d_k",
+    "caption": "The standard deviation of a dot product of two random d_k-wide vectors.",
+    "alt": "Line chart of score spread against key width from 1 to 512, rising like a square root: 2 at width 4, 8 at width 64, about 22.6 at width 512.",
+    "params": [
+     {
+      "name": "x",
+      "value": 64
+     }
+    ],
+    "controls": [
+     "x"
+    ],
+    "readouts": [
+     "x",
+     "y"
+    ],
+    "curve": {
+     "expr": "sqrt(x)",
+     "x": {
+      "label": "key width d_k",
+      "min": 1,
+      "max": 512
+     },
+     "y": {
+      "label": "score spread",
+      "min": 0
+     },
+     "vars": []
+    }
+   }
+  ]
+ }
+}
