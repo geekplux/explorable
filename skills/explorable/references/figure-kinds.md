@@ -50,7 +50,33 @@ For `expr-curve` the kit fills `series`, `seriesLabels`, `markers` and `yLabel` 
 | `ticks`, `markEvery` | labelled x ticks (strings) and spacing of the ●/■ markers |
 | `yMin`, `yMax`, `yLabel` | for registry curves; `expr-curve` takes them from `model.y` |
 
-A registry model on a `curve` also needs `xParam`, `series` (list outputs), `markers` and `tableColumns`; copy them from the diffusion sample in the app (`src/samples/diffusion.json` in the repository).
+A registry model on a `curve` (today only `diffusion-forward`) gets nothing filled in, so set these too:
+
+| Option | Meaning |
+|---|---|
+| `xParam` | the param on the x axis (default: the first control) |
+| `series` | up to 3 list outputs, each sampled at even steps along the x track; for `diffusion-forward`, `signalSeries` and `noiseSeries` (index = t) |
+| `refSeries` | the one of `series` drawn as the dotted reference, if any |
+| `markers`, `markerLabels` | number outputs drawn as vertical markers at that x (`crossT`), and their labels; `{marker}` fills in the x |
+| `tableColumns`, `tableStep` | number outputs shown as "Show data" columns, and the x spacing of its rows (default: the param's step) |
+
+The diffusion signal/noise figure, complete:
+
+```json
+"model": { "id": "diffusion-forward", "params": { "t": 100, "seed": 2020 } },
+"controls": ["t"],
+"readouts": ["alphaBar", "snrDb"],
+"options": {
+  "handle": "t", "xParam": "t",
+  "series": ["signalSeries", "noiseSeries"],
+  "seriesLabels": ["signal √ᾱ_t", "noise √(1−ᾱ_t)"],
+  "seriesSpoken": ["signal, square root of alpha-bar", "noise, square root of one minus alpha-bar"],
+  "markers": ["crossT"], "markerLabels": ["signal = noise (t ≈ {marker})"],
+  "ticks": ["0", "250", "500", "750", "1000"], "yLabel": "coefficient",
+  "markEvery": 100, "tableStep": 10, "tableColumns": ["alphaBar", "signal", "noise", "snrDb"],
+  "describe": "At t = {t}, alpha-bar is {alphaBar}: signal {signal:fixed2}, noise {noise:fixed2}, signal-to-noise ratio {snrDb:fixed1} dB."
+}
+```
 
 ## Rules the audit enforces on options
 
