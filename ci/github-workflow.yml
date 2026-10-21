@@ -43,6 +43,10 @@ jobs:
             node skills/explorable/scripts/audit.mjs "$spec"
             node skills/explorable/scripts/audit.mjs "$(dirname "$spec")/index.html"
           done
+      - name: Rebuild and audit the root examples/ gallery (the built-in samples)
+        run: |
+          node scripts/build-examples.mjs
+          for page in examples/*.html; do node skills/explorable/scripts/audit.mjs "$page"; done
       - name: Committed kit bundle and pages are unchanged
         run: |
           git status --short

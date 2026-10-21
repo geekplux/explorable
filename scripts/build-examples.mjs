@@ -1,0 +1,29 @@
+// pnpm build:examples: build every built-in sample (src/samples/<slug>.json)
+// through the skill's page builder into examples/<slug>.html, the root gallery.
+// Deterministic (same specs and kit, same bytes) and dependency-free, so CI can
+// rebuild the pages and fail when the committed ones are stale.
+import { readdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { join } from 'node:path';
+import * as kit from '../skills/explorable/kit/dist/explorable-kit.js';
+import { buildPage } from '../skills/explorable/scripts/build.mjs';
+
+const SAMPLES = 'src/samples';
+const OUT = 'examples';
+
+const slugs = readdirSync(SAMPLES)
+  .filter((f) => f.endsWith('.json'))
+  .map((f) => f.slice(0, -'.json'.length))
+  .sort();
+let failed = 0;
+for (const slug of slugs) {
+  const parsed = kit.parseDoc(JSON.parse(readFileSync(join(SAMPLES, `${slug}.json`), 'utf8')));
+  if (!parsed.ok) {
+    console.error(`${slug}: invalid doc\n- ${parsed.errors.join('\n- ')}`);
+    failed++;
+    continue;
+  }
+  const html = buildPage(parsed.doc);
+  writeFileSync(join(OUT, `${slug}.html`), html);
+  console.log(`wrote ${OUT}/${slug}.html (${(Buffer.byteLength(html) / 1024).toFixed(1)} KB)`);
+}
+if (failed || !slugs.length) process.exitCode = 1;
