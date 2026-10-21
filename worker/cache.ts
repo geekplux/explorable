@@ -1,12 +1,16 @@
 // KV cache for /api/explain (docs/PLAN.md §5.7). Keys hash the canonical URL
 // and carry the doc schema version and PROMPT_VERSION, so a prompt change
-// invalidates old entries. Docs live 30 days, failures 10 minutes.
+// invalidates old entries. Docs live 30 days, failures 10 minutes, and a failed
+// model call (AI_UNAVAILABLE, usually transient) only 1 minute.
 import type { ExplorableDoc } from '../skills/explorable/kit/src/doc/schema.ts';
 import { ApiError, type ErrorCode, isErrorCode } from './errors';
 import { PROMPT_VERSION } from './plan/prompt';
 
 export const DOC_TTL = 30 * 24 * 60 * 60;
 export const ERROR_TTL = 600;
+export const TRANSIENT_ERROR_TTL = 60;
+/** Failures cached only briefly: the next minute may well succeed. */
+const TRANSIENT: ReadonlySet<ErrorCode> = new Set(['AI_UNAVAILABLE']);
 /** Failures that are not cached: transient or per-client. */
 const UNCACHED: ReadonlySet<ErrorCode> = new Set(['INTERNAL', 'RATE_LIMITED']);
 
@@ -56,5 +60,6 @@ export async function writeDoc(kv: KvLike | undefined, keys: CacheKeys, doc: Exp
 export async function writeError(kv: KvLike | undefined, keys: CacheKeys, error: unknown): Promise<void> {
   if (!(error instanceof ApiError) || UNCACHED.has(error.code)) return;
   const body = JSON.stringify({ code: error.code, message: error.message, hint: error.hint });
-  await kv?.put(keys.error, body, { expirationTtl: ERROR_TTL }).catch(() => {});
+  const expirationTtl = TRANSIENT.has(error.code) ? TRANSIENT_ERROR_TTL : ERROR_TTL;
+  await kv?.put(keys.error, body, { expirationTtl }).catch(() => {});
 }

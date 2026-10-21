@@ -9,7 +9,7 @@ const env = (vars: Partial<Env> = {}) =>
     ...vars,
   }) as unknown as Env;
 const call = (path: string, e = env()) =>
-  worker.fetch(new Request(`http://localhost${path}`) as Parameters<typeof worker.fetch>[0], e);
+  worker.fetch(new Request(`http://localhost${path}`) as Parameters<typeof worker.fetch>[0], e, { waitUntil: () => {} } as unknown as ExecutionContext);
 
 afterEach(() => vi.unstubAllGlobals());
 

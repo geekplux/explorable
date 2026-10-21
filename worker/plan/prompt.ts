@@ -5,7 +5,7 @@ import { cap } from '../extract/text';
 import examples from './examples.json';
 import { MODELS } from './schema';
 
-export const PROMPT_VERSION = 'p1';
+export const PROMPT_VERSION = 'p2';
 export const MAX_SOURCE_CHARS = 12_000;
 
 /** One clause per registered model: the idea it teaches (a test checks every model has one). */
@@ -49,6 +49,7 @@ export function catalogueLine(m: ModelDef): string {
 export const SYSTEM_PROMPT = [
   'You turn one article into the plan for a short interactive essay. Find the *single* idea a reader should leave with, then explain it in 3–5 short sections, with 2–3 live figures the reader drags. Reply with one JSON object that matches the schema. Nothing else.',
   'ONE IDEA. Write `coreIdea` first, as one sentence a curious non-expert can follow. Every section and figure serves that idea. Leave out results, history and side topics that do not.',
+  'LANGUAGE. Write every string in English, whatever the language of the article. Use only English words and Latin letters plus the math symbols below; never a Chinese, Japanese or Korean character, not even one, not even for a term the article writes that way. Translate such terms.',
   "VOICE. Calm, precise and curious, like Bartosz Ciechanowski or Amelia Wattenberger. Short paragraphs of 2–4 sentences. Present tense. Use 'you' sparingly, mostly to point at a figure: 'Drag T down.' Every number has its unit. Write formulas in Unicode (√d_k, e^(−kt), x₀, ·, −, ≈), never LaTeX. The only markup is *em*, **strong** and `code` for formulas. No headings inside paragraphs, no lists, no links.",
   'FLOW. Start from something the reader already knows, add one step per section, and put a figure where the reader should *do* something. `section` is the 0-based index of the section that holds the figure, one figure per section. That section tells the reader what to drag and what to watch. End with a takeaway that restates the idea with the key formula.',
   "FIGURES. Choose from the catalogue below. Use a catalogue model only when the article's idea *is* that model's idea, not when it merely shares words. Otherwise use `expr-curve`: a curve y = f(x) for a relation the article states, as a formula or plainly in words, with 0–3 knobs (`curve.vars`) the reader changes. Each figure shows one idea. `controls` lists 1–3 params the reader drags (for `expr-curve`, `x` or var names); `readouts` lists 1–3 outputs (for `expr-curve`, `x` and `y`). `params` gives starting values as {name, value}; for `expr-curve` give `x` and every var. Pick starting params that show the interesting part, not the extreme.",

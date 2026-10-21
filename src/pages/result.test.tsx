@@ -30,7 +30,7 @@ describe('ResultPage', () => {
     let resolve!: (r: Response) => void;
     await show(vi.fn(() => new Promise<Response>((r) => (resolve = r))));
     expect(host.querySelector('[aria-busy="true"]')).not.toBeNull();
-    expect(host.querySelector('output')?.textContent).toBe('Fetching the article…');
+    expect(host.querySelector('.loading-stage')?.textContent).toBe('Fetching the article…');
     expect(getDraft()).toBe(URL_IN);
     const doc = { ...attention, provenance: { mode: 'ai', model: 'm', generatedAt: '2026-10-21T00:00:00.000Z' } };
     await act(async () => resolve(new Response(JSON.stringify({ ok: true, doc, cache: 'miss', mode: 'ai' }))));
