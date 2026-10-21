@@ -19,3 +19,36 @@ jobs:
       - run: pnpm check
       - run: pnpm build
       - run: pnpm check:size
+  skill:
+    # The /explorable skill: the committed kit bundle and example pages must be
+    # fresh, and the zero-dependency scripts must run on the oldest supported Node.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build:kit
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20.10'
+      - run: node --test skills/explorable/scripts/*.test.mjs
+      - name: Rebuild and audit the examples
+        run: |
+          for spec in skills/explorable/examples/*/explorable.json; do
+            node skills/explorable/scripts/build.mjs "$spec"
+            node skills/explorable/scripts/audit.mjs "$spec"
+            node skills/explorable/scripts/audit.mjs "$(dirname "$spec")/index.html"
+          done
+      - name: Committed kit bundle and pages are unchanged
+        run: |
+          git status --short
+          git diff --exit-code
+          test -z "$(git status --porcelain)"
+      - name: Example pages work from file:// with the network off
+        run: node scripts/skill-page.mjs
+        env:
+          EXPLORABLE_CHROME_NO_SANDBOX: '1'

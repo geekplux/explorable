@@ -20,6 +20,7 @@
     "smoke": "node scripts/smoke.mjs",
     "e2e": "node scripts/e2e.mjs",
     "check:size": "node scripts/check-size.mjs",
+    "check:skill-page": "node scripts/skill-page.mjs",
     "check": "pnpm lint && pnpm typecheck && pnpm test",
     "types:worker": "wrangler types --strict-vars=false"
   },
