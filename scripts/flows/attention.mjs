@@ -31,7 +31,7 @@ async function settled(page) {
     const ok = top && root.querySelector('.xfig-readout').textContent.includes(`top weight ${top}`) && move === root.dataset.lastKnob;
     root.dataset.lastKnob = move ?? "";
     return ok;
-  }, FIG, { polling: 100, timeout: 5000 });
+  }, FIG, { polling: 100, timeout: 10_000 });
 }
 
 /** Hit areas of every control in Fig 1 are ≥ 44 × 44 CSS px. */

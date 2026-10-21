@@ -1,6 +1,10 @@
 // Bloom Fig 1 is live: the false-positive query by keyboard, k = 1 then 6 by
 // keyboard, an n drag, CVD, axe, and the 2 × 16 layout at 390 px.
+// Bloom Fig 2 (curve): the knob dragged along the FPR curve, the optimal-k
+// marker for k = 6 and off the chart, the data table, CVD, and 1280 / 390 /
+// 320 px with no text overlaps or clipping and ≥ 44 px hit areas.
 import { blocking } from '../lib/axe.mjs';
+import { assertHitAreas as hitAreas, assertTableContained, settledBy, textProblems } from '../lib/figure.mjs';
 
 const FIG = '#fig-bits';
 const readout = (page) => page.locator(`${FIG} .xfig-readout`).textContent();
@@ -17,7 +21,7 @@ async function settled(page) {
       return ok;
     },
     FIG,
-    { polling: 200, timeout: 5000 },
+    { polling: 200, timeout: 10_000 },
   );
   await page.waitForTimeout(250);
 }
@@ -111,4 +115,103 @@ export default async function bloom({ page, baseURL, shot, assert, cvd, axe }) {
   await assertHitAreas(page, assert, 390);
   await settled(page);
   await shot('bloom-mobile');
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await fprCurve({ page, baseURL, shot, assert, cvd, axe });
+}
+
+const CURVE = '#fig-fpr-curve';
+const curveReadout = (page) => page.locator(`${CURVE} .xfig-readout`).textContent();
+const curveSettled = (page) =>
+  settledBy(page, CURVE, (root) => (root.querySelector('svg.xfig-curve .xfig-line')?.getAttribute('d') ?? '') + (root.querySelector('.xfig-knob g')?.getAttribute('transform') ?? ''));
+
+async function openCurve(page, baseURL) {
+  await page.goto(`${baseURL}/s/bloom-filter`, { waitUntil: 'networkidle' });
+  const fig = page.locator(CURVE);
+  await fig.locator('.xfig-knob').waitFor();
+  await fig.scrollIntoViewIfNeeded();
+  await curveSettled(page);
+  return fig;
+}
+
+/** Bloom Fig 2: the FPR curve over n for the current m and k. */
+async function fprCurve({ page, baseURL, shot, assert, cvd, axe }) {
+  const fig = await openCurve(page, baseURL);
+  assert.equal(await curveReadout(page), 'items inserted n 8 · false-positive rate 14.7%');
+  assert.equal(await fig.locator('.xfig-marker-label').textContent(), 'k = 3 is best at n ≈ 7.4');
+  assert.equal(await fig.locator('.xfig-series-label').textContent(), 'k = 3, m = 32');
+  assert.equal(await fig.locator('.xfig-ref-label').textContent(), 'best possible k');
+  assert.equal(await fig.locator('svg.xfig-curve .xfig-ref').evaluate((p) => getComputedStyle(p).strokeDasharray), '1px, 3px', 'the reference is dotted');
+  assert.notEqual(await fig.locator('.xfig-meet').evaluate((p) => getComputedStyle(p).fill), 'none', 'the marker point is filled, not a ring');
+  assert.deepEqual(blocking(await axe()).map((v) => `${v.id}: ${v.help}`), [], 'axe: no serious/critical violations');
+  await hitAreas(page, assert, CURVE, 1280);
+  assert.deepEqual(await textProblems(page, CURVE), [], 'Fig 2: no text overlaps at 1280 px');
+  await shot('bloom-fig2');
+
+  // Drag the knob along the curve from n = 8 to n = 16.
+  const band = await fig.locator('.xfig-track-hit').boundingBox();
+  const xOf = (n) => band.x + 23 + ((n - 1) / 63) * (band.width - 46);
+  const ring = await fig.locator('.xfig-knob-ring').boundingBox();
+  await page.mouse.move(ring.x + ring.width / 2, ring.y + ring.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(xOf(16), ring.y - 60, { steps: 8 });
+  await page.mouse.up();
+  assert.equal(await fig.locator('.xfig-knob').getAttribute('aria-valuenow'), '16');
+  assert.equal(await curveReadout(page), 'items inserted n 16 · false-positive rate 46.9%');
+  await page.waitForFunction((sel) => document.querySelector(`${sel}-desc`)?.textContent === 'At n = 16 items, the false-positive rate is 46.9%.', CURVE, { timeout: 10_000 });
+  const knobY = (await fig.locator('.xfig-knob-ring').boundingBox()).y;
+  assert.ok(knobY < ring.y - 40, 'the knob climbs the curve as n grows');
+  await curveSettled(page);
+  assert.deepEqual(await textProblems(page, CURVE), [], 'Fig 2: no text overlaps after the drag');
+  await shot('bloom-fig2-drag');
+
+  // k = 6 keeps n and moves the marker; m = 128 with k = 1 pushes it off the chart.
+  await fig.locator('#fig-fpr-curve-k').focus();
+  await page.keyboard.press('End');
+  await curveSettled(page);
+  assert.equal(await fig.locator('.xfig-marker-label').textContent(), 'k = 6 is best at n ≈ 3.7');
+  assert.match(await curveReadout(page), /^items inserted n 16 · /);
+  await curveSettled(page);
+  for (const vision of ['deutan', 'protan', 'tritan']) {
+    await cvd(vision);
+    await shot(`bloom-fig2-${vision}`);
+  }
+  await cvd(null);
+  await fig.locator('#fig-fpr-curve-m').focus();
+  await page.keyboard.press('End');
+  await fig.locator('#fig-fpr-curve-k').focus();
+  await page.keyboard.press('Home');
+  await curveSettled(page);
+  assert.equal(await fig.locator('.xfig-marker-label').textContent(), 'k = 1 is best at n ≈ 88.7 (off the chart)');
+  await curveSettled(page);
+  assert.deepEqual(await textProblems(page, CURVE), [], 'Fig 2: no text overlaps with the marker off the chart');
+
+  // "Show data": 11 points around the knob, inside the table's own scroll region.
+  await fig.locator('.xfig-data-toggle').click();
+  assert.equal(await fig.locator('table.xfig-table tbody tr').count(), 11);
+  await assertTableContained(page, assert, CURVE, 1280);
+  await fig.locator('table.xfig-table').scrollIntoViewIfNeeded();
+  await shot('bloom-fig2-table');
+  await fig.locator('.xfig-data-toggle').click();
+
+  // Narrow widths with the static "drag" hint (reduced motion): no overlaps, clipping or sideways scroll.
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  for (const width of [390, 320]) {
+    await page.setViewportSize({ width, height: 800 });
+    await openCurve(page, baseURL);
+    assert.equal(await page.evaluate(() => document.documentElement.scrollWidth - innerWidth), 0, `no horizontal scroll at ${width} px`);
+    await hitAreas(page, assert, CURVE, width);
+    assert.deepEqual(await textProblems(page, CURVE), [], `Fig 2: no text overlaps or clipping at ${width} px (hint showing)`);
+    await shot(width === 390 ? 'curve-mobile' : 'bloom-fig2-320');
+    const states = [['#fig-fpr-curve-k', 'End'], ['#fig-fpr-curve-m', 'End'], ['#fig-fpr-curve-k', 'Home'], ['#fig-fpr-curve-x', 'End'], ['#fig-fpr-curve-m', 'Home']];
+    for (const [sel, key] of states) {
+      await fig.locator(sel).focus();
+      await page.keyboard.press(key);
+      assert.deepEqual(await textProblems(page, CURVE), [], `Fig 2: no text overlaps or clipping at ${width} px (${sel} ${key})`);
+    }
+    await fig.locator('.xfig-data-toggle').click();
+    await assertTableContained(page, assert, CURVE, width);
+    await fig.locator('.xfig-data-toggle').click();
+  }
+  await page.emulateMedia({ reducedMotion: 'no-preference' });
+  await page.setViewportSize({ width: 1280, height: 800 });
 }

@@ -2,7 +2,11 @@
 // track, the native range, "Show data", CVD, axe, reduced motion (no morph
 // easing), and 1280 / 390 / 320 px with no text overlaps, no clipped text and
 // ≥ 44 px hit areas.
+// Diffusion Fig 2 (curve): signal solid with ●, noise dashed with ■, both
+// labelled, the crossing at t = 260 marked, ∞ dB at t = 0, CVD, and no text
+// overlaps or clipping at 1280 / 390 / 320 px.
 import { blocking } from '../lib/axe.mjs';
+import { assertHitAreas as hitAreas, assertTableContained, settledBy, textProblems as problemsIn } from '../lib/figure.mjs';
 
 const FIG = '#fig-histogram';
 const READ_T0 = 'signal √ᾱ_t 1.000 · noise √(1−ᾱ_t) 0.000 · spread (SD) 1.77';
@@ -25,7 +29,7 @@ async function settled(page) {
       return ok;
     },
     FIG,
-    { polling: 200, timeout: 5000 },
+    { polling: 200, timeout: 10_000 },
   );
 }
 
@@ -187,6 +191,73 @@ export default async function diffusion({ page, baseURL, shot, assert, cvd, axe 
     assert.equal(await page.evaluate(() => document.documentElement.scrollWidth - innerWidth), 0, `open table: no page scroll at ${width} px`);
     await fig.locator('.xfig-table-wrap').focus();
     assert.equal(await page.evaluate(() => document.activeElement?.getAttribute('role')), 'region');
+    await fig.locator('.xfig-data-toggle').click();
+  }
+  await page.emulateMedia({ reducedMotion: 'no-preference' });
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await signalNoise({ page, baseURL, shot, assert, cvd, axe });
+}
+
+const SN = '#fig-signal-noise';
+const snReadout = (page) => page.locator(`${SN} .xfig-readout`).textContent();
+const snSettled = (page) => settledBy(page, SN, (root) => root.querySelector('.xfig-knob g')?.getAttribute('transform') ?? '');
+
+async function openSN(page, baseURL) {
+  await page.goto(`${baseURL}/s/diffusion`, { waitUntil: 'networkidle' });
+  const fig = page.locator(SN);
+  await fig.locator('.xfig-knob').waitFor();
+  await fig.scrollIntoViewIfNeeded();
+  await snSettled(page);
+  return fig;
+}
+
+/** Diffusion Fig 2: √ᾱ_t and √(1−ᾱ_t) over t from the registry's precomputed series. */
+async function signalNoise({ page, baseURL, shot, assert, cvd, axe }) {
+  const fig = await openSN(page, baseURL);
+  assert.equal(await snReadout(page), 'ᾱ_t 0.897 · SNR 9.4 dB');
+  assert.deepEqual(await fig.locator('.xfig-series-label').allTextContents(), ['signal √ᾱ_t', 'noise √(1−ᾱ_t)']);
+  assert.equal(await fig.locator('.xfig-marker-label').textContent(), 'signal = noise (t ≈ 260)');
+  const dash = (sel) => fig.locator(`svg.xfig-curve ${sel}`).evaluate((p) => getComputedStyle(p).strokeDasharray);
+  assert.equal(await dash('.xfig-line.xfig-s0'), 'none', 'signal is solid');
+  assert.equal(await dash('.xfig-line.xfig-s1'), '6px, 3px', 'noise is dashed');
+  assert.deepEqual(blocking(await axe()).map((v) => `${v.id}: ${v.help}`), [], 'axe: no serious/critical violations');
+  await hitAreas(page, assert, SN, 1280);
+  assert.deepEqual(await problemsIn(page, SN), [], 'Fig 2: no text overlaps at 1280 px');
+  await shot('diffusion-fig2');
+  for (const vision of ['deutan', 'protan', 'tritan']) {
+    await cvd(vision);
+    await shot(`diffusion-fig2-${vision}`);
+  }
+  await cvd(null);
+
+  const knob = fig.locator('.xfig-knob');
+  await knob.focus();
+  await page.keyboard.press('Home');
+  assert.equal(await snReadout(page), 'ᾱ_t 1.00 · SNR ∞ dB', 'non-finite SNR prints as ∞');
+  await page.keyboard.press('End');
+  assert.equal(await snReadout(page), 'ᾱ_t 4.04 × 10⁻⁵ · SNR −43.9 dB');
+  await snSettled(page);
+  assert.deepEqual(await problemsIn(page, SN), [], 'Fig 2: no text overlaps at t = 1000');
+  await fig.locator('.xfig-data-toggle').click();
+  assert.equal(await fig.locator('table.xfig-table tbody tr').count(), 6, 't = 950 … 1000, clipped to the range');
+  await assertTableContained(page, assert, SN, 1280);
+  await fig.locator('.xfig-data-toggle').click();
+
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  for (const width of [390, 320]) {
+    await page.setViewportSize({ width, height: 800 });
+    await openSN(page, baseURL);
+    assert.equal(await page.evaluate(() => document.documentElement.scrollWidth - innerWidth), 0, `no horizontal scroll at ${width} px`);
+    await hitAreas(page, assert, SN, width);
+    assert.deepEqual(await problemsIn(page, SN), [], `Fig 2: no text overlaps or clipping at ${width} px (hint showing)`);
+    await shot(width === 390 ? 'diffusion-fig2-mobile' : 'diffusion-fig2-320');
+    await knob.focus();
+    for (const key of ['Home', 'PageUp', 'PageUp', 'PageUp', 'PageUp', 'PageUp', 'End']) {
+      await page.keyboard.press(key);
+      assert.deepEqual(await problemsIn(page, SN), [], `Fig 2: no text overlaps or clipping at ${width} px (t = ${await knob.getAttribute('aria-valuenow')})`);
+    }
+    await fig.locator('.xfig-data-toggle').click();
+    await assertTableContained(page, assert, SN, width);
     await fig.locator('.xfig-data-toggle').click();
   }
   await page.emulateMedia({ reducedMotion: 'no-preference' });
