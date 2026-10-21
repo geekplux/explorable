@@ -9,14 +9,24 @@ export const FIGURE_KINDS = ['bars', 'bits', 'histogram', 'curve'] as const;
 
 const slug = (what: string) =>
   v.pipe(v.string(), v.regex(/^[a-z0-9][a-z0-9-]*$/, `${what} must be lowercase letters, digits and dashes`));
-/** Whitespace and invisible format characters (zero-width space, joiners, bidi marks): never counted as text. */
-const INVISIBLE = /[\p{Cf}\s]/gu;
-/** A string with at least `min` visible characters (padding and zero-width characters never count) and at most `max` in all. */
+/**
+ * Whitespace, invisible format characters (zero-width space, joiners, bidi marks) and combining marks
+ * (a lone U+0301 shows nothing on its own): never counted as text.
+ */
+const INVISIBLE = /[\p{Cf}\p{M}\s]/gu;
+/** A string with at least `min` visible characters (padding, zero-width characters and marks never count) and at most `max` in all. */
 const text = (max: number, min = 1) =>
   v.pipe(
     v.string(),
     v.check((s) => s.replace(INVISIBLE, '').length >= min, min === 1 ? 'must not be empty' : `must be at least ${min} characters`),
     v.maxLength(max, `must be at most ${max} characters`),
+  );
+/** A label a figure shows (a control or an axis): it must say something, so it needs a letter or digit, not only "-" or "—". */
+const SAYS = /[\p{L}\p{N}]/u;
+const label = (max: number) =>
+  v.pipe(
+    text(max),
+    v.check((s) => SAYS.test(s.replace(INVISIBLE, '')), 'must have a letter or digit; a label must say what it marks'),
   );
 const list = <T extends v.GenericSchema>(item: T, min: number, max: number) =>
   v.pipe(v.array(item), v.minLength(min, `needs ${min} to ${max} items`), v.maxLength(max, `needs ${min} to ${max} items`));
@@ -25,7 +35,7 @@ const range = <T extends { min: number; max: number }>(input: T) => input.min < 
 const ExprParamSchema = v.pipe(
   v.strictObject({
     name: v.pipe(v.string(), v.regex(/^[A-Za-z_]\w*$/, 'must be an identifier')),
-    label: text(60),
+    label: label(60),
     min: v.number(),
     max: v.number(),
     default: v.number(),
@@ -40,14 +50,14 @@ const ExprCurveModelSchema = v.strictObject({
   x: v.pipe(
     v.strictObject({
       name: v.literal('x', 'must be "x"'),
-      label: text(60),
+      label: label(60),
       min: v.number(),
       max: v.number(),
       scale: v.optional(v.picklist(['linear', 'log'])),
     }),
     v.check(range, 'needs min < max'),
   ),
-  y: v.strictObject({ label: text(60), min: v.optional(v.number()), max: v.optional(v.number()) }),
+  y: v.strictObject({ label: label(60), min: v.optional(v.number()), max: v.optional(v.number()) }),
   params: v.pipe(v.array(ExprParamSchema), v.maxLength(6, 'at most 6 params')),
 });
 

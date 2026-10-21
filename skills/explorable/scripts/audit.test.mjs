@@ -122,6 +122,23 @@ describe('audit: failing fixtures', () => {
     fails(problems, /figure "fig-cooling": options\.refLabel is empty/);
     assert.ok(!problems.some((p) => /seriesLabels\[1\]/.test(p)), problems.join('\n'));
   });
+  it('a param label "-" and an axis label made only of a combining mark', () => {
+    const doc = newton();
+    const m = fig(doc).model;
+    m.params[0].label = '-';
+    m.x.label = '\u0301';
+    const problems = auditSpec(doc);
+    fails(problems, /schema: sections\[\d\]\.figure\.model\.params\[0\]\.label: must have a letter or digit/);
+    fails(problems, /schema: sections\[\d\]\.figure\.model\.x\.label: must not be empty/);
+  });
+  it('a marker label that is only a placeholder says only a number', () => {
+    const doc = newton();
+    Object.assign(fig(doc).options, { markerLabel: '{marker}', refLabel: ' {y:fixed1} \u200B', seriesLabels: ['k = {k}', 'room'] });
+    const problems = auditSpec(doc);
+    fails(problems, /figure "fig-cooling": options\.markerLabel "\{marker\}" says only a number; add what it marks/);
+    fails(problems, /figure "fig-cooling": options\.refLabel ".*" says only a number; add what it marks/);
+    assert.ok(!problems.some((p) => /seriesLabels/.test(p)), problems.join('\n'));
+  });
   it('unknown model', () => {
     const doc = bloom();
     fig(doc).model.id = 'bloom-filtre';

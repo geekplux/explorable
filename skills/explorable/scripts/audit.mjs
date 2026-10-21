@@ -46,11 +46,17 @@ function auditFigure(fig) {
   }
   const o = fig.options ?? {};
   // Labels carry meaning (never colour alone), so a label the figure shows must have a visible letter or digit:
-  // not blank, not only zero-width characters, not only punctuation such as "-".
+  // not blank, not only zero-width characters or combining marks, not only punctuation such as "-". A template
+  // is judged by its words, so "{marker}" (just the number) fails while "k = {k}" passes.
   for (const key of LABEL_KEYS) {
     if (o[key] === undefined) continue;
-    const blank = [o[key]].flat().map((v, i) => (typeof v === 'string' && !SAYS.test(v.replace(INVISIBLE, '')) ? i : -1)).filter((i) => i >= 0);
-    for (const i of blank) out.push(`options.${key}${Array.isArray(o[key]) ? `[${i}]` : ''} is empty; every label must say what it marks`);
+    [o[key]].flat().forEach((v, i) => {
+      if (typeof v !== 'string') return;
+      const words = v.replace(PLACEHOLDER, '').replace(INVISIBLE, '');
+      if (SAYS.test(words)) return;
+      const where = `options.${key}${Array.isArray(o[key]) ? `[${i}]` : ''}`;
+      out.push(PLACEHOLDER_ONE.test(v) ? `${where} "${v}" says only a number; add what it marks` : `${where} is empty; every label must say what it marks`);
+    });
   }
   // Every number the figure shows must be finite wherever a reader can put it: at the defaults and at every
   // stop of every control (the others held at their defaults). That covers the readouts, the marker and
@@ -92,8 +98,11 @@ function auditFigure(fig) {
   return out;
 }
 
-/** Whitespace and invisible format characters, stripped before a label is measured (as the schema's text() does). */
-const INVISIBLE = /[\p{Cf}\s]/gu;
+/** Whitespace, invisible format characters and combining marks, stripped before a label is measured (as the schema's text() does). */
+const INVISIBLE = /[\p{Cf}\p{M}\s]/gu;
+/** A `{output}` or `{output:format}` slot in a template (the kit's fillTemplate syntax); it fills in a number, not words. */
+const PLACEHOLDER = /\{\w+(?::\w+)?\}/g;
+const PLACEHOLDER_ONE = /\{\w+(?::\w+)?\}/;
 /** A label says something when it has at least one letter or digit. */
 const SAYS = /[\p{L}\p{N}]/u;
 
