@@ -1,0 +1,260 @@
+[
+ {
+  "coreIdea": "Dividing every logit by a temperature before the softmax decides how sharply a language model prefers its top word.",
+  "title": "Temperature decides how sure the next word is",
+  "dek": "A softmax turns scores into chances. Divide the scores by a temperature first, and one number slides the model from greedy to adventurous.",
+  "sections": [
+   {
+    "heading": "Scores become chances",
+    "paragraphs": [
+     "At each step a language model gives every word a score, a *logit*. A softmax turns the scores into probabilities: `pᵢ = e^(sᵢ) / Σⱼ e^(sⱼ)`."
+    ]
+   },
+   {
+    "heading": "One knob for sharpness",
+    "paragraphs": [
+     "Sampling code divides every logit by a temperature T first. Drag T below 1 and watch the top word take almost everything. Drag it above 1 and the bars even out."
+    ]
+   },
+   {
+    "heading": "From greedy to adventurous",
+    "paragraphs": [
+     "Close scores make the knob matter more. With five near-equal logits, T decides whether the model always says the same thing or wanders. As T approaches 0, sampling becomes **greedy decoding**."
+    ]
+   }
+  ],
+  "figures": [
+   {
+    "section": 1,
+    "model": "softmax-temperature",
+    "title": "Temperature sharpens the softmax",
+    "caption": "Five candidate next words for “The cat sat on the …”. Drag T.",
+    "alt": "Bar chart of the chance of five next words at temperature 1, with “mat” highest. Lowering T sharpens the bars into one spike on “mat”; raising T flattens them toward equal heights.",
+    "params": [
+     {
+      "name": "T",
+      "value": 1
+     },
+     {
+      "name": "n",
+      "value": 5
+     },
+     {
+      "name": "s1",
+      "value": 3
+     },
+     {
+      "name": "s2",
+      "value": 1.8
+     },
+     {
+      "name": "s3",
+      "value": 1.2
+     },
+     {
+      "name": "s4",
+      "value": 0.5
+     },
+     {
+      "name": "s5",
+      "value": -1
+     }
+    ],
+    "controls": [
+     "T"
+    ],
+    "readouts": [
+     "top",
+     "entropy"
+    ],
+    "labels": [
+     "mat",
+     "rug",
+     "floor",
+     "sofa",
+     "moon"
+    ]
+   },
+   {
+    "section": 2,
+    "model": "softmax-temperature",
+    "title": "Close scores, big swings",
+    "caption": "Five words with nearly equal logits. Small changes in T move a lot of probability.",
+    "alt": "Bar chart of five next words whose logits differ by less than one, nearly level at temperature 1. Lowering T toward 0.05 hands almost all of the probability to the first word.",
+    "params": [
+     {
+      "name": "T",
+      "value": 1
+     },
+     {
+      "name": "n",
+      "value": 5
+     },
+     {
+      "name": "s1",
+      "value": 1
+     },
+     {
+      "name": "s2",
+      "value": 0.8
+     },
+     {
+      "name": "s3",
+      "value": 0.7
+     },
+     {
+      "name": "s4",
+      "value": 0.5
+     },
+     {
+      "name": "s5",
+      "value": 0.2
+     }
+    ],
+    "controls": [
+     "T"
+    ],
+    "readouts": [
+     "top",
+     "entropy"
+    ],
+    "labels": [
+     "walked",
+     "ran",
+     "drove",
+     "flew",
+     "swam"
+    ]
+   }
+  ],
+  "takeaway": "A softmax only cares about score differences measured against T. Divide by a small T and the top word wins outright; divide by a large T and every word gets a chance."
+ },
+ {
+  "coreIdea": "A hot object cools in proportion to how much hotter it is than the room, so the gap shrinks by the same fraction every minute.",
+  "title": "Why coffee cools fast, then slowly",
+  "dek": "The rate of cooling is proportional to the gap to room temperature. That one rule gives an exponential curve and a fixed half-life for the gap.",
+  "sections": [
+   {
+    "heading": "Heat flows down the gap",
+    "paragraphs": [
+     "A cup at 90 °C in a 20 °C room loses heat quickly. At 25 °C it barely cools. Newton's law of cooling makes this exact: the rate is proportional to the gap, T − Tₐ."
+    ]
+   },
+   {
+    "heading": "The curve",
+    "paragraphs": [
+     "Solve it and you get `T(t) = Tₐ + (T₀ − Tₐ)·e^(−kt)`. Drag the point along time and watch the drop slow down. Raise k, the cooling constant, and the whole curve falls faster."
+    ]
+   },
+   {
+    "heading": "A half-life for the gap",
+    "paragraphs": [
+     "The gap halves every `ln 2 / k` minutes, whatever T₀ is. A cup at 90 °C and one at 50 °C take the same time to halve their gaps."
+    ]
+   }
+  ],
+  "figures": [
+   {
+    "section": 1,
+    "model": "expr-curve",
+    "title": "Temperature over time",
+    "caption": "T(t) = Tₐ + (T₀ − Tₐ)·e^(−kt). Drag the point, then change k and T₀.",
+    "alt": "Line chart of temperature against time from 0 to 60 minutes, falling from 90 °C toward a room temperature of 20 °C, steeply at first and then slowly. Raising k makes the fall steeper.",
+    "params": [
+     {
+      "name": "x",
+      "value": 10
+     },
+     {
+      "name": "k",
+      "value": 0.05
+     },
+     {
+      "name": "T0",
+      "value": 90
+     },
+     {
+      "name": "Ta",
+      "value": 20
+     }
+    ],
+    "controls": [
+     "x",
+     "k",
+     "T0"
+    ],
+    "readouts": [
+     "x",
+     "y"
+    ],
+    "curve": {
+     "expr": "Ta + (T0 - Ta)*exp(-k*x)",
+     "x": {
+      "label": "time (minutes)",
+      "min": 0,
+      "max": 60
+     },
+     "y": {
+      "label": "temperature (°C)",
+      "min": 0,
+      "max": 100
+     },
+     "vars": [
+      {
+       "name": "k",
+       "label": "cooling constant k (per minute)",
+       "min": 0.01,
+       "max": 0.2
+      },
+      {
+       "name": "T0",
+       "label": "start temperature T₀ (°C)",
+       "min": 40,
+       "max": 100
+      },
+      {
+       "name": "Ta",
+       "label": "room temperature Tₐ (°C)",
+       "min": 10,
+       "max": 30
+      }
+     ]
+    }
+   },
+   {
+    "section": 2,
+    "model": "expr-curve",
+    "title": "Faster cooling, shorter half-life",
+    "caption": "The time for the gap to halve, ln 2 / k, against k.",
+    "alt": "Line chart of the gap's half-life against the cooling constant k from 0.01 to 0.3 per minute: about 69 minutes at k = 0.01, falling steeply and then flattening near 2 minutes at k = 0.3.",
+    "params": [
+     {
+      "name": "x",
+      "value": 0.05
+     }
+    ],
+    "controls": [
+     "x"
+    ],
+    "readouts": [
+     "x",
+     "y"
+    ],
+    "curve": {
+     "expr": "ln(2)/x",
+     "x": {
+      "label": "cooling constant k (per minute)",
+      "min": 0.01,
+      "max": 0.3
+     },
+     "y": {
+      "label": "half-life of the gap (minutes)",
+      "min": 0
+     },
+     "vars": []
+    }
+   }
+  ],
+  "takeaway": "Cooling is proportional to the gap, so the gap decays exponentially, T(t) = Tₐ + (T₀ − Tₐ)·e^(−kt), and halves every ln 2 / k minutes from any start."
+ }
+]

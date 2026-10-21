@@ -1,0 +1,37 @@
+name: Sample request
+description: Suggest a paper, post or concept for a built-in sample explorable.
+labels: [sample]
+body:
+  - type: input
+    id: source
+    attributes:
+      label: Source
+      description: An arXiv or blog URL, or the name of the concept.
+    validations:
+      required: true
+  - type: textarea
+    id: core
+    attributes:
+      label: Its core idea
+      description: The single idea a reader should leave with.
+    validations:
+      required: true
+  - type: textarea
+    id: figures
+    attributes:
+      label: Two or three figures
+      description: What each figure lets the reader drag, and which model (existing or new) computes it.
+  - type: dropdown
+    id: language
+    attributes:
+      label: Language
+      options:
+        - English
+        - A translation of an existing sample
+  - type: checkboxes
+    id: rules
+    attributes:
+      label: Fit
+      options:
+        - label: The source is publicly readable, and the topic is not finance-related.
+          required: true

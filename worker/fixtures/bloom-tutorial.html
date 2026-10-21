@@ -1,0 +1,157 @@
+<html>
+<head>
+  <title>Bloom Filters by Example</title>
+  <style type="text/css">#content { width: 650px; margin: auto; }</style>
+  <script src="./murmurhash.js"></script>
+  <script>var seed1 = Math.floor(Math.random() * 2e32); // hash mixing for the demo</script>
+</head>
+<body>
+  <a aria-label="View source on GitHub" class="github-corner" href="https://github.com/llimllib/bloomfilter-tutorial" rel="noopener"><svg aria-hidden="true" class="github-corner-svg" height="110" viewBox="0 0 250 250" width="110"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z" /></svg></a>
+  <div id="content">
+    <span style="float: right"><a href="./zh_CN/">简体中文</a></span>
+    <h1>Bloom Filters by Example</h1>
+
+    <p>A Bloom filter is a data structure designed to tell you, rapidly and memory-efficiently, whether an element is
+      present in a set.
+
+    <p>The base data structure of a Bloom filter is a <strong>Bit Vector</strong>. Here's a small one we'll use to
+      demonstrate:
+
+    <div class="insetbox">
+      <table id="bitvector" border=1 cellpadding=0 cellspacing=0>
+        <tr id="bits"></tr>
+        <tr id="labels"></tr>
+      </table>
+    </div>
+
+    <p>Each empty cell in that table represents a bit, and the number below it its index. To add an element to the Bloom
+      filter, we simply hash it a few times and set the bits in the bit vector at the index of those hashes to 1.
+
+    <p>It's easier to see what that means than explain it, so enter some strings and see how the bit vector changes. Fnv
+      and Murmur are two simple hash functions:
+
+    <div id="addstring" class="insetbox">
+      <p>Enter a string: <input id="addtoset"><input type="submit" id="hash" value="add to bloom filter">
+
+      <div id="hashes">
+        fnv: <span id="fnv"></span><br>
+        murmur: <span id="murmur"></span>
+      </div>
+
+      <p>Your set: [<span id="yourset"></span>]
+    </div>
+
+    <p>When you add a string, you can see that the bits at the index given by the hashes are set to 1. I've used the
+      color green to show the newly added ones, but any colored cell is simply a 1.
+
+    <p>To test for membership, you simply hash the string with the same hash functions, then see if those values are set
+      in the bit vector. If they aren't, you know that the element isn't in the set. If they are, you only know that it
+      <em>might</em> be, because another element or some combination of other elements could have set the same bits.
+      Again, let's demonstrate:
+
+    <div id="testmembership" class="insetbox">
+      <p>Test an element for membership: <input id="membership">
+      <div id="memhashes">
+        fnv: <span id="memfnv"></span><br>
+        murmur: <span id="memmurmur"></span>
+      </div>
+
+      <p>Is the element in the set? <span id="ismember">no</span>
+
+      <p>Probability of a false positive: <span id="false_pos_prob">0%</span>
+    </div>
+
+    <p>And that's the basics of a bloom filter!
+
+    <h2>Advanced Topics</h2>
+
+    <p>Before I write a bit more about Bloom filters, a disclaimer: I've never used them in production. Don't take my
+      word for it. All I intend to do is give you general ideas and pointers to where you can find out more.
+
+    <p>In the following text, we will refer to a Bloom filter with <em>k</em> hashes, <em>m</em> bits in the filter, and
+      <em>n</em> elements that have been inserted.
+
+    <h3>Hash Functions</h3>
+
+    <p>The hash functions used in a Bloom filter should be <strong><a
+          href="http://en.wiktionary.org/wiki/independent_function">independent</a></strong> and <strong><a
+          href="http://en.wikipedia.org/wiki/Uniform_distribution_(discrete)">uniformly distributed</a></strong>. They
+      should also be as fast as possible (cryptographic hashes such as sha1, though widely used therefore are not very
+      good choices).
+
+    <p>Examples of fast, simple hashes that are independent enough<sup><a href="#footnote3">3</a></sup> include <a
+        href="https://github.com/aappleby/smhasher">murmur</a>, <a
+        href="https://github.com/Cyan4973/xxHash">xxHash</a>, the <a
+        href="http://isthe.com/chongo/tech/comp/fnv/">fnv</a> series of hashes, and <a
+        href="https://web.archive.org/web/20061030103559/http://www.concentric.net/~Ttwang/tech/inthash.htm">HashMix</a>.
+
+    <p>To see the difference that a faster-than-cryptographic hash function can make, <a
+        href="https://github.com/bitly/dablooms/pull/19">check out this story</a> of a ~800% speedup when switching a
+      bloom filter implementation from md5 to murmur.
+
+    <p>In a short survey of bloom filter implementations:
+    <ul>
+      <li><a href="https://plan9.io/sources/plan9/sys/src/cmd/venti/srv/bloom.c">Plan9</a> uses a simple hash as proposed in <a href="http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.152.579&rank=1">Mitzenmacher 2005</a></li>
+      <li><a href="https://github.com/squid-cache/squid/blob/master/src/store_key_md5.cc">Squid</a> uses MD5</li>
+    </ul>
+
+    <h3>How big should I make my Bloom filter?</h3>
+
+    <p>It's a nice property of Bloom filters that you can modify the false positive rate of your filter. A larger filter
+      will have less false positives, and a smaller one more.
+
+    <p>Your false positive rate will be approximately <em>(1-e<sup>-kn/m</sup>)<sup>k</sup></em>, so you can just plug
+      the number <em>n</em> of elements you expect to insert, and try various values of <em>k</em> and <em>m</em> to
+      configure your filter for your application.<sup><a href="#footnote2">2</a></sup>
+
+    <p>This leads to an obvious question:
+
+    <h3>How many hash functions should I use?</h3>
+
+    <p>The more hash functions you have, the slower your bloom filter, and the quicker it fills up. If you have too few,
+      however, you may suffer too many false positives.
+
+    <p>Since you have to pick <em>k</em> when you create the filter, you'll have to ballpark what range you expect
+      <em>n</em> to be in. Once you have that, you still have to choose a potential <em>m</em> (the number of bits) and
+      <em>k</em> (the number of hash functions).
+
+    <p>It seems a difficult optimization problem, but fortunately, given an <em>m</em> and an <em>n</em>, we have a
+      function to choose the optimal value of <em>k</em>: <em>(m/n)ln(2)</em> <sup><a href="#footnote2">2</a>, <a
+          href="#footnote3">3</a></sup>
+
+    <p>So, to choose the size of a bloom filter, we:
+
+    <p>
+    <ol>
+      <li>Choose a ballpark value for <em>n</em>
+      <li>Choose a value for <em>m</em>
+      <li>Calculate the optimal value of <em>k</em>
+      <li>Calculate the error rate for our chosen values of <em>n</em>, <em>m</em>, and <em>k</em>. If it's
+        unacceptable, return to step 2 and change m; otherwise we're done.
+    </ol>
+
+    <h3>How fast and space efficient is a Bloom filter?</h3>
+
+    <p>Given a Bloom filter with <em>m</em> bits and <em>k</em> hashing functions, both insertion and membership testing
+      are <em>O(k)</em>. That is, each time you want to add an element to the set or check set membership, you just need
+      to run the element through the <em>k</em> hash functions and add it to the set or check those bits.
+
+    <p>The space advantages are more difficult to sum up; again it depends on the error rate you're willing to tolerate.
+      It also depends on the potential range of the elements to be inserted; if it is very limited, a deterministic bit
+      vector can do better. If you can't even ballpark estimate the number of elements to be inserted, you may be better
+      off with a hash table or a scalable Bloom filter<sup><a href="#footnote4">4</a></sup>.
+
+    <h3>What can I use them for?</h3>
+
+    <p>I'll link you to <a href="http://en.wikipedia.org/wiki/Bloom_filter#Examples">wiki</a> instead of copying what
+      they say. <a
+        href="https://archive.org/details/pyvideo_402___handling-ridiculous-amounts-of-data-with-probabilistic-data-structures">C.
+        Titus Brown</a> also has an excellent talk on an application of Bloom filters to bioinformatics.
+
+    <h3>References</h3>
+
+    <p><a name="footnote1">1:</span> <a href="http://citeseer.ist.psu.edu/viewdoc/summary?doi=10.1.1.127.9672">Network
+          Applications of Bloom Filters: A Survey</a>, Broder and Mitzenmacher. An excellent overview.
+  </div>
+</body>
+</html>

@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Why ropes beat strings for big edits | Field Notes</title>
+  <meta property="og:title" content="Why ropes beat strings for big edits">
+  <meta name="description" content="A rope stores text as a balanced tree of short chunks, so an edit in the middle touches only a few nodes.">
+  <meta name="author" content="Ada Example">
+  <meta property="article:published_time" content="2024-03-18T09:00:00Z">
+</head>
+<body class="has-sidebar">
+  <header class="site-header">
+    <a href="/">Field Notes</a>
+    <nav><ul><li><a href="/">Home</a></li><li><a href="/archive">Archive of every post we ever wrote</a></li><li><a href="/about">About this site and its authors</a></li></ul></nav>
+  </header>
+  <div class="cookie-banner">We use cookies to remember your reading position across visits to this site.</div>
+  <main>
+    <article>
+      <header><h1>Why ropes beat strings for big edits</h1><p class="byline">By Ada Example, March 2024</p></header>
+      <p>Text editors spend most of their time doing small edits in the middle of large files. A plain string makes every one of those edits expensive, because inserting a character means copying everything after it.</p>
+      <h2>The idea</h2>
+      <p>A rope stores the text as a balanced binary tree whose leaves hold short chunks of characters. Each inner node remembers the length of its left subtree, which is enough to find any position by walking down from the root.</p>
+      <p>To insert text, you split the leaf at the cursor and hang a new leaf in between. Only the nodes on one path from the root change, so the cost grows with the logarithm of the file size instead of the file size itself.</p>
+      <h2>When it pays off</h2>
+      <p>For a short note, a string is simpler and just as fast. Once files reach megabytes, the copy cost dominates, and a rope keeps every keystroke cheap. Concatenation also becomes a single new node, which makes undo history cheap to keep around.</p>
+      <ul>
+        <li>Insert and delete in O(log n) time instead of O(n).</li>
+        <li><a href="/tag/trees">trees</a></li>
+      </ul>
+      <div class="share-buttons"><p>Share this post with a friend who edits large files every day.</p></div>
+    </article>
+    <aside class="related"><h2>Related posts</h2><p>Gap buffers explained in one picture, and why many editors still use them.</p></aside>
+  </main>
+  <section id="comments"><p>Great post! I always wondered how big editors stay responsive when files get huge.</p></section>
+  <footer><p>Copyright Field Notes. All rights reserved. Built with a static site generator.</p></footer>
+  <script>window.analytics = [];</script>
+</body>
+</html>

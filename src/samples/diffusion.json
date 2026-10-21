@@ -1,0 +1,157 @@
+{
+  "schema": 1,
+  "id": "diffusion",
+  "title": "Noise, one step at a time",
+  "dek": "A diffusion model's forward process blurs data into pure Gaussian noise over 1,000 small steps, and a closed form jumps straight to any step: x_t = √ᾱ_t·x₀ + √(1−ᾱ_t)·ε.",
+  "source": {
+    "kind": "arxiv",
+    "url": "https://arxiv.org/abs/2006.11239",
+    "title": "Denoising Diffusion Probabilistic Models",
+    "authors": [
+      "Jonathan Ho",
+      "Ajay Jain",
+      "Pieter Abbeel"
+    ],
+    "year": 2020
+  },
+  "provenance": {
+    "mode": "curated",
+    "generatedAt": "2026-10-19T00:00:00.000Z"
+  },
+  "sections": [
+    {
+      "id": "start-with-data",
+      "heading": "Start with data",
+      "paragraphs": [
+        "A diffusion model learns to make data by first learning how it gets destroyed. The destroying half, the *forward process*, has no learned parts at all: it is a fixed recipe that adds noise. Ho, Jain and Abbeel's denoising diffusion probabilistic models (DDPM) apply it to images, but every pixel follows the same rule, so one number is enough to watch it work.",
+        "Our data is 2,000 numbers drawn from two clumps, one around −2 and one around +1.5, each with a spread of 0.25. Think of them as two kinds of picture. The question is what the noise does to the clumps, step by step."
+      ]
+    },
+    {
+      "id": "one-small-step",
+      "heading": "One small step",
+      "paragraphs": [
+        "Each step shrinks the current value a little and adds a little fresh Gaussian noise: `x_t = √(1 − β_t)·x_(t−1) + √β_t·ε`, with ε drawn from N(0, 1). The shrink matters. If x_(t−1) already has variance 1, the new value has variance `(1 − β_t) + β_t = 1`. Without the shrink, noise would pile up and the values would drift ever wider.",
+        "The step sizes β_t follow a schedule. DDPM uses T = 1,000 steps with β rising linearly from 0.0001 at the first step to 0.02 at the last. Early steps barely touch the data; the last steps are 200 times larger."
+      ]
+    },
+    {
+      "id": "jump-to-any-step",
+      "heading": "Jump to any step",
+      "paragraphs": [
+        "Steps compose. Multiply the shrink factors together, `ᾱ_t = (1 − β₁)(1 − β₂)…(1 − β_t)`, and the whole chain from x₀ collapses into one line: `x_t = √ᾱ_t·x₀ + √(1 − ᾱ_t)·ε`. The first coefficient, √ᾱ_t, is how much of the original signal is left; the second, √(1 − ᾱ_t), is how much noise has replaced it.",
+        "The figure uses that line directly. Scrub t from 0 to 1,000. At t = 100 the clumps are softer but still apart. Around t = 370 they merge into one hump. By t = 600 only 16% of the signal is left and the samples sit on the dotted N(0, 1) curve; at t = 1,000 their spread is 1.01 and the data is gone."
+      ],
+      "figure": {
+        "id": "fig-histogram",
+        "kind": "histogram",
+        "title": "Two clumps become one bell",
+        "caption": "2,000 samples (seed 2020) pushed through DDPM's linear schedule, β from 0.0001 to 0.02 over 1,000 steps. Each histogram is the exact distribution at that step; each sample keeps one fixed noise draw, so its path between steps is illustrative.",
+        "alt": "Histogram of 2,000 numbers from two clumps, centred near −2 and +1.5, at diffusion step t = 0. As t increases to 1,000 the clumps shrink toward 0, blur, merge into one hump around t = 370 and end as the standard normal curve N(0, 1).",
+        "model": {
+          "id": "diffusion-forward",
+          "params": {
+            "t": 0,
+            "seed": 2020
+          }
+        },
+        "controls": [
+          "t"
+        ],
+        "readouts": [
+          "signal",
+          "noise",
+          "sd"
+        ],
+        "options": {
+          "handle": "t",
+          "ticks": [
+            "0",
+            "250",
+            "500",
+            "750",
+            "1000"
+          ],
+          "ghost": true,
+          "refLabel": "N(0, 1)"
+        }
+      }
+    },
+    {
+      "id": "signal-and-noise",
+      "heading": "Signal fades, noise rises",
+      "paragraphs": [
+        "Plot the two coefficients against t and the schedule shows its shape. The signal √ᾱ_t falls slowly at first, then quickly, then hardly at all; the noise √(1 − ᾱ_t) mirrors it. They cross at t ≈ 260, where ᾱ_t = 0.5 and the signal-to-noise ratio `ᾱ_t / (1 − ᾱ_t)` is exactly 1, or 0 dB.",
+        "Most of the change happens in the first half. Past t ≈ 750 the signal is under 6%, and each further step changes little. Later papers proposed other schedules for exactly this reason: the schedule is a design choice, not a law."
+      ],
+      "figure": {
+        "id": "fig-signal-noise",
+        "kind": "curve",
+        "title": "How much signal is left at each step",
+        "caption": "Both curves come from the same schedule as the figure above, β from 0.0001 to 0.02. Drag along the signal curve; the readout shows ᾱ_t and the signal-to-noise ratio in decibels.",
+        "alt": "Line chart over diffusion steps 0 to 1,000: the signal coefficient (the square root of alpha-bar) falls from 1 to almost 0, slowly at first, then steeply between steps 100 and 600, while the noise coefficient (the square root of one minus alpha-bar) rises from 0 to 1. They cross at step 260.",
+        "model": {
+          "id": "diffusion-forward",
+          "params": {
+            "t": 100,
+            "seed": 2020
+          }
+        },
+        "controls": [
+          "t"
+        ],
+        "readouts": [
+          "alphaBar",
+          "snrDb"
+        ],
+        "options": {
+          "handle": "t",
+          "xParam": "t",
+          "series": [
+            "signalSeries",
+            "noiseSeries"
+          ],
+          "seriesLabels": [
+            "signal √ᾱ_t",
+            "noise √(1−ᾱ_t)"
+          ],
+          "seriesSpoken": [
+            "signal, square root of alpha-bar",
+            "noise, square root of one minus alpha-bar"
+          ],
+          "markers": [
+            "crossT"
+          ],
+          "markerLabels": [
+            "signal = noise (t ≈ {marker})"
+          ],
+          "ticks": [
+            "0",
+            "250",
+            "500",
+            "750",
+            "1000"
+          ],
+          "yLabel": "coefficient",
+          "markEvery": 100,
+          "tableStep": 10,
+          "tableColumns": [
+            "alphaBar",
+            "signal",
+            "noise",
+            "snrDb"
+          ],
+          "describe": "At t = {t}, alpha-bar is {alphaBar}: signal {signal:fixed2}, noise {noise:fixed2}, signal-to-noise ratio {snrDb:fixed1} dB."
+        }
+      }
+    },
+    {
+      "id": "why-it-matters",
+      "heading": "Why the shortcut matters",
+      "paragraphs": [
+        "Generation runs the process backwards: a network learns to predict the noise ε that was mixed into x_t, so it can take a little of it away at each step. Training needs examples at random steps, and the closed form makes each one cheap: pick an x₀, pick a t, draw ε and form `√ᾱ_t·x₀ + √(1 − ᾱ_t)·ε` in one line, with no loop over the earlier steps. DDPM's simplified training objective is just the squared error between the true ε and the predicted one."
+      ]
+    }
+  ],
+  "takeaway": "The forward process is a fixed schedule of tiny shrink-and-add-noise steps. Their product ᾱ_t gives a one-line jump to any step, x_t = √ᾱ_t·x₀ + √(1 − ᾱ_t)·ε, and by t = 1,000 any data has become N(0, 1)."
+}
