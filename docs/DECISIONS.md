@@ -46,3 +46,8 @@ Record every non-trivial decision here: date, decision, alternatives considered,
 | 2026-10-20 | Default x step = power of ten ≤ range/100 when unspecified | range/100 or range/1000 | Keeps round values exact (e.g. x0 = 8). |
 | 2026-10-20 | Invalid `expr-curve` expressions leave the figure as its static shell (alt + caption), no runtime error | Throw / visible error | F6: invalid plans degrade, never crash; the static alt still teaches. |
 | 2026-10-20 | `log` = natural log (alias of `ln`) in the expression language | log10 | Matches JS `Math.log` and most papers' notation. |
+| 2026-10-20 | Pin `wrangler` 4.151.0 to match `@cloudflare/vite-plugin` 1.64.0's exact dependency | Latest wrangler | Avoids a second wrangler/workerd copy on a RAM-tight machine. |
+| 2026-10-20 | `EXPLORABLE_DEBUG="1"` in the local-only top-level wrangler config; production env (P15) must set `"0"` | Off by default | Top-level config is local-safe by design; `/api/extract` is a dev aid. |
+| 2026-10-20 | URL guard blocks all IPv6 literals, dotless hosts and `.local/.internal/.lan/.home.arpa`; decimal/hex/octal IPv4 forms are normalised by URL parsing and blocked | DNS pre-resolution | Workers can't resolve DNS before fetch; strict literal blocking + per-redirect re-check is the practical SSRF guard. |
+| 2026-10-20 | Error mapping: >3 MB → `UNSUPPORTED_CONTENT`; unknown arXiv id → `INVALID_URL`; 600-char minimum applies to arXiv too; 12,000-char cap at a word boundary; added `NOT_FOUND` for unknown `/api/*` | Separate codes | Keeps the §5.6 contract small and predictable. |
+| 2026-10-20 | Commit generated `worker-configuration.d.ts` instead of adding `@cloudflare/workers-types` | Types package | Fewer deps; regenerate with `pnpm types:worker`. |
