@@ -131,6 +131,8 @@ export default async function diffusion({ page, baseURL, shot, assert, cvd, axe 
   await fig.locator('.xfig-data-toggle').click();
   assert.equal(await fig.locator('table.xfig-table tbody tr').count(), 60);
   await fig.locator('table.xfig-table').scrollIntoViewIfNeeded();
+  // The PageUp above starts an eased morph; shoot only once it has landed.
+  await settled(page);
   await shot('diffusion-table');
   await fig.locator('.xfig-data-toggle').click();
 

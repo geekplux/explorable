@@ -50,7 +50,7 @@ export function createDataTable(id: string, caption: string, columns: readonly s
     setColumns,
     /** A one-line summary after the caption, e.g. the current verdict. */
     setNote(note: string) {
-      cap.textContent = note ? `${caption}. ${note}` : caption;
+      cap.textContent = note ? `${caption} — ${note}` : caption;
     },
     /** Replace the body rows; the `rowHeader` cell of each row is a row header. */
     setRows(rows: readonly (readonly string[])[]) {

@@ -2,7 +2,7 @@
  * `histogram`: a density histogram that morphs with one param
  * (docs/figures/diffusion.md, Fig 1). Fixed 0–1 density axis, cobalt bars with
  * an ink outline, a dotted ink N(0, 1) reference labelled directly, an
- * optional dashed ghost of the t = 0 histogram, ±2σ guides, and a ring knob on
+ * optional dashed ghost of the t = 0 histogram, a ±2σ bracket under the axis, and a ring knob on
  * a ticked scrubber. Drawn in CSS pixels so text stays legible at any width.
  */
 import { format } from '../format.ts';
@@ -33,8 +33,6 @@ export const mountHistogram: FigureMount = (el, { spec, model, setParam }) => {
   const plot = svgEl(svg, 'g', { role: 'img', 'aria-label': `${spec.title}: histogram with the ${refLabel} reference curve` });
   const barsG = svgEl(plot, 'g');
   const bars = Array.from({ length: BINS }, () => svgEl(barsG, 'rect', { class: 'xfig-bar' }));
-  // ±2σ hairlines sit above the bars so a tall bar never paints over them.
-  const guidesG = svgEl(plot, 'g', { 'aria-hidden': 'true' });
   // Paper halos under the dashed ghost and the dotted reference keep them ≥ 3:1 where they cross bars.
   const ghostHalo = o.ghost === true ? svgEl(plot, 'path', { class: 'xfig-line-halo' }) : undefined;
   const ghost = o.ghost === true ? svgEl(plot, 'path', { class: 'xfig-ghost' }) : undefined;
@@ -57,8 +55,8 @@ export const mountHistogram: FigureMount = (el, { spec, model, setParam }) => {
     // Unrounded size: one SVG unit is exactly one CSS px, so 44-unit hit areas are ≥ 44 px.
     const box = el.getBoundingClientRect();
     const [w, h] = [box.width || 640, box.height || 360];
-    // Below the plot: x tick labels, the ±2σ row, then the scrubber with room above for the "drag" hint.
-    g = { L: 40, R: w - 12, top: 30, bottom: h - 108 };
+    // Below the plot: x tick labels, the ±2σ bracket and its label, then the scrubber with room above for the "drag" hint.
+    g = { L: 40, R: w - 12, top: 30, bottom: h - 114 };
     const trackY = h - 34;
     ATTR(svg, { viewBox: `0 0 ${w} ${h}`, width: '100%', height: '100%' });
     axis.replaceChildren();
@@ -71,10 +69,10 @@ export const mountHistogram: FigureMount = (el, { spec, model, setParam }) => {
       svgEl(axis, 'path', { class: 'xfig-tick', d: `M${px(x)} ${g.bottom}v4` });
       svgEl(axis, 'text', { x: px(x), y: g.bottom + 17, 'text-anchor': 'middle' }).textContent = format(x, 'int');
     }
-    // ±2σ guides: short hairlines over the bars, named once in the row below the tick labels.
-    guidesG.replaceChildren();
-    for (const x of [-2, 2]) svgEl(guidesG, 'path', { class: 'xfig-sigma', d: `M${px(x)} ${g.bottom}v-12` });
-    svgEl(axis, 'text', { class: 'xfig-sigma-label', x: px(0), y: g.bottom + 34, 'text-anchor': 'middle' }).textContent = '±2σ of N(0, 1)';
+    // ±2σ of N(0, 1): a bracket in the free row under the tick labels (x = ±2 are bin edges, so marks over the bars get lost), named at its middle.
+    const by = g.bottom + 26;
+    svgEl(axis, 'path', { class: 'xfig-sigma', d: `M${px(-2)} ${by - 5}V${by}H${px(2)}V${by - 5}` });
+    svgEl(axis, 'text', { class: 'xfig-sigma-label', x: px(0), y: by + 13, 'text-anchor': 'middle' }).textContent = '±2σ of N(0, 1)';
     const curve = Array.from({ length: 161 }, (_, i) => X_MIN + i * 0.05).map((x) => `${px(x).toFixed(1)} ${py(normalPdf(x)).toFixed(1)}`);
     for (const path of [refHalo, ref]) ATTR(path, { d: `M${curve.join('L')}` });
     // Just right of the peak; on a narrow plot that is over the +1.5 clump, so centre it above the peak instead (no bar tops 0.46 there).

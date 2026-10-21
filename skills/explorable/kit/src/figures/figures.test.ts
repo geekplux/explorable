@@ -185,17 +185,31 @@ const heights = () => [...root.querySelectorAll('rect.xfig-bar')].map((r) => r.g
 describe('histogram: diffusion Fig 1', () => {
   beforeEach(() => mount(diffusionDoc, 'fig-histogram'));
 
-  it('draws 60 ink-outlined bars, the labelled dotted reference and the ±2σ guides', () => {
+  it('draws 60 ink-outlined bars, the labelled dotted reference and the ±2σ bracket', () => {
     expect(readout()).toBe('signal √ᾱ_t 1.000 · noise √(1−ᾱ_t) 0.000 · spread (SD) 1.77');
     expect(root.querySelectorAll('rect.xfig-bar')).toHaveLength(60);
     expect(texts('.xfig-ref-label')).toEqual(['N(0, 1)']);
     expect(texts('.xfig-ghost-label')).toEqual(['data (t = 0)']);
     expect($('.xfig-ref').getAttribute('d')).toMatch(/^M[\d.]+ [\d.]+(L[\d.]+ [\d.]+){160}$/);
     expect(texts('.xfig-sigma-label')).toEqual(['±2σ of N(0, 1)']);
-    // The hairlines are drawn after (over) the bars; the dotted and dashed lines sit on paper halos with the same path.
+    // ±2σ is one bracket below the baseline, from the "−2" tick to the "2" tick, labelled at its middle under it.
     const sigma = [...root.querySelectorAll('.xfig-sigma')];
-    expect(sigma).toHaveLength(2);
-    expect(sigma.every((s) => s.closest('[aria-hidden="true"]') && s.compareDocumentPosition($('.xfig-bar')) & Node.DOCUMENT_POSITION_PRECEDING)).toBe(true);
+    expect(sigma).toHaveLength(1);
+    expect(sigma[0]!.closest('[aria-hidden="true"]')).not.toBeNull();
+    const m = /^M([\d.]+) ([\d.]+)V([\d.]+)H([\d.]+)V([\d.]+)$/.exec(sigma[0]!.getAttribute('d') ?? '');
+    expect(m).not.toBeNull();
+    const [x0, yEnd, yBar, x1] = m!.slice(1, 5).map(Number) as [number, number, number, number];
+    const tickX = (label: string) => Number([...root.querySelectorAll('.xfig-axis text')].find((t) => t.textContent === label)?.getAttribute('x'));
+    expect([x0, x1]).toEqual([tickX('−2'), tickX('2')]);
+    const baseline = Number(/^M[\d.]+ ([\d.]+)/.exec($('.xfig-baseline').getAttribute('d') ?? '')?.[1]);
+    const tickLabelY = Number([...root.querySelectorAll('.xfig-axis text')].find((t) => t.textContent === '2')?.getAttribute('y'));
+    expect(yEnd).toBeGreaterThan(tickLabelY);
+    expect(yBar).toBeGreaterThan(yEnd);
+    expect(yBar).toBeGreaterThan(baseline);
+    const label = $('.xfig-sigma-label');
+    expect(Number(label.getAttribute('x'))).toBe((x0 + x1) / 2);
+    expect(Number(label.getAttribute('y'))).toBeGreaterThan(yBar);
+    // The dotted and dashed lines sit on paper halos with the same path.
     expect(($('.xfig-ref').previousElementSibling as Element).getAttribute('d')).toBe($('.xfig-ref').getAttribute('d'));
     expect(($('.xfig-ghost').previousElementSibling as Element).classList.contains('xfig-line-halo')).toBe(true);
     expect(($('.xfig-ghost').previousElementSibling as Element).classList.contains('is-hidden')).toBe(true);
@@ -228,7 +242,7 @@ describe('histogram: diffusion Fig 1', () => {
     key($('.xfig-knob'), 'End');
     const table = $<HTMLTableElement>('table.xfig-table');
     expect(texts('thead th')).toEqual(['bin from', 'bin to', 'density now', 'density at t = 0', 'N(0, 1) at bin centre']);
-    expect(table.caption?.textContent).toContain('step t = 1000, alpha-bar 4.04 × 10⁻⁵');
+    expect(table.caption?.textContent).toMatch(/^Data for: [A-Z][^.]* — step t = 1000, alpha-bar 4.04 × 10⁻⁵$/);
     const rows = [...table.querySelectorAll('tbody tr')].map((r) => [...r.children].map((c) => c.textContent));
     expect(rows).toHaveLength(60);
     expect(rows[15]).toEqual(['−2.00', '−1.87', '0.105', '0.735', '0.062']);

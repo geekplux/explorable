@@ -111,7 +111,7 @@ circle.xfig-knob-hint { fill: none; stroke: var(--ink-2); stroke-width: 1.5; str
 .xfig-line-halo { fill: none; stroke: var(--paper); stroke-width: 3.5; stroke-linejoin: round; }
 .xfig-ghost { fill: none; stroke: var(--ink-3); stroke-width: 1.5; stroke-dasharray: 4 3; }
 .xfig-ref { fill: none; stroke: var(--ink); stroke-width: 1.5; stroke-dasharray: 1 3; stroke-linecap: round; }
-.xfig-sigma { stroke: var(--ink-2); }
+.xfig-sigma { fill: none; stroke: var(--ink); stroke-width: 1.5; }
 .xfig-svg .xfig-sigma-label { font-size: .75rem; }
 .xfig-svg .xfig-ref-label, .xfig-svg .xfig-ghost-label { fill: var(--ink); paint-order: stroke; stroke: var(--well); stroke-width: 3px; }
 .xfig-svg .is-hidden { visibility: hidden; }
