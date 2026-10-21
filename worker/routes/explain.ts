@@ -6,7 +6,7 @@ import { ApiError, errorResponse, json } from '../errors';
 import { type Extracted, extract } from '../extract';
 import type { FetchFn } from '../fetch';
 import { type AiBinding, DEFAULT_AI_MODEL, requestPlan } from '../plan/ai';
-import { assemblePlan, matchDoc } from '../plan/assemble';
+import { assemblePlan, clean, matchDoc } from '../plan/assemble';
 import { bestMatch, matchModels } from '../plan/match';
 import { MODELS } from '../plan/schema';
 import { normaliseUrl } from '../url';
@@ -21,12 +21,17 @@ export interface ExplainEnv {
 
 const CACHE_HEADER = 'x-explorable-cache';
 
-function unavailable(ex: Extracted): ApiError {
-  const excerpt = ex.abstract.length > 200 ? `${ex.abstract.slice(0, 200).trimEnd()}…` : ex.abstract;
+/** End a sentence with a period unless it already has closing punctuation. */
+const sentence = (s: string) => (s && !/[.!?…]$/.test(s) ? `${s}.` : s);
+
+export function unavailable(ex: Pick<Extracted, 'title' | 'abstract'>): ApiError {
+  const title = clean(ex.title);
+  const abstract = clean(ex.abstract);
+  const excerpt = abstract.length > 200 ? `${abstract.slice(0, 200).trimEnd()}…` : abstract;
   return new ApiError(
     'AI_UNAVAILABLE',
     'No model is configured here, and this page matches no built-in explorable.',
-    [`Found “${ex.title}”.`, excerpt, 'The built-in samples still work.'].filter(Boolean).join(' '),
+    [title && `Found “${title}”.`, excerpt !== title && sentence(excerpt), 'The built-in samples still work.'].filter(Boolean).join(' '),
   );
 }
 

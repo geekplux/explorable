@@ -9,7 +9,7 @@ import valid from '../fixtures/ai/valid.json';
 import worker from '../index';
 import { MAX_SOURCE_CHARS } from '../plan/prompt';
 import { URLS, fakeAi, fakeKv, serveFixtures } from '../testing';
-import { type ExplainEnv, explain } from './explain';
+import { type ExplainEnv, explain, unavailable } from './explain';
 
 type Body = { ok: boolean; cache?: string; mode?: string; doc?: any; error?: { code: string; message: string; hint: string } };
 
@@ -123,6 +123,15 @@ describe('/api/explain without a model', () => {
     expect(status).toBe(503);
     expect(body.error?.code).toBe('AI_UNAVAILABLE');
     expect(body.error?.hint).toContain('Why ropes beat strings for big edits');
+  });
+});
+
+describe('AI_UNAVAILABLE hint', () => {
+  it('ends sentences with a period, cleans the title and skips an excerpt that repeats it', () => {
+    expect(unavailable({ title: 'A\u0007 rope\n post', abstract: 'Ropes split text into a tree' }).hint).toBe(
+      'Found “A rope post”. Ropes split text into a tree. The built-in samples still work.',
+    );
+    expect(unavailable({ title: 'Ropes', abstract: 'Ropes' }).hint).toBe('Found “Ropes”. The built-in samples still work.');
   });
 });
 

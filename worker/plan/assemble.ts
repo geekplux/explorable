@@ -87,7 +87,8 @@ function registryFigure(f: PlanFigure, m: ModelDef, base: Omit<FigureSpec, 'kind
 
 function curveFigure(f: PlanFigure, base: Omit<FigureSpec, 'kind' | 'model' | 'controls' | 'readouts'>): FigureSpec | undefined {
   const c = f.curve;
-  if (!c || ![c.x, ...c.vars].every((r) => r.min < r.max)) return undefined;
+  // A finite span is required too: [-1e308, 1e308] passes min < max but overflows the step.
+  if (!c || ![c.x, ...c.vars].every((r) => r.min < r.max && Number.isFinite(r.max - r.min))) return undefined;
   const given = new Map(f.params.map((p) => [p.name, p.value]));
   const start = (name: string, min: number, max: number) => Math.min(max, Math.max(min, given.get(name) ?? (min + max) / 2));
   const names = ['x', ...c.vars.map((v) => v.name)];

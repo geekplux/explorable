@@ -93,6 +93,8 @@ describe('match', () => {
   });
 });
 
+const figureIds = (doc: { sections: { figure?: { model: { id: string } } }[] }) => doc.sections.flatMap((s) => (s.figure ? [s.figure.model.id] : []));
+
 describe('assemble', () => {
   let source: Extracted;
   it('turns a valid plan into a doc that passes parseDoc', async () => {
@@ -123,6 +125,14 @@ describe('assemble', () => {
     expect(doc.sections.filter((s) => s.figure).map((s) => s.figure!.model.id)).toEqual(['attention-scaling']);
     const none: Plan = { ...p, figures: [p.figures[1]!, { ...p.figures[1]!, section: 0 }] };
     expect(thrown(() => assemblePlan(none, source, opts)).code).toBe('NO_FIGURE');
+  });
+
+  it('drops a curve whose range has no finite span', () => {
+    const p = plan(valid);
+    const curve = p.figures[1]!.curve!;
+    const huge: Plan = { ...p, figures: [p.figures[0]!, { ...p.figures[1]!, curve: { ...curve, expr: '1', x: { ...curve.x, min: -1e308, max: 1e308 } } }] };
+    expect(figureIds(assemblePlan(p, source, opts))).toEqual(['attention-scaling', 'expr-curve']);
+    expect(figureIds(assemblePlan(huge, source, opts))).toEqual(['attention-scaling']);
   });
 
   it('stores <script> prose as text, and essayHtml escapes it', async () => {
