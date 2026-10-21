@@ -200,6 +200,8 @@ The raw counts are 196, 218 and 0 at t = 0 and 28, 40 and 104 at t = 1000. Snaps
 
 **Reduced motion.** The knob and drop line move instantly.
 
+**Implementation note (P7).** This figure draws the registry's precomputed `signalSeries` and `noiseSeries` outputs (`number[]`, index = t); it does not use `expr-curve`, because ᾱ_t is a cumulative product with no closed form in the expression language. Extra options used by the `curve` kind: `yLabel: "coefficient"`, `markEvery: 100` (● / ■ every 100 steps), `tableStep: 10`, `tableColumns: ["alphaBar", "signal", "noise", "snrDb"]` and `describe` (the live-description template above, with `{name:fixed2}` format overrides). Direct labels sit at the right end of each line rather than near t = 120, clear of the default knob at t = 100 and its "drag" hint.
+
 ### Acceptance criteria for the implementer (Fig 2, in addition to P7)
 
 1. The two series are told apart by line style and marker (solid with ● versus dashed with ■), with direct labels. In a deutan or tritan screenshot both remain identifiable from the labels.

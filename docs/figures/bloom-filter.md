@@ -275,6 +275,8 @@ All three expressions use only whitelisted tokens (`exp`, `ln`, `^`, `*`, `/`, `
 
 At the marker the FPR equals 0.5^k exactly: 0.12500 (k = 3), 0.50000 (k = 1), 0.01563 (k = 6). Tolerance 1e-9 on the expression evaluator against `Math` (P7 AC 2 asks for 1e-12 on random points; these are the readable anchors).
 
+**Implementation note (P7).** Extra options: `xSymbol: "n"` (the slider output reads "n = 8" and the table's first column is "n"), `ticks: ["1", "8", "16", "32", "64"]` and `markEvery: 8`. The table's third column is headed with `refLabel` ("best possible k"). Both direct labels sit at the right end, each placed clear of its own line.
+
 ### Acceptance criteria for the implementer (Fig 2, in addition to P7)
 
 1. At the defaults the readout reads exactly `items inserted n 8 · false-positive rate 14.7%`, and the live description reads "At n = 8 items, the false-positive rate is 14.7%."

@@ -57,11 +57,17 @@ The implementer should add each of these to the schema (P3) or registry (P4 to P
 | `markerExpr`, `markerLabel` | `curve` (`expr-curve`) | A marker x position as a whitelisted expression over the declared params, and its label. The label may hold `{name}` placeholders for declared params and `{marker}` for the marker x, each formatted with fixed1 (integers without decimals). |
 | `refExpr` | `curve` (`expr-curve`) | A second, dotted reference curve, written in the same expression language and validated the same way. |
 | `x0` | `curve` (`expr-curve`) | Initial knob position on x. |
-| `xStep` | `curve` (`expr-curve`) | Snap step for the knob on x. The default is continuous, rounded to (max − min)/1000. |
+| `xStep` | `curve` (`expr-curve`) | Snap step for the knob on x. The default is the power of ten at or below (max − min)/100 (P7; it keeps round `x0` values exact). |
 | `describe` | `curve` (`expr-curve`) | Live-description template with `{x}`, `{y}` and `{name}` placeholders, formatted with the readout formats. The default is `At {x.label} = {x}, {y.label} is {y}.` |
 | `xFormat`, `yFormat` | `curve` (`expr-curve`) | Readout formats for the `x` and `y` outputs. |
+| `xSymbol` | `curve` (`expr-curve`) | Short name of x for the slider output and the table's first column ("n"). Default: `x`. *(P7)* |
+| `yLabel`, `yMin`, `yMax` | `curve` | The y-axis title and range. `expr-curve` takes them from `model.y`; otherwise the range comes from the first state's data. *(P7)* |
+| `markEvery` | `curve` | Spacing on x of the ● / ■ / ▲ markers along each series. Default: a round step near range / 5. *(P7)* |
+| `tableStep`, `tableColumns` | `curve` | The data table lists x − 5 … x + 5 steps of `tableStep` (default: the x step), with one column per output id in `tableColumns` (`expr-curve` default: `y` and `ref`). *(P7)* |
+| `refSeries` | `curve` | The series id drawn as the dotted ink reference (`expr-curve`: `refCurve`). *(P7)* |
+| `describe` | all | Also accepted by registry models: a live-description template where `{name}` is an output (its readout format) or a param, and `{name:fmt}` overrides the format. *(P7)* |
 
-**In the doc schema (`expr-curve` model):** `params[].step` (optional number). Without it the step is (max − min)/100. The Bloom Fig 2 `k` needs `step: 1`.
+**In the doc schema (`expr-curve` model):** `params[].step` (optional number). Without it the step is the power of ten at or below (max − min)/100 (P7). The Bloom Fig 2 `k` needs `step: 1`.
 
 **In `figure.controls` for `expr-curve`:** the name `x` means "the knob on the curve". It counts toward the 1 to 3 controls.
 
