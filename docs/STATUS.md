@@ -1,10 +1,10 @@
 STATE: DONE
 
-explorable is **shipped and live** at https://explorable.geekplux.org. All 15 phases are merged to `main`. Cloudflare Workers Builds (Git integration) deploys `main` on every merge; nobody runs `wrangler deploy` by hand.
+explorable is **shipped and live** at https://explorable.geekplux.com. All 15 phases are merged to `main`. Cloudflare Workers Builds (Git integration) deploys `main` on every merge; nobody runs `wrangler deploy` by hand.
 
 # Status
 
-- Live: https://explorable.geekplux.org (`/api/health` → `{"ok":true,"ai":true,"kv":true}`)
+- Live: https://explorable.geekplux.com (`/api/health` → `{"ok":true,"ai":true,"kv":true}`)
 - Production KV namespace `06957ddddaad40bb86bfa7df7b6edd75` is committed in `wrangler.jsonc` (`env.production`).
 - Plan: docs/PLAN.md (15 phases, all done)
 - Blockers: none
