@@ -2,7 +2,7 @@
 
 explorable is one Cloudflare Worker with Static Assets: the built app in `dist/client`, the API in `worker/`, a KV namespace for the cache, Workers AI for the one plan call per new link, and a rate limiter. Local development (`pnpm dev`, `pnpm preview`, the tests and the harness) never needs any of this.
 
-Production (https://explorable.geekplux.org) is deployed by **Cloudflare Workers Builds** (Git integration): every merge to `main` builds with the production config and deploys. Nobody deploys by hand; the steps below are for forks and first-time setup.
+Production (https://explorable.geekplux.com) is deployed by **Cloudflare Workers Builds** (Git integration): every merge to `main` builds with the production config and deploys. Nobody deploys by hand; the steps below are for forks and first-time setup.
 
 The local config at the top of `wrangler.jsonc` is safe by design: no AI, a simulated KV namespace, debug routes on. Deploys use the `env.production` block instead, which `pnpm build:prod` bakes into `dist/explorable/wrangler.json`.
 
@@ -38,7 +38,7 @@ pnpm build:prod && pnpm exec wrangler deploy
 
 Always run `pnpm build:prod` right before deploying. `wrangler deploy` uses whatever the last build wrote to `dist/` (via `.wrangler/deploy/config.json`), and a plain `pnpm build` writes the local config, which has debug routes on and a fake KV id.
 
-The Worker is named `explorable-production` (wrangler appends the environment name), so it is served at `https://explorable-production.<your-subdomain>.workers.dev` until you add a custom domain (production uses https://explorable.geekplux.org). Check it with `curl https://explorable.geekplux.org/api/health`, which should return `{"ok":true,"ai":true,"kv":true}`.
+The Worker is named `explorable-production` (wrangler appends the environment name), so it is served at `https://explorable-production.<your-subdomain>.workers.dev` until you add a custom domain (production uses https://explorable.geekplux.com). Check it with `curl https://explorable.geekplux.com/api/health`, which should return `{"ok":true,"ai":true,"kv":true}`.
 
 What ships with it:
 

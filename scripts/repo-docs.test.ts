@@ -191,7 +191,7 @@ describe('contributor docs', () => {
     const headings = readFileSync('README.md', 'utf8').split('\n').filter((l) => l.startsWith('## '));
     const top = readFileSync('README.md', 'utf8').split('## ')[0]!;
     expect(top).toContain('docs/assets/hero.png');
-    expect(top).toContain('Live demo: https://explorable.geekplux.org');
+    expect(top).toContain('Live demo: https://explorable.geekplux.com');
     expect(headings[0]).toBe('## Quick start');
   });
 
