@@ -21,7 +21,7 @@ a{color:var(--link);text-decoration:underline var(--hairline) var(--link-line);t
 code{font:.9em var(--font-mono);overflow-wrap:anywhere}
 :focus-visible{outline:2px solid var(--focus);outline-offset:2px}
 h1[tabindex="-1"]:focus{outline:none}
-.page-foot{max-width:var(--measure);margin:0 auto;padding:var(--space-4) 1rem var(--space-7);font:.8125rem var(--font-ui);color:var(--text-2)}
+.page-foot{max-width:var(--measure);margin:0 auto;padding:var(--space-4) 1rem var(--space-7);font:var(--text-12) var(--font-ui);color:var(--text-2)}
 @media (max-width:639.98px){body{font-size:1.0625rem}}
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{transition:none!important;animation:none!important;scroll-behavior:auto!important}}
 @media (forced-colors:active){:focus-visible{outline-color:Highlight}}`;

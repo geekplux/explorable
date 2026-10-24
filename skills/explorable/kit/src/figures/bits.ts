@@ -8,7 +8,7 @@
 import { INSERT, VERDICTS } from '../models/bloom-filter.ts';
 import type { ParamDef } from '../registry.ts';
 import { toPos } from '../runtime/controls.ts';
-import { createHandle, svgEl } from '../runtime/handle.ts';
+import { createHandle, svgEl, trackLabel } from '../runtime/handle.ts';
 import type { FigureMount, FigureView, Outputs, Params } from '../runtime/mount.ts';
 
 const nums = (v: unknown): number[] => (Array.isArray(v) ? v : []);
@@ -80,7 +80,7 @@ export const mountBits: FigureMount = (el, { spec, model, setParam }) => {
     if (knob && handleDef) {
       const [t0, t1] = wide ? [x0, x0 + 12 * cp] : [24, w - 24];
       knob.layout(t0, t1, trackY);
-      svgEl(track, 'text', { x: t0 - 12, y: trackY + 4, 'text-anchor': 'end' }).textContent = handleName;
+      trackLabel(track, t0 - 12, trackY + 4, handleDef.symbol ?? handleName);
       svgEl(track, 'path', { class: 'xfig-track-line', d: `M${t0} ${trackY}H${t1}` });
       for (let t = handleDef.min; t <= handleDef.max; t++) {
         const x = t0 + toPos(handleDef, t) * (t1 - t0);

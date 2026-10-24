@@ -41,7 +41,7 @@ export function CoolingExplainer() {
 
 - **Validate first.** `Explorable` trusts its `doc`. `parseDoc` returns `{ ok: true, doc }` or `{ ok: false, errors }` with the same messages `build.mjs` prints.
 - **Keep `doc` and `options` stable.** The effect re-hydrates when either changes identity, so parse at module scope or in `useMemo`, and do not pass an inline `options={{ … }}` object.
-- **CSS.** `tokens.css` holds the palette and type tokens and `kit.css` the essay and figure styles. The app's page CSS (fonts, a global reduced-motion rule) is yours to add; the figures already skip easing and the hint under reduced motion.
+- **CSS.** `tokens.css` holds the palette and type tokens and `kit.css` the essay and figure styles. The app's page CSS (fonts, a global reduced-motion rule) is yours to add; the figures already skip easing under reduced motion.
 - **Server rendering.** `essayHtml` is a pure string function, so the essay renders on the server; the figures go live in the browser when the effect runs.
 
 ## Check it

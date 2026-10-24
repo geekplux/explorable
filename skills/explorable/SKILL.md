@@ -74,7 +74,7 @@ Every item is enforced by the kit or the audit; none rests on good intentions.
 - **One idea per figure.** 1–3 controls and 1–3 readouts per figure; 2–6 sections; at least one figure.
 - **Accessible.** Each control is a labelled native slider, switch or radio group; the knob on the chart is a `role="slider"` with arrow, Page and Home/End keys. Changes are spoken through a throttled live region, and every figure has a "Show data" table. The audit requires alt text of at least 40 characters, a caption, labels with real words, `lang`, `<title>`, one `<main>` and an `<h1>` (`references/accessibility.md`).
 - **Never colour alone, CVD-safe.** Series differ by line style, markers and direct labels as well as hue. The audit rejects colour values in figure options, more than 3 hue-coded series, any series pair too close under protan, deutan or tritan simulation, and text or graphics below WCAG contrast.
-- **Reduced motion.** Under `prefers-reduced-motion: reduce` there is no easing and no hint animation; the audit fails a page without that media rule.
+- **Reduced motion.** Under `prefers-reduced-motion: reduce` there is no easing and no entrance animation; the audit fails a page without that media rule.
 - **No decorative 3D.** The figure kinds are `bars`, `bits`, `histogram` and `curve`, all flat SVG; the schema rejects any other kind. A request for 3D gets the 2D figure that carries the idea, with the reason stated.
 - **Offline and self-contained.** One file with inline CSS, JS and font. A Content-Security-Policy blocks the network, and the audit rejects any external `src` or `href` except a link to `source.url`.
 - **True words.** State only facts and numbers the source or the model gives. Nothing about money, prices, trading or payments.
