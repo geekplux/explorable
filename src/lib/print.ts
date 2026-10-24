@@ -12,14 +12,14 @@ export function pdfAction(sampleSlug: string | undefined): PdfAction {
 
 /**
  * "explorable.geekplux.com/s/attention", or the result page's address with its link readable ("/x?url=https://…")
- * when the readable form still means the same link (no "&", "#" or "+" inside it); it is printed and linked.
+ * when the readable form still means the same link (no "&", "#", "+" or white space inside it); it is printed and linked.
  */
 export function printLink(sampleSlug: string | undefined, pathname: string, search: string): string {
   if (sampleSlug) return `${SITE}/s/${sampleSlug}`;
   let query = search;
   try {
     const readable = decodeURIComponent(search);
-    if (!/#/.test(readable) && new URLSearchParams(readable).toString() === new URLSearchParams(search).toString()) query = readable;
+    if (!/[#\s]/.test(readable) && new URLSearchParams(readable).toString() === new URLSearchParams(search).toString()) query = readable;
   } catch {
     // a malformed escape stays as typed
   }

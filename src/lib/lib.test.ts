@@ -88,5 +88,6 @@ describe('print', () => {
     // Decoding would change what the link means: keep it encoded.
     expect(printLink(undefined, '/x', '?url=https%3A%2F%2Fa.org%2F%3Fx%3D1%26y%3D2')).toBe('explorable.geekplux.com/x?url=https%3A%2F%2Fa.org%2F%3Fx%3D1%26y%3D2');
     expect(printLink(undefined, '/x', '?url=https%3A%2F%2Fa.org%2Fp%23s')).toBe('explorable.geekplux.com/x?url=https%3A%2F%2Fa.org%2Fp%23s');
+    expect(printLink(undefined, '/x', '?url=https%3A%2F%2Fa.org%2Fa%20b')).toBe('explorable.geekplux.com/x?url=https%3A%2F%2Fa.org%2Fa%20b');
   });
 });
