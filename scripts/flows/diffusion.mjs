@@ -76,7 +76,7 @@ async function press(page, key, n) {
 export default async function diffusion({ page, baseURL, shot, assert, cvd, axe }) {
   const fig = await open(page, baseURL);
   assert.equal(await readout(page), READ_T0);
-  assert.equal(await fig.locator('.xfig-chip').textContent(), 't = 0 · ᾱ_t = 1.00');
+  assert.equal(await fig.locator('.xfig-chip').textContent(), 't = 0 ᾱ_t = 1.00');
   assert.equal(await fig.locator('.xfig-ref-label').textContent(), 'N(0, 1)', 'the reference curve is labelled in the SVG');
   assert.equal(await fig.locator('.xfig-ref').evaluate((p) => getComputedStyle(p).strokeDasharray), '1px, 3px', 'the reference is dotted');
   const bar = await fig.locator('rect.xfig-bar').first().evaluate((r) => [getComputedStyle(r).fill, getComputedStyle(r).stroke]);

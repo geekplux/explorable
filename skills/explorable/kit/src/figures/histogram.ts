@@ -18,6 +18,8 @@ const ATTR = (el: Element, attrs: Record<string, string | number>) => {
 };
 const edge = (j: number) => X_MIN + j * BIN_W;
 
+const span = (text: string) => Object.assign(document.createElement('span'), { textContent: text });
+
 export const mountHistogram: FigureMount = (el, { spec, model, setParam }) => {
   const o = spec.options ?? {};
   const handleName = typeof o.handle === 'string' ? o.handle : spec.controls[0];
@@ -114,7 +116,8 @@ export const mountHistogram: FigureMount = (el, { spec, model, setParam }) => {
       // At t = 0 the ghost would coincide with the bars.
       for (const n of [ghostHalo, ghost, ghostText]) n.classList.toggle('is-hidden', t === 0);
     }
-    chip.textContent = `t = ${t} · ᾱ_t = ${format(Number(out.alphaBar), 'sig3')}`;
+    // Two spans spaced by CSS (no "·" separator), with a plain space between them for copy and tests.
+    chip.replaceChildren(span(`t = ${t}`), ' ', span(`ᾱ_t = ${format(Number(out.alphaBar), 'sig3')}`));
     if (knob && handleDef && handleName) knob.place(toPos(handleDef, p[handleName]!));
   }
 

@@ -41,8 +41,8 @@ let root: HTMLElement;
 let destroy: () => void;
 const $ = <T extends Element = HTMLElement>(s: string) => root.querySelector<T>(s)!;
 const readout = () => $('.xfig-readout').textContent;
-/** Fallback geometry: 640 px wide, track from 56 to 616 px. */
-const xFor = (T: number) => 56 + (Math.log(T / 0.05) / Math.log(100)) * 560;
+/** Fallback geometry: 640 px wide, track from 68 to 616 px. */
+const xFor = (T: number) => 68 + (Math.log(T / 0.05) / Math.log(100)) * 548;
 const ev = (type: string, x: number, y = 0) => new PointerEvent(type, { pointerId: 7, pointerType: 'touch', clientX: x, clientY: y, bubbles: true, cancelable: true });
 /** Drawn height of the "cat" bar. */
 const bar = () => Number(root.querySelectorAll('rect.xfig-bar')[1]!.getAttribute('height'));
@@ -78,7 +78,9 @@ describe('hydrateFigures: fig-temperature', () => {
     expect([...root.querySelectorAll('.xfig-readout > span')].map((s) => s.textContent)).toEqual(['top weight 0.51', 'entropy 2.05 bits']);
     expect([...root.querySelectorAll('.xfig-readout b')].map((b) => b.textContent)).toEqual(['0.51', '2.05']);
     // The track fills from its start to the knob.
-    expect($('.xfig-track-fill').getAttribute('d')).toBe(`M56 326H${xFor(1).toFixed(1)}`);
+    expect($('.xfig-track-fill').getAttribute('d')).toBe(`M68 326H${xFor(1).toFixed(1)}`);
+    // The leading bar is marked on the rect too (indigo-11 in kit.css), and follows T.
+    expect([...root.querySelectorAll('#fig-temperature rect.xfig-bar')].map((r) => r.classList.contains('is-top'))).toEqual([false, true, false, false, false, false]);
     expect($('.xfig-chip').textContent).toBe('query: sat');
     expect($('.xfig-top text').textContent).toBe('top');
     expect($('.xfig-top path')).toBeTruthy();

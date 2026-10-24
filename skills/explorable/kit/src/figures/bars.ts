@@ -82,7 +82,8 @@ export const mountBars: FigureMount = (el, { spec, model, setParam }) => {
     }
     trackG.replaceChildren();
     if (knob && handleDef && handleName) {
-      const [x0, x1, y] = [g.L + 12, g.R - 12, g.trackY];
+      // The track starts 30 px after the end of its label, so the knob's focus ring never covers the symbol.
+      const [x0, x1, y] = [g.L + 24, g.R - 12, g.trackY];
       knob.layout(x0, x1, y);
       svgEl(trackG, 'text', { x: g.L - 6, y: y + 4, 'text-anchor': 'end', class: 'xfig-track-label' }).textContent = handleDef.symbol ?? handleName;
       svgEl(trackG, 'path', { class: 'xfig-track-line', d: `M${x0} ${y}H${x1}` });
@@ -123,6 +124,7 @@ export const mountBars: FigureMount = (el, { spec, model, setParam }) => {
       const cx = g.L + slot * (i + 0.5);
       const y = g.bottom - Math.min(1, Math.max(0, wt)) * (g.bottom - g.top);
       ATTR(b.rect, { x: cx - bw / 2, y, width: bw, height: g.bottom - y });
+      b.rect.classList.toggle('is-top', i === top);
       // Labels and the ▼ sit above the taller of the bar and its dashed outline.
       let above = y;
       if (b.other) {

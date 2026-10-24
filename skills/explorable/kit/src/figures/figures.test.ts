@@ -222,7 +222,7 @@ describe('histogram: diffusion Fig 1', () => {
     expect(($('.xfig-ghost').previousElementSibling as Element).classList.contains('is-hidden')).toBe(true);
     expect($('.xfig-foot .xfig-sr').textContent).toBe('signal 1.000, noise 0.000, spread 1.77');
     expect($('.xfig-ghost').classList.contains('is-hidden')).toBe(true);
-    expect($('.xfig-chip').textContent).toBe('t = 0 · ᾱ_t = 1.00');
+    expect($('.xfig-chip').textContent).toBe('t = 0 ᾱ_t = 1.00');
     expect(texts('.xfig-track text')).toEqual(['t', '0', '250', '500', '750', '1000']);
   });
 
@@ -241,7 +241,7 @@ describe('histogram: diffusion Fig 1', () => {
     key(knob, 'End');
     expect(knob.getAttribute('aria-valuenow')).toBe('1000');
     expect(readout()).toBe('signal √ᾱ_t 0.006 noise √(1−ᾱ_t) 1.000 spread (SD) 1.01');
-    expect($('.xfig-chip').textContent).toBe('t = 1000 · ᾱ_t = 4.04 × 10⁻⁵');
+    expect($('.xfig-chip').textContent).toBe('t = 1000 ᾱ_t = 4.04 × 10⁻⁵');
     expect(yAxis()).toEqual(axis0);
   });
 

@@ -28,14 +28,15 @@
 .xfig-foot { display: flex; justify-content: space-between; gap: var(--space-4); }
 .xfig-readout { margin-left: auto; font-family: var(--font-mono); font-variant-numeric: tabular-nums; color: var(--ink); }
 .xfig-sr { position: absolute; width: 1px; height: 1px; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
-.xfig-chip { display: inline-block; margin: var(--space-3) 0 0; padding: .1rem .6rem; background: var(--note-wash); border-radius: var(--radius-pill); font: .8125rem var(--font-mono); color: var(--ink); }
+.xfig-chip { display: inline-flex; flex-wrap: wrap; gap: 0 12px; margin: var(--space-3) 0 0; padding: .1rem .6rem; background: var(--note-wash); border-radius: var(--radius-pill); font: .8125rem var(--font-mono); color: var(--ink); }
 .xfig-svg { display: block; overflow: visible; touch-action: pan-y; font: .8125rem var(--font-ui); user-select: none; }
 .xfig-svg text { fill: var(--ink-2); }
 .xfig-svg .xfig-bar-label { fill: var(--ink); font-size: .875rem; }
 .xfig-svg .xfig-bar-value { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
 .xfig-svg .xfig-bar-value.is-tight { font-size: .6875rem; }
-.xfig-svg .is-top, .xfig-svg .xfig-top text { fill: var(--ink); font-weight: 700; }
+.xfig-svg text.is-top, .xfig-svg .xfig-top text { fill: var(--ink); font-weight: 700; }
 .xfig-bar { fill: var(--data); stroke: none; }
+.xfig-bar.is-top { fill: var(--data-top); }
 .xfig-top path { fill: var(--ink); }
 .xfig-grid { stroke: var(--rule); }
 .xfig-baseline { stroke: var(--ink); }
@@ -146,12 +147,12 @@ circle.xfig-knob-hint { fill: none; stroke: var(--ink-2); stroke-width: 1.5; str
   .xfig-line-halo, .xfig-bar-other-halo, .xfig-probe-halo, .xfig-arrow-halo { stroke: Canvas; }
   .xfig-marks, .xfig-marks:is(.xfig-s0, .xfig-s1, .xfig-s2), .xfig-meet { fill: CanvasText; stroke: Canvas; }
   .xfig-arrowhead, .xfig-top path { fill: CanvasText; }
-  .xfig-bar { fill: Canvas; stroke: CanvasText; stroke-width: 2; }
+  .xfig-bar, .xfig-bar.is-top { fill: Canvas; stroke: CanvasText; stroke-width: 2; }
   .xfig-knob-ring { fill: Canvas; stroke: CanvasText; }
   .xfig-word rect, .xfig-word.is-in rect, .xfig-bit rect, .xfig-query:not([data-fp]), .xfig-verdict:not([data-fp]) { fill: Canvas; stroke: CanvasText; }
   .xfig-query, .xfig-verdict { stroke: CanvasText; }
   .xfig-bit.is-set rect { fill: CanvasText; stroke: Canvas; }
-  .xfig-svg text, .xfig-svg .xfig-bar-label, .xfig-svg .is-top, .xfig-svg .xfig-top text, .xfig-svg .xfig-bit text,
+  .xfig-svg text, .xfig-svg .xfig-bar-label, .xfig-svg text.is-top, .xfig-svg .xfig-top text, .xfig-svg .xfig-bit text,
   .xfig-svg .xfig-word.is-in text, .xfig-svg .xfig-query-text, .xfig-svg .xfig-verdict-text, .xfig-svg .xfig-bits > g > g > text { fill: CanvasText; }
   .xfig-svg .xfig-bit.is-set text { fill: Canvas; }
   /* Labels drawn with a halo (paint-order: stroke) keep it, in the canvas colour. */
