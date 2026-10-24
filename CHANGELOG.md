@@ -7,6 +7,7 @@ All notable changes to this project are documented here. The format follows [Kee
 ### Changed
 
 - Redesign foundation: Radix Colors sand, indigo and orange tokens with a dark theme that follows the system setting; Source Serif 4, Geist and Geist Mono, self-hosted (`docs/redesign/DESIGN.md`).
+- A new spiral logo and favicon; a header with navigation on every page, a "Made by GeekPlux" block linking geekplux.com and sibling projects, and a simpler footer. The "All explorables" back links are gone; the logo goes home.
 
 ### Added
 
