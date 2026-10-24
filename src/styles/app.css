@@ -17,7 +17,7 @@
 .site-footer { margin-top: 96px; padding-inline: var(--gutter); }
 .made-by { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 48px; padding-top: 32px; border-top: var(--hairline) solid var(--line-2); }
 .made-by a { color: var(--text); text-decoration: none; }
-.maker { display: grid; gap: 8px; align-content: start; justify-self: start; }
+.maker { display: grid; gap: 8px; align-content: start; align-self: start; justify-self: start; }
 .maker h2 { margin: 0; font: 600 var(--text-20)/1.3 var(--font-display); }
 .made-by-sites { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 28px 48px; margin: 0; padding: 0; list-style: none; }
 .made-by-sites a { display: grid; gap: 2px; }
@@ -29,7 +29,9 @@
 .site-foot { display: flex; align-items: center; justify-content: space-between; gap: var(--space-4); margin-top: 72px; padding: 14px 0 30px; border-top: var(--hairline) solid var(--line); }
 .site-foot ul { display: flex; flex-wrap: wrap; align-items: center; gap: 0 24px; margin: 0; padding: 0; list-style: none; color: var(--text-2); }
 @media (max-width: 639.98px) {
+  :root { --gutter: 16px; }
   .site-header { height: 56px; }
+  .wordmark-header .logo { width: 31px; height: 22px; }
   .site-nav { display: none; }
   .site-footer { margin-top: 64px; }
   .made-by, .made-by-sites { grid-template-columns: 1fr; }
@@ -133,12 +135,14 @@
 .error-state > .kicker { margin: var(--space-6) 0 var(--space-3); }
 .essay-page > .provenance-note { max-width: var(--measure); margin: 0 auto var(--space-5); font: .9375rem/1.5 var(--font-ui); color: var(--ink-2); }
 .provenance-tag { display: inline-block; margin-right: var(--space-1); padding: 0 .5rem; font-weight: 600; color: var(--ink); border: 1px dashed var(--ink-2); border-radius: var(--radius-pill); }
-@media (max-width: 639.98px) { .essay-page > .provenance-note { padding-inline: .25rem; } .error-panel { padding: var(--space-4); } }
+@media (max-width: 639.98px) { .essay-page > .provenance-note { padding-inline: 0; } .error-panel { padding: var(--space-4); } }
 @media (forced-colors: active) { .bar, .error-panel, .offline-banner { border: 1px solid CanvasText; } }
 
 @media (max-width: 639.98px) {
   .page-title, .not-found > svg { margin-top: var(--space-6); }
-  .essay-page { padding-top: var(--space-6); }
+  /* Essay text and figures share the header's 16px edge (the kit's own .25rem inset is dropped here). */
+  .essay-page { padding: var(--space-6) var(--gutter) 0; }
+  .essay-page :is(.essay-hero, .essay-section > :not(.xfig), .essay-takeaway) { padding-inline: 0; }
 }
 @media (prefers-reduced-motion: reduce) { .card:hover { transform: none; } }
 @media (forced-colors: active) {

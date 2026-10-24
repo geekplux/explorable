@@ -174,6 +174,8 @@ export async function withBrowser(fn, { baseURL }) {
     });
     page.on('pageerror', (error) => problems.push(`page error on ${page.url()}: ${error.message}`));
     page.on('requestfailed', (req) => {
+      // A reload can cancel the browser's own favicon fetch; that is not an app failure.
+      if (req.failure()?.errorText === 'net::ERR_ABORTED' && new URL(req.url()).pathname === '/favicon.svg') return;
       if (!blocked.has(req.url()) && !(apiErrors && isApi(req.url()))) problems.push(`request failed: ${req.url()} (${req.failure()?.errorText})`);
     });
     page.on('response', (res) => {
