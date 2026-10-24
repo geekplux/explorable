@@ -55,7 +55,7 @@ describe('bits: Bloom Fig 1', () => {
   beforeEach(() => mount(bloomDoc, 'fig-bits'));
 
   it('draws 32 cells whose value is a glyph as well as a fill, and the default readout', () => {
-    expect(readout()).toBe('bits set 20 / 32 · predicted FPR 14.7% · observed FP 10 / 50');
+    expect(readout()).toBe('bits set 20 / 32 predicted FPR 14.7% observed FP 10 / 50');
     const cells = [...root.querySelectorAll('.xfig-bit')];
     expect(cells).toHaveLength(32);
     expect(cells.map((c) => c.textContent).join('')).toBe('11001101111010101011010110010111');
@@ -99,9 +99,9 @@ describe('bits: Bloom Fig 1', () => {
     }
     expect(verdicts).toEqual(['definitely not', 'maybe (false positive)', 'maybe (true positive)']);
     key(knob, 'Home');
-    expect(readout()).toBe('bits set 0 / 32 · predicted FPR 0% · observed FP 0 / 50');
+    expect(readout()).toBe('bits set 0 / 32 predicted FPR 0% observed FP 0 / 50');
     key(knob, 'End');
-    expect(readout()).toBe('bits set 24 / 32 · predicted FPR 30.8% · observed FP 19 / 50');
+    expect(readout()).toBe('bits set 24 / 32 predicted FPR 30.8% observed FP 19 / 50');
     const k = $<HTMLInputElement>('#fig-bits-k');
     expect(k.getAttribute('aria-valuetext')).toBe('3');
     key(k, 'Home');
@@ -148,7 +148,7 @@ describe('bars + switch: attention Fig 2', () => {
   beforeEach(() => mount(attentionDoc, 'fig-scaling'));
 
   it('starts unscaled at d_k = 4 with dashed "other setting" outlines and a legend that follows the switch', () => {
-    expect(readout()).toBe('score SD 2.02 · top weight 0.57 · entropy 1.85 bits');
+    expect(readout()).toBe('score SD 2.02 top weight 0.57 entropy 1.85 bits');
     expect(root.querySelectorAll('.xfig-bar-g rect.xfig-bar-other')).toHaveLength(8);
     expect(texts('.xfig-legend text')).toEqual(['this setting', 'with ÷√d_k']);
     expect(sw().getAttribute('aria-checked')).toBe('false');
@@ -156,7 +156,7 @@ describe('bars + switch: attention Fig 2', () => {
     expect(sw().textContent).toBe('divide by √d_koff');
     sw().click();
     expect(sw().getAttribute('aria-checked')).toBe('true');
-    expect(readout()).toBe('score SD 1.01 · top weight 0.34 · entropy 2.58 bits');
+    expect(readout()).toBe('score SD 1.01 top weight 0.34 entropy 2.58 bits');
     expect(texts('.xfig-legend text')).toEqual(['this setting', 'without ÷√d_k']);
   });
 
@@ -166,9 +166,9 @@ describe('bars + switch: attention Fig 2', () => {
     expect($('#fig-scaling-dk').getAttribute('aria-valuetext')).toBe('4 dimensions');
     key(knob, 'End');
     expect(knob.getAttribute('aria-valuetext')).toBe('512 dimensions');
-    expect(readout()).toBe('score SD 23.95 · top weight 1.00 · entropy 0.00 bits');
+    expect(readout()).toBe('score SD 23.95 top weight 1.00 entropy 0.00 bits');
     sw().click();
-    expect(readout()).toBe('score SD 1.06 · top weight 0.61 · entropy 2.00 bits');
+    expect(readout()).toBe('score SD 1.06 top weight 0.61 entropy 2.00 bits');
   });
 
   it('at d_k = 1 the switch changes no number', () => {
@@ -193,7 +193,7 @@ describe('histogram: diffusion Fig 1', () => {
   beforeEach(() => mount(diffusionDoc, 'fig-histogram'));
 
   it('draws 60 ink-outlined bars, the labelled dotted reference and the ±2σ bracket', () => {
-    expect(readout()).toBe('signal √ᾱ_t 1.000 · noise √(1−ᾱ_t) 0.000 · spread (SD) 1.77');
+    expect(readout()).toBe('signal √ᾱ_t 1.000 noise √(1−ᾱ_t) 0.000 spread (SD) 1.77');
     expect(root.querySelectorAll('rect.xfig-bar')).toHaveLength(60);
     expect(texts('.xfig-ref-label')).toEqual(['N(0, 1)']);
     expect(texts('.xfig-ghost-label')).toEqual(['data (t = 0)']);
@@ -240,7 +240,7 @@ describe('histogram: diffusion Fig 1', () => {
     expect($('.xfig-ghost').classList.contains('is-hidden')).toBe(false);
     key(knob, 'End');
     expect(knob.getAttribute('aria-valuenow')).toBe('1000');
-    expect(readout()).toBe('signal √ᾱ_t 0.006 · noise √(1−ᾱ_t) 1.000 · spread (SD) 1.01');
+    expect(readout()).toBe('signal √ᾱ_t 0.006 noise √(1−ᾱ_t) 1.000 spread (SD) 1.01');
     expect($('.xfig-chip').textContent).toBe('t = 1000 · ᾱ_t = 4.04 × 10⁻⁵');
     expect(yAxis()).toEqual(axis0);
   });
@@ -272,7 +272,7 @@ describe('curve: Bloom Fig 2 (expr-curve)', () => {
   beforeEach(() => mount(bloomDoc, 'fig-fpr-curve'));
 
   it('draws the FPR curve, the dotted reference and the optimal-k marker, all labelled directly', () => {
-    expect(readout()).toBe('items inserted n 8 · false-positive rate 14.7%');
+    expect(readout()).toBe('items inserted n 8 false-positive rate 14.7%');
     expect(texts('.xfig-series-label')).toEqual(['k = 3, m = 32']);
     expect(texts('.xfig-ref-label')).toEqual(['best possible k']);
     expect(marker()).toBe('k = 3 is best at n ≈ 7.4');
@@ -304,12 +304,12 @@ describe('curve: Bloom Fig 2 (expr-curve)', () => {
     expect(knob.getAttribute('aria-valuetext')).toBe('8');
     const y8 = Number(/ ([\d.]+)\)/.exec($('.xfig-knob g').getAttribute('transform')!)![1]);
     key(knob, 'PageUp');
-    expect(readout()).toBe('items inserted n 18 · false-positive rate 54.1%');
+    expect(readout()).toBe('items inserted n 18 false-positive rate 54.1%');
     const y18 = Number(/ ([\d.]+)\)/.exec($('.xfig-knob g').getAttribute('transform')!)![1]);
     expect(y18).toBeLessThan(y8 - 50);
     for (let i = 0; i < 10; i++) key(knob, 'ArrowLeft');
     key($('#fig-fpr-curve-k'), 'End');
-    expect(readout()).toBe('items inserted n 8 · false-positive rate 22.0%');
+    expect(readout()).toBe('items inserted n 8 false-positive rate 22.0%');
     expect(marker()).toBe('k = 6 is best at n ≈ 3.7');
     expect(texts('.xfig-series-label')).toEqual(['k = 6, m = 32']);
     key($('#fig-fpr-curve-m'), 'End');
@@ -317,7 +317,7 @@ describe('curve: Bloom Fig 2 (expr-curve)', () => {
     expect(marker()).toBe('k = 1 is best at n ≈ 88.7 (off the chart)');
     expect($('.xfig-marker-line').getAttribute('d')).toBe('');
     expect($('.xfig-meet').getAttribute('d')).toMatch(/l8 5l-8 5z$/);
-    expect(readout()).toBe('items inserted n 8 · false-positive rate 6.1%');
+    expect(readout()).toBe('items inserted n 8 false-positive rate 6.1%');
   });
 
   it('"Show data" lists 11 sampled points around the knob, clipped to the range', () => {
@@ -408,7 +408,7 @@ describe('curve: diffusion Fig 2 (registry series)', () => {
   beforeEach(() => mount(diffusionDoc, 'fig-signal-noise'));
 
   it('signal is solid with ● markers, noise dashed with ■, both labelled, the crossing marked', () => {
-    expect(readout()).toBe('ᾱ_t 0.897 · SNR 9.4 dB');
+    expect(readout()).toBe('ᾱ_t 0.897 SNR 9.4 dB');
     expect($('.xfig-foot .xfig-sr').textContent).toBe('alpha-bar 0.897, signal-to-noise ratio 9.4 dB');
     expect(texts('.xfig-series-label')).toEqual(['signal √ᾱ_t', 'noise √(1−ᾱ_t)']);
     expect($('.xfig-marker-label').textContent).toBe('signal = noise (t ≈ 260)');
@@ -436,7 +436,7 @@ describe('curve: diffusion Fig 2 (registry series)', () => {
 
   it('reads ∞ dB at t = 0 and lists t ± 50 in steps of 10', () => {
     key($('.xfig-knob'), 'Home');
-    expect(readout()).toBe('ᾱ_t 1.00 · SNR ∞ dB');
+    expect(readout()).toBe('ᾱ_t 1.00 SNR ∞ dB');
     key($('.xfig-knob'), 'PageUp');
     key($('.xfig-knob'), 'PageUp');
     const rows = [...root.querySelectorAll('tbody tr')].map((r) => [...r.children].map((c) => c.textContent));

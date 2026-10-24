@@ -37,7 +37,7 @@ export const mountBits: FigureMount = (el, { spec, model, setParam }) => {
   const [words, track, arrows, cells, outlines, mark, query] = Array.from({ length: 7 }, () => svgEl(chart, 'g')) as [SVGGElement, SVGGElement, SVGGElement, SVGGElement, SVGGElement, SVGGElement, SVGGElement];
   track.setAttribute('aria-hidden', 'true');
   words.setAttribute('class', 'xfig-words');
-  const knob = handleDef ? createHandle(svg, { def: handleDef, onChange: (v, instant) => setParam(handleName, v, instant) }) : undefined;
+  const knob = handleDef ? createHandle(svg, { def: handleDef, onChange: (v, instant) => setParam(handleName, v, instant), fill: true }) : undefined;
 
   let g = { w: 640, h: 250, wide: true, cell: 24, pitch: 27, rowGap: 18, top: 124, chipTop: 192 };
   let chips: SVGGElement[] = [];

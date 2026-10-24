@@ -20,13 +20,16 @@ export interface HandleOptions {
   def: ParamDef;
   /** A new value; `instant` is true while dragging (no easing). */
   onChange(value: number, instant: boolean): void;
+  /** Draw the track from its start to the knob in the handle colour (a straight track only). */
+  fill?: boolean;
 }
 
 export type Handle = ReturnType<typeof createHandle>;
 
-export function createHandle(parent: SVGElement, { def, onChange }: HandleOptions) {
+export function createHandle(parent: SVGElement, { def, onChange, fill }: HandleOptions) {
   const root = svgEl(parent, 'g', { class: 'xfig-handle' });
   const band = svgEl(root, 'rect', { class: 'xfig-track-hit' });
+  const filled = fill ? svgEl(root, 'path', { class: 'xfig-track-fill', 'aria-hidden': 'true' }) : undefined;
   const knob = svgEl(root, 'g', {
     class: 'xfig-knob', role: 'slider', tabindex: 0, 'aria-label': `${spoken(def)} (${def.symbol && !spoken(def).endsWith(` ${def.symbol}`) ? `${def.symbol}, ` : ''}drag on chart)`,
     'aria-valuemin': def.min, 'aria-valuemax': def.max, 'aria-orientation': 'horizontal',
@@ -40,7 +43,10 @@ export function createHandle(parent: SVGElement, { def, onChange }: HandleOption
   svgEl(move, 'path', { class: 'xfig-knob-grip', d: 'M-2.5 -3.5v7M0 -3.5v7M2.5 -3.5v7' });
 
   let x0 = 0, x1 = 1, y = 0, x = 0, dx = 0, value = def.default, dragging: number | undefined;
-  const placeMove = () => move.setAttribute('transform', `translate(${(x + dx).toFixed(1)} ${y})`);
+  const placeMove = () => {
+    move.setAttribute('transform', `translate(${(x + dx).toFixed(1)} ${y})`);
+    filled?.setAttribute('d', `M${x0} ${y}H${Math.max(x0, x + dx).toFixed(1)}`);
+  };
 
   const posAt = (clientX: number) => {
     const svg = root.ownerSVGElement;

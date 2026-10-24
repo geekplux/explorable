@@ -73,7 +73,12 @@ describe('hydrateFigures: fig-temperature', () => {
     mount();
     expect([...root.querySelectorAll('.xfig-bar-label')].map((t) => t.textContent)).toEqual(['the', 'cat', 'sat', 'on', 'the', 'mat']);
     expect(root.querySelectorAll('rect.xfig-bar')).toHaveLength(6);
-    expect(readout()).toBe('top weight 0.51 · entropy 2.05 bits');
+    expect(readout()).toBe('top weight 0.51 entropy 2.05 bits');
+    // One span per output (spaced by CSS, no "·" joiner), the number in <b>.
+    expect([...root.querySelectorAll('.xfig-readout > span')].map((s) => s.textContent)).toEqual(['top weight 0.51', 'entropy 2.05 bits']);
+    expect([...root.querySelectorAll('.xfig-readout b')].map((b) => b.textContent)).toEqual(['0.51', '2.05']);
+    // The track fills from its start to the knob.
+    expect($('.xfig-track-fill').getAttribute('d')).toBe(`M56 326H${xFor(1).toFixed(1)}`);
     expect($('.xfig-chip').textContent).toBe('query: sat');
     expect($('.xfig-top text').textContent).toBe('top');
     expect($('.xfig-top path')).toBeTruthy();
@@ -107,10 +112,10 @@ describe('hydrateFigures: fig-temperature', () => {
     mount();
     key(knob(), 'Home');
     expect(knob().getAttribute('aria-valuetext')).toBe('0.05');
-    expect(readout()).toBe('top weight 1.00 · entropy 0.00 bits');
+    expect(readout()).toBe('top weight 1.00 entropy 0.00 bits');
     key(knob(), 'End');
     expect(knob().getAttribute('aria-valuenow')).toBe('5');
-    expect(readout()).toBe('top weight 0.22 · entropy 2.57 bits');
+    expect(readout()).toBe('top weight 0.22 entropy 2.57 bits');
     expect($('output').textContent).toBe('T = 5.00');
     expect($<HTMLInputElement>('input[type=range]').getAttribute('aria-valuetext')).toBe('5.00');
     key(knob(), 'PageDown');
@@ -120,13 +125,13 @@ describe('hydrateFigures: fig-temperature', () => {
     expect(knob().getAttribute('aria-valuenow')).toBe('0.05');
   });
 
-  it('reads exactly "top weight 0.98 · entropy 0.15 bits" at T = 0.25 (native slider)', () => {
+  it('reads exactly "top weight 0.98 entropy 0.15 bits" at T = 0.25 (native slider)', () => {
     mount();
     const input = $<HTMLInputElement>('input[type=range]');
     input.value = String(Math.round(1000 * (Math.log(0.25 / 0.05) / Math.log(100))));
     input.dispatchEvent(new Event('input', { bubbles: true }));
     expect(knob().getAttribute('aria-valuenow')).toBe('0.25');
-    expect(readout()).toBe('top weight 0.98 · entropy 0.15 bits');
+    expect(readout()).toBe('top weight 0.98 entropy 0.15 bits');
   });
 
   it('keeps the y axis fixed and the two "the" bars equal at every fixture T', () => {
@@ -247,9 +252,9 @@ describe('hydrateFigures: fig-temperature', () => {
     io.fire(false);
     key(knob(), 'End');
     expect(knob().getAttribute('aria-valuenow')).toBe('5');
-    expect(readout()).toBe('top weight 0.51 · entropy 2.05 bits');
+    expect(readout()).toBe('top weight 0.51 entropy 2.05 bits');
     io.fire(true);
-    expect(readout()).toBe('top weight 0.22 · entropy 2.57 bits');
+    expect(readout()).toBe('top weight 0.22 entropy 2.57 bits');
   });
 
   it('reduced motion: no nudge, a static "drag" hint, instant keyboard steps', () => {
@@ -291,7 +296,7 @@ describe('hydrateFigures: fig-temperature', () => {
     const h0 = bar();
     key(knob(), 'Home');
     const h1 = bar();
-    expect(readout()).toBe('top weight 1.00 · entropy 0.00 bits');
+    expect(readout()).toBe('top weight 1.00 entropy 0.00 bits');
     vi.advanceTimersByTime(1000);
     expect(h1).toBeGreaterThan(h0);
     expect(bar()).toBeGreaterThan(h1);

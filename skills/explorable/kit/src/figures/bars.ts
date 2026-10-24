@@ -43,7 +43,7 @@ export const mountBars: FigureMount = (el, { spec, model, setParam }) => {
   const axis = svgEl(svg, 'g', { class: 'xfig-axis', 'aria-hidden': 'true' });
   const plot = svgEl(svg, 'g', { role: 'img', 'aria-label': `${spec.title}: bar chart` });
   const trackG = svgEl(svg, 'g', { class: 'xfig-track', 'aria-hidden': 'true' });
-  const knob = handleDef ? createHandle(svg, { def: handleDef, onChange: (v, instant) => setParam(handleName!, v, instant) }) : undefined;
+  const knob = handleDef ? createHandle(svg, { def: handleDef, onChange: (v, instant) => setParam(handleName!, v, instant), fill: true }) : undefined;
 
   const legend = compare ? svgEl(svg, 'g', { class: 'xfig-legend', 'aria-hidden': 'true' }) : undefined;
   let otherText: SVGTextElement | undefined;
@@ -66,10 +66,10 @@ export const mountBars: FigureMount = (el, { spec, model, setParam }) => {
     axis.replaceChildren();
     for (const y of [0, 0.25, 0.5, 0.75, 1]) {
       const py = g.bottom - y * (g.bottom - g.top);
-      svgEl(axis, 'path', { class: y ? 'xfig-grid' : 'xfig-baseline', d: `M${g.L} ${py}H${g.R}` });
+      svgEl(axis, 'path', { class: y ? `xfig-grid${y * 2 === Math.round(y * 2) ? '' : ' is-minor'}` : 'xfig-baseline', d: `M${g.L} ${py}H${g.R}` });
       if (y * 2 === Math.round(y * 2)) svgEl(axis, 'text', { x: g.L - 6, y: py + 4, 'text-anchor': 'end' }).textContent = String(y);
     }
-    svgEl(axis, 'text', { x: 4, y: compare ? 20 : g.top - 24 }).textContent = 'weight';
+    svgEl(axis, 'text', { x: 4, y: compare ? 20 : g.top - 24, class: 'xfig-axis-name' }).textContent = 'weight';
     if (legend) {
       legend.replaceChildren();
       const x = Math.max(g.L + 40, g.R - 300);

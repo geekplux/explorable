@@ -43,7 +43,7 @@ export const mountHistogram: FigureMount = (el, { spec, model, setParam }) => {
   const refText = svgEl(plot, 'text', { class: 'xfig-ref-label' });
   refText.textContent = refLabel;
   const trackG = svgEl(svg, 'g', { class: 'xfig-track', 'aria-hidden': 'true' });
-  const knob = handleDef ? createHandle(svg, { def: handleDef, onChange: (v, instant) => setParam(handleName!, v, instant) }) : undefined;
+  const knob = handleDef ? createHandle(svg, { def: handleDef, onChange: (v, instant) => setParam(handleName!, v, instant), fill: true }) : undefined;
 
   let g = { L: 40, R: 628, top: 30, bottom: 252 };
   // The x domain starts 12 px right of the y axis, so the "0" density label and the "−4" tick label never meet.

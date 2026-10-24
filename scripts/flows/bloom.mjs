@@ -47,7 +47,7 @@ export default async function bloom({ page, baseURL, shot, assert, cvd, axe }) {
   const fig = page.locator(FIG);
   await fig.locator('.xfig-knob').waitFor();
   await fig.scrollIntoViewIfNeeded();
-  assert.equal(await readout(page), 'bits set 20 / 32 · predicted FPR 14.7% · observed FP 10 / 50');
+  assert.equal(await readout(page), 'bits set 20 / 32 predicted FPR 14.7% observed FP 10 / 50');
   assert.equal((await fig.locator('.xfig-bit text').allTextContents()).join(''), '11001101111010101011010110010111', 'every cell shows its 1/0 glyph');
   const cell = await fig.locator('.xfig-bit rect').first().boundingBox();
   assert.ok(cell.width >= 24 && cell.height >= 24, `cells ≥ 24 px on desktop (${cell.width})`);
@@ -81,10 +81,10 @@ export default async function bloom({ page, baseURL, shot, assert, cvd, axe }) {
   await fig.locator('#fig-bits-k').focus();
   await page.keyboard.press('Home');
   const k1 = await readout(page);
-  assert.equal(k1, 'bits set 7 / 32 · predicted FPR 22.1% · observed FP 9 / 50');
+  assert.equal(k1, 'bits set 7 / 32 predicted FPR 22.1% observed FP 9 / 50');
   for (let i = 0; i < 5; i++) await page.keyboard.press('ArrowRight');
   const k6 = await readout(page);
-  assert.equal(k6, 'bits set 26 / 32 · predicted FPR 22.0% · observed FP 15 / 50');
+  assert.equal(k6, 'bits set 26 / 32 predicted FPR 22.0% observed FP 15 / 50');
   assert.notEqual(fpr(k1), fpr(k6), 'predicted FPR changes with k');
   await settled(page);
   assert.equal(await fig.locator('.xfig-arrow').count(), 6, 'six probe arrows at k = 6 once motion settles');
@@ -155,7 +155,7 @@ async function verticalSwipe(page, assert, fig) {
 /** Bloom Fig 2: the FPR curve over n for the current m and k. */
 async function fprCurve({ page, baseURL, shot, assert, cvd, axe }) {
   const fig = await openCurve(page, baseURL);
-  assert.equal(await curveReadout(page), 'items inserted n 8 · false-positive rate 14.7%');
+  assert.equal(await curveReadout(page), 'items inserted n 8 false-positive rate 14.7%');
   assert.equal(await fig.locator('.xfig-marker-label').textContent(), 'k = 3 is best at n ≈ 7.4');
   assert.equal(await fig.locator('.xfig-series-label').textContent(), 'k = 3, m = 32');
   assert.equal(await fig.locator('.xfig-ref-label').textContent(), 'best possible k');
@@ -175,7 +175,7 @@ async function fprCurve({ page, baseURL, shot, assert, cvd, axe }) {
   await page.mouse.move(xOf(16), ring.y - 60, { steps: 8 });
   await page.mouse.up();
   assert.equal(await fig.locator('.xfig-knob').getAttribute('aria-valuenow'), '16');
-  assert.equal(await curveReadout(page), 'items inserted n 16 · false-positive rate 46.9%');
+  assert.equal(await curveReadout(page), 'items inserted n 16 false-positive rate 46.9%');
   await page.waitForFunction((sel) => document.querySelector(`${sel}-desc`)?.textContent === 'At n = 16 items, the false-positive rate is 46.9%; k = 3 is best at n ≈ 7.4.', CURVE, { timeout: 10_000 });
   const knobY = (await fig.locator('.xfig-knob-ring').boundingBox()).y;
   assert.ok(knobY < ring.y - 40, 'the knob climbs the curve as n grows');
@@ -188,7 +188,7 @@ async function fprCurve({ page, baseURL, shot, assert, cvd, axe }) {
   await page.keyboard.press('End');
   await curveSettled(page);
   assert.equal(await fig.locator('.xfig-marker-label').textContent(), 'k = 6 is best at n ≈ 3.7');
-  assert.match(await curveReadout(page), /^items inserted n 16 · /);
+  assert.match(await curveReadout(page), /^items inserted n 16 /);
   await curveSettled(page);
   for (const vision of ['deutan', 'protan', 'tritan']) {
     await cvd(vision);

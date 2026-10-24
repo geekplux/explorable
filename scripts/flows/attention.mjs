@@ -55,7 +55,7 @@ export default async function attention({ page, baseURL, shot, assert, cvd, axe 
   await fig.scrollIntoViewIfNeeded();
   const labels = await fig.locator('.xfig-bar-label').allTextContents();
   assert.deepEqual(labels, ['the', 'cat', 'sat', 'on', 'the', 'mat'], 'six token-labelled bars');
-  assert.equal((await state(page)).readout, 'top weight 0.51 · entropy 2.05 bits');
+  assert.equal((await state(page)).readout, 'top weight 0.51 entropy 2.05 bits');
   assert.equal(await fig.locator('.xfig-top text').textContent(), 'top', 'top bar carries ▼ + "top"');
   const describedBy = await fig.getAttribute('aria-describedby');
   assert.ok((await page.locator(`#${describedBy}`).textContent()).startsWith('Bar chart'), 'alt text kept via aria-describedby');
@@ -110,11 +110,11 @@ export default async function attention({ page, baseURL, shot, assert, cvd, axe 
   const flat = await state(page);
   assert.equal(flat.value, T_MAX, 'End sets T to max');
   assert.equal(flat.valuetext, '5.00');
-  assert.equal(flat.readout, 'top weight 0.22 · entropy 2.57 bits');
+  assert.equal(flat.readout, 'top weight 0.22 entropy 2.57 bits');
   await settled(page);
   await shot('attention-fig1-flat');
   await page.keyboard.press('Home');
-  assert.equal((await state(page)).readout, 'top weight 1.00 · entropy 0.00 bits');
+  assert.equal((await state(page)).readout, 'top weight 1.00 entropy 0.00 bits');
   await page.keyboard.press('ArrowRight');
   assert.ok((await state(page)).value > T_MIN, 'ArrowRight steps up');
   await settled(page);
@@ -220,7 +220,7 @@ async function fig2(page, { shot, assert, axe }) {
   await fig.locator('.xfig-knob').waitFor();
   await fig.scrollIntoViewIfNeeded();
   const sw = fig.locator('[role="switch"]');
-  assert.equal(await fig.locator('.xfig-readout').textContent(), 'score SD 2.02 · top weight 0.57 · entropy 1.85 bits');
+  assert.equal(await fig.locator('.xfig-readout').textContent(), 'score SD 2.02 top weight 0.57 entropy 1.85 bits');
   assert.equal(await sw.getAttribute('aria-checked'), 'false');
   assert.equal(await sw.getAttribute('aria-label'), 'divide by square root of d k');
 
@@ -229,7 +229,7 @@ async function fig2(page, { shot, assert, axe }) {
   assert.equal(await fig.locator('.xfig-knob').getAttribute('aria-valuenow'), '512');
   assert.ok(sd(unscaled[0]) < 1.5 && topWeight(unscaled[0]) < 0.5, `d_k = 1 is soft: ${unscaled[0]}`);
   assert.ok(sd(unscaled[1]) > 6 && sd(unscaled[1]) < 10, `SD ≈ √64 = 8: ${unscaled[1]}`);
-  assert.equal(unscaled[2], 'score SD 23.95 · top weight 1.00 · entropy 0.00 bits', 'SD ≈ √512 and one-hot at 512');
+  assert.equal(unscaled[2], 'score SD 23.95 top weight 1.00 entropy 0.00 bits', 'SD ≈ √512 and one-hot at 512');
   assert.deepEqual(await fig.locator('.xfig-legend text').allTextContents(), ['this setting', 'with ÷√d_k']);
   await page.waitForTimeout(200);
   await shot('attention-fig2-unscaled');
@@ -241,7 +241,7 @@ async function fig2(page, { shot, assert, axe }) {
   await page.keyboard.press('Enter');
   assert.equal(await sw.getAttribute('aria-checked'), 'false', 'Enter turns it off');
   await page.keyboard.press('Space');
-  assert.equal(await fig.locator('.xfig-readout').textContent(), 'score SD 1.06 · top weight 0.61 · entropy 2.00 bits');
+  assert.equal(await fig.locator('.xfig-readout').textContent(), 'score SD 1.06 top weight 0.61 entropy 2.00 bits');
   assert.deepEqual(await fig.locator('.xfig-legend text').allTextContents(), ['this setting', 'without ÷√d_k']);
 
   // Scaled: the SD stays near 1 across the whole drag.

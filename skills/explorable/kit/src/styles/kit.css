@@ -40,6 +40,7 @@
 .xfig-grid { stroke: var(--rule); }
 .xfig-baseline { stroke: var(--ink); }
 .xfig-track-line { stroke: var(--ink-3); stroke-width: 2; stroke-linecap: round; }
+.xfig-track-fill { fill: none; stroke: var(--handle); stroke-width: 2; stroke-linecap: round; pointer-events: none; }
 .xfig-tick { stroke: var(--ink-3); }
 .xfig-handle { cursor: pointer; touch-action: none; }
 .xfig-track-hit, .xfig-knob-hit { fill: transparent; }
@@ -103,7 +104,8 @@ circle.xfig-knob-hint { fill: none; stroke: var(--ink-2); stroke-width: 1.5; str
 .xfig-control output, .xfig-table td { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
 .xfig-control output { white-space: nowrap; }
 .xfig-foot { flex-wrap: wrap; align-items: center; margin-top: var(--space-2); }
-.xfig-readout { margin: 0; font-size: .875rem; }
+.xfig-readout { display: flex; flex-wrap: wrap; gap: 0 20px; margin: 0; font-size: .875rem; color: var(--text-2); }
+.xfig-readout b { font-weight: 500; color: var(--text); }
 .xfig-data-toggle { min-height: 44px; min-width: 44px; padding: 0 .9rem; font: .875rem var(--font-ui); color: var(--ink); background: var(--paper); border: 1px solid var(--ink-3); border-radius: var(--radius-pill); cursor: pointer; }
 .xfig-table-wrap { max-width: 100%; overflow-x: auto; margin-top: var(--space-3); }
 .xfig-table-wrap:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
@@ -139,7 +141,7 @@ circle.xfig-knob-hint { fill: none; stroke: var(--ink-2); stroke-width: 1.5; str
   .xfig-probe { stroke: Highlight; }
   /* SVG paint is not forced, so every stroke and fill that carries meaning names a system colour here. */
   .xfig-line, .xfig-line:is(.xfig-s0, .xfig-s1, .xfig-s2), .xfig-ref, .xfig-ghost, .xfig-sigma, .xfig-marker-line, .xfig-axis path, .xfig-baseline, .xfig-tick, .xfig-drop,
-  .xfig-track-line, .xfig-bar-other, .xfig-arrow, .xfig-hatch, .xfig-zero, .xfig-verdict-icon, .xfig-knob-grip, circle.xfig-knob-hint { stroke: CanvasText; }
+  .xfig-track-line, .xfig-track-fill, .xfig-bar-other, .xfig-arrow, .xfig-hatch, .xfig-zero, .xfig-verdict-icon, .xfig-knob-grip, circle.xfig-knob-hint { stroke: CanvasText; }
   .xfig-axis .xfig-grid { stroke: GrayText; }
   .xfig-line-halo, .xfig-bar-other-halo, .xfig-probe-halo, .xfig-arrow-halo { stroke: Canvas; }
   .xfig-marks, .xfig-marks:is(.xfig-s0, .xfig-s1, .xfig-s2), .xfig-meet { fill: CanvasText; stroke: Canvas; }

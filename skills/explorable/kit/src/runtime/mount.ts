@@ -153,9 +153,16 @@ export function mountFigure(stage: HTMLElement, spec: FigureSpec, opts: MountOpt
     const out = model.compute(target);
     const shownOuts = spec.readouts
       .map((id) => [model.outputs[id], out[id]] as const)
-      .flatMap(([def, v]) => (def && typeof v === 'number' ? [[def, `${format(v, def.format)}${def.unit ? ` ${def.unit}` : ''}`] as const] : []));
-    readout.textContent = shownOuts.map(([def, v]) => `${def.label} ${v}`).join(' · ');
-    spokenReadout.textContent = shownOuts.map(([def, v]) => `${def.spoken ?? def.label} ${v}`).join(', ');
+      .flatMap(([def, v]) => (def && typeof v === 'number' ? [[def, format(v, def.format)] as const] : []));
+    // One span per output, "label <b>value</b> unit", spaced by CSS (a plain space between them for copy and tests).
+    readout.replaceChildren(
+      ...shownOuts.flatMap(([def, v], i) => {
+        const span = document.createElement('span');
+        span.append(`${def.label} `, Object.assign(document.createElement('b'), { textContent: v }), def.unit ? ` ${def.unit}` : '');
+        return i ? [' ', span] : [span];
+      }),
+    );
+    spokenReadout.textContent = shownOuts.map(([def, v]) => `${def.spoken ?? def.label} ${v}${def.unit ? ` ${def.unit}` : ''}`).join(', ');
     data.setColumns(columns(out));
     data.setRows(view.rows(target, out));
     data.setNote(view.note?.(target, out) ?? '');
