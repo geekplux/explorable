@@ -34,7 +34,7 @@
 .xnote-g .xsub { font-size: var(--text-12); }
 .xnote-cite { position: relative; }
 .xnote-src { padding: 0; font: inherit; color: inherit; background: none; border: 0; text-decoration: underline dotted var(--hairline) var(--sand-9); text-underline-offset: 4px; cursor: pointer; }
-.xnote-cite.is-open .xnote-src { text-decoration-color: var(--indigo-9); }
+.xnote-src[aria-expanded="true"] { text-decoration-color: var(--indigo-9); }
 .xnote-card { position: absolute; left: var(--xnote-shift, 0); top: calc(100% + 8px); z-index: 2; display: grid; gap: 2px; width: 300px; max-width: calc(100vw - 32px); padding: 12px 14px; border-radius: var(--radius); background: var(--sand-1); box-shadow: 0 0 0 var(--hairline) var(--sand-6); font: 400 var(--text-14)/1.5 var(--font-ui); text-align: left; }
 .xnote-card::before { content: ""; position: absolute; inset: -8px 0 auto; height: 8px; }
 .xnote-card-title { font-weight: 500; color: var(--text); }

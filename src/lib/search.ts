@@ -1,5 +1,9 @@
 import type { ExplorableDoc } from '@kit/doc/schema.ts';
-import { searchModels } from '@kit/index.ts';
+import { searchModels } from '@kit/registry.ts';
+// The runtime registers the built-in models. Importing the registry and the runtime rather than the kit's index keeps
+// the schema (valibot), the formula check and the palette checks out of the app bundle.
+// oxlint-disable-next-line import/no-unassigned-import -- imported for its side effect
+import '@kit/runtime/mount.ts';
 import { samples } from '../samples/index.ts';
 
 const words = (s: string): string[] => s.toLowerCase().match(/[a-z0-9]+/g) ?? [];

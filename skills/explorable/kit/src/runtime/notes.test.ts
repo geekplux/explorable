@@ -103,7 +103,7 @@ describe('source cards', () => {
     label().focus();
     expect(label().getAttribute('aria-expanded')).toBe('true');
     expect(card().hidden).toBe(false);
-    expect($('.xnote-cite').classList.contains('is-open')).toBe(true);
+    expect(card().classList.contains('is-open')).toBe(true);
     card().querySelector('a')!.focus();
     expect(card().hidden).toBe(false);
     key('Escape');
