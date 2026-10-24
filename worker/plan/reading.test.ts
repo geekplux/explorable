@@ -15,8 +15,11 @@ describe('reading level', () => {
     // The first sentence of the attention paper's abstract: 21 words, 1 sentence, 41 syllables.
     const abstract = 'The dominant sequence transduction models are based on complex recurrent or convolutional neural networks that include an encoder and a decoder.';
     expect(fleschKincaid([abstract])).toEqual({ grade: 15.6, words: 21, sentences: 1 });
-    // A passage with no closing punctuation is one sentence; an empty one counts nothing.
+    // A passage with no closing punctuation is one sentence, as is text after the last full stop; an empty one counts nothing.
     expect(fleschKincaid(['Drag T down', ''])).toMatchObject({ words: 3, sentences: 1 });
+    expect(fleschKincaid(['Drag T down. Then watch the bars'])).toMatchObject({ words: 7, sentences: 2 });
+    // Numbers are one word each: "0.25" and "1,000", not "0" and "25".
+    expect(fleschKincaid(['Set T to 0.25 for 1,000 steps.'])).toMatchObject({ words: 7, sentences: 1 });
     expect(fleschKincaid([])).toEqual({ grade: 0, words: 0, sentences: 0 });
   });
 

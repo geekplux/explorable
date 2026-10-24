@@ -36,6 +36,8 @@ const TIGHT = new Set('+−×·^=≈≤≥<>√'.split(''));
 /** Tokens of one segment; `sep` ends a run (a word, a comma, a full stop, a quote). */
 function tokenize(text: string, code: boolean): Tok[] {
   const toks: Tok[] = [];
+  // ‖ and | come in pairs: the first opens (a norm, an absolute value), the next closes.
+  const bars = new Set<string>();
   let space = false;
   let start = 0;
   const push = (t: Tok['t'], s: string, end = start + s.length) => {
@@ -90,7 +92,10 @@ function tokenize(text: string, code: boolean): Tok[] {
       else if (ROOT.has(c)) push('root', c);
       else if (c === '(' || c === '[') push('open', c);
       else if (c === ')' || c === ']') push('close', c);
-      else push('sep', c);
+      else if (c === '‖' || c === '|') {
+        push(bars.has(c) ? 'close' : 'open', c);
+        if (!bars.delete(c)) bars.add(c);
+      } else push('sep', c);
       i++;
     }
   }
@@ -144,9 +149,14 @@ function runIsFormula(run: Tok[], code: boolean): boolean {
   return sides.some((side) => (code || hasVar(side)) && operations(side) >= 1);
 }
 
+const LATEX = /\S*(?:[_^]\{|\\[a-zA-Z]{2,})\S*/;
+
+/** True when `text` holds LaTeX (`\frac`, `^{`, `_{`) or a `$` math delimiter. */
+export const hasLatex = (text: string): boolean => LATEX.test(text) || text.includes('$');
+
 /** The first stretch of `text` that reads like a formula, or null. Note markers and emphasis are ignored. */
 export function findFormula(text: string): string | null {
-  const latex = /\S*(?:[_^]\{|\\[a-zA-Z]{2,})\S*/.exec(text);
+  const latex = LATEX.exec(text);
   if (latex) return latex[0];
   const parts = text.replace(/\[\[[^[\]\n]*\]\]/g, ' ').split(/(`[^`\n]+`)/);
   for (const [i, part] of parts.entries()) {

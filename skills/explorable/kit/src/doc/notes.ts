@@ -18,6 +18,13 @@ export function authorLine(authors: readonly string[] | undefined): string {
   return `${surname(authors[0] ?? '')} et al.`;
 }
 
+/** "Chen, Rubanova, Bettencourt and Duvenaud", or "Vaswani, Shazeer, Parmar and 5 others" past four authors: a source card's detail. */
+export function authorList(authors: readonly string[] | undefined): string {
+  const names = (authors ?? []).map(surname);
+  if (names.length > 4) return `${names.slice(0, 3).join(', ')} and ${names.length - 3} others`;
+  return names.length < 2 ? (names[0] ?? '') : `${names.slice(0, -1).join(', ')} and ${names.at(-1)}`;
+}
+
 /** The family name a citation uses: the last word of a name. */
 export const surname = (name: string): string => name.trim().split(/\s+/).pop() ?? '';
 

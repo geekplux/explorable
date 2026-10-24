@@ -19,7 +19,7 @@
    {
     "heading": "From greedy to adventurous",
     "paragraphs": [
-     "Close scores make the knob matter more. With five nearly equal scores, T decides whether the model always says the same word or wanders. As T gets close to 0, the model always picks its top word, which is called **greedy decoding**."
+     "[[source]] point out that close scores make the knob matter more. With five nearly equal scores, T decides whether the model always says the same word or wanders. As T gets close to 0, the model always picks its top word, which is called **greedy decoding**."
     ]
    }
   ],

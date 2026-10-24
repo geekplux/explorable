@@ -7,7 +7,7 @@
    {
     "heading": "Scores from dot products",
     "paragraphs": [
-     "A softmax turns the scores into weights: `wᵢ = e^(sᵢ) / Σⱼ e^(sⱼ)`. The weights add up to 1.",
+     "A softmax turns the scores into weights. In symbols: `wᵢ = e^(sᵢ) / Σⱼ e^(sⱼ)`. The weights add up to 1.",
      "Add up d_k products and you get `q·k = Σᵢ qᵢkᵢ`. Each product is one pair of matching components."
     ]
    },

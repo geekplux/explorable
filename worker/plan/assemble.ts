@@ -12,7 +12,7 @@ import { getModel, type ModelDef, type ParamDef } from '../../skills/explorable/
 import { snap } from '../../skills/explorable/kit/src/runtime/values.ts';
 import { ApiError } from '../errors';
 import type { Extracted } from '../extract';
-import { type PlainReport, SOURCE_ID, plainWords, sourceLabel } from './plain';
+import { type PlainReport, plainWords, sourceLabel } from './plain';
 import { EXPR_CURVE, type Plan, type PlanFigure } from './schema';
 
 /** Curated samples double as match-mode templates and as the source of kind options. */
@@ -182,7 +182,8 @@ export function assemblePlan(plan: Plan, ex: Extracted, { model, now = new Date(
   // A repair that does not validate (a paragraph pushed past its length, say) falls back to the text without notes,
   // the source marker written out as its label.
   const fallback = !result.ok;
-  const flat = (s: string) => bare(s.replaceAll(`[[${SOURCE_ID}]]`, sourceLabel(source)));
+  const label = sourceLabel(source);
+  const flat = (s: string) => bare(s.replace(/\[\[source\]\](\.?)/g, (_m, dot: string) => (label.endsWith('.') ? label : label + dot)));
   if (fallback) result = doc({ dek: flat(text.dek), paragraphs: text.paragraphs.map((ps) => ps.map(flat)), takeaway: flat(text.takeaway) }, {});
   onReport?.({ ...plain.report, fallback });
   if (!result.ok) throw new ApiError('PLAN_INVALID', 'The assembled essay did not pass validation.');

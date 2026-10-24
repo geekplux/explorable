@@ -21,12 +21,15 @@ export interface Reading {
 export function fleschKincaid(texts: readonly string[]): Reading {
   let [words, sentences, syl] = [0, 0, 0];
   for (const text of texts) {
-    const ws = text.match(/[\p{L}\p{N}][\p{L}\p{N}'’-]*/gu) ?? [];
+    // A number ("0.25", "1,000") is one word.
+    const ws = text.match(/\d+(?:[.,]\d+)*|[\p{L}\p{N}][\p{L}\p{N}'’-]*/gu) ?? [];
     if (!ws.length) continue;
     words += ws.length;
     syl += ws.reduce((n, w) => n + syllables(w), 0);
-    // A passage without closing punctuation is still one sentence.
-    sentences += Math.max(1, text.match(/[.!?…]+["”’)\]]*(?=\s|$)/g)?.length ?? 0);
+    // Words after the last closing punctuation make one more sentence.
+    const ends = [...text.matchAll(/[.!?…]+["”’)\]]*(?=\s|$)/g)];
+    const tail = ends.length ? text.slice(ends.at(-1)!.index + ends.at(-1)![0].length) : text;
+    sentences += ends.length + (/[\p{L}\p{N}]/u.test(tail) ? 1 : 0);
   }
   if (!words) return { grade: 0, words, sentences };
   const grade = 0.39 * (words / sentences) + 11.8 * (syl / words) - 15.59;

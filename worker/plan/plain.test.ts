@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { bodyHasFormula } from '../../skills/explorable/kit/src/doc/formula.ts';
+import attention from '../../src/samples/attention.json';
 import type { DocSource } from '../../skills/explorable/kit/src/doc/schema.ts';
-import { FALLBACK_GLOSS, MAX_NOTES, markCitations, plainWords, sourceLabel, sourceNote } from './plain';
+import { MAX_NOTES, markCitations, plainWords, sourceLabel, sourceNote } from './plain';
 
 const paper: DocSource = {
   kind: 'arxiv',
@@ -10,59 +10,58 @@ const paper: DocSource = {
   authors: ['Ashish Vaswani', 'Noam Shazeer', 'Niki Parmar', 'Jakob Uszkoreit', 'Llion Jones'],
   year: 2017,
 };
+const ddpm: DocSource = { kind: 'arxiv', url: 'https://arxiv.org/abs/2006.11239', title: 'Denoising Diffusion Probabilistic Models', authors: ['Jonathan Ho', 'Ajay Jain', 'Pieter Abbeel'], year: 2020 };
 const post: DocSource = { kind: 'blog', url: 'http://example.org/bloom', title: 'Bloom filters by example', authors: ['Bill Mill'] };
 const anon: DocSource = { kind: 'blog', url: 'https://example.org/ropes', title: 'Why ropes beat strings for big edits' };
-const W = '`wᵢ = e^(sᵢ) / Σⱼ e^(sⱼ)`';
-const run = (paragraphs: string[], notes: { id: string; formula: string; plain: string }[] = [], src = paper, rest: { dek?: string; takeaway?: string } = {}) =>
+const W = 'wᵢ = e^(sᵢ) / Σⱼ e^(sⱼ)';
+const gloss = { id: 'g', formula: W, plain: 'Each weight is a share.' };
+type Notes = { id: string; formula: string; plain: string }[];
+const cite = (t: string, src = ddpm) => markCitations(t, src).text;
+const run = (paragraphs: string[], notes: Notes = [], src = paper, rest: { dek?: string; takeaway?: string } = {}) =>
   plainWords({ dek: rest.dek ?? 'A short dek.', paragraphs: [paragraphs], takeaway: rest.takeaway ?? 'A plain takeaway.' }, notes, src);
 
 describe('formulas left in the text', () => {
-  it('moves a formula after a colon into a math note, with the model gloss for the same formula', () => {
-    const r = run([`A softmax turns the scores into weights: ${W}. The weights add up to 1.`], [{ id: 'q', formula: 'wᵢ = e^(sᵢ)/Σⱼ e^(sⱼ)', plain: 'Each weight is a share.' }]);
+  it('drops a sentence that is only a formula the model glossed, and puts the marker after the sentence before it', () => {
+    const r = run([`A softmax turns the scores into weights. In symbols: \`${W}\`. The weights add up to 1.`], [gloss]);
     expect(r.paragraphs[0]).toEqual(['A softmax turns the scores into weights.[[m1]] The weights add up to 1.']);
-    expect(r.notes).toEqual([{ id: 'm1', kind: 'math', formula: 'wᵢ = e^(sᵢ) / Σⱼ e^(sⱼ)', plain: 'Each weight is a share.' }]);
+    expect(r.notes).toEqual([{ id: 'm1', kind: 'math', formula: W, plain: 'Each weight is a share.' }]);
     expect(r.report).toMatchObject({ moved: 1, kept: 0 });
+    // First in its paragraph: the marker follows the next sentence.
+    expect(run([`${W}. A softmax turns the scores into weights. Drag T.`], [gloss]).paragraphs[0]).toEqual(['A softmax turns the scores into weights.[[m1]] Drag T.']);
   });
 
-  it('cuts a parenthesis or a formula between commas, and says "a formula" where it is part of the grammar', () => {
-    expect(run(['The weights (wᵢ = e^(sᵢ) / Σⱼ e^(sⱼ)) add up to 1.']).paragraphs[0]).toEqual(['The weights add up to 1.[[m1]]']);
-    expect(run(['The gap decays, T(t) = Tₐ + (T₀ − Tₐ)·e^(−kt), and halves often. Drag k.']).paragraphs[0]).toEqual(['The gap decays and halves often.[[m1]] Drag k.']);
-    const r = run(['Solve it and you get `T(t) = Tₐ + (T₀ − Tₐ)·e^(−kt)`. Drag the point.']);
-    expect(r.paragraphs[0]).toEqual(['Solve it and you get a formula.[[m1]] Drag the point.']);
-    // No model gloss for this formula: the honest fallback.
-    expect(r.notes[0]).toMatchObject({ formula: 'T(t) = Tₐ + (T₀ − Tₐ)·e^(−kt)', plain: FALLBACK_GLOSS });
-    expect(run(['`q·k = Σᵢ qᵢkᵢ` is the score.']).paragraphs[0]).toEqual(['A formula is the score.[[m1]]']);
+  it('leaves every other formula as written and counts it', () => {
+    const cases = [
+      // Part of a longer sentence.
+      `Each weight ${W} is a share of the total, so the weights add up to 1.`,
+      // No gloss from the model.
+      'The model learns to predict the noise. The loss is L = ‖ε − ε_θ(x_t, t)‖². Smaller is better.',
+      // The only sentence.
+      `In symbols: ${W}.`,
+    ];
+    for (const text of cases) {
+      const r = run([text], [gloss]);
+      expect(r.paragraphs[0]).toEqual([text]);
+      expect(r.report).toMatchObject({ moved: 0, kept: 1 });
+      expect(r.notes).toEqual([]);
+    }
   });
 
-  it('keeps one math marker per paragraph: a second formula is cut, its sentence dropped, or (alone) kept', () => {
-    const notes = [{ id: 'm1', formula: 'Var(q·k) = d_k', plain: 'Variances add.' }];
-    // Same formula as the paragraph's note: the copy in the text goes.
-    expect(run(['The variance is d_k.[[m1]] In symbols: Var(q·k) = d_k.'], notes).paragraphs[0]).toEqual(['The variance is d_k.[[m1]] In symbols.']);
-    // A different formula after a colon is cut; one that is part of a sentence drops the sentence.
-    expect(run(['The variance is d_k.[[m1]] So the spread is: σ = √d_k · 1.'], notes).paragraphs[0]).toEqual(['The variance is d_k.[[m1]] So the spread is.']);
-    const dropped = run(['The variance is d_k.[[m1]] Its spread is σ = √d_k · 1 here. Drag d_k.'], notes);
-    expect(dropped.paragraphs[0]).toEqual(['The variance is d_k.[[m1]] Drag d_k.']);
-    expect(dropped.report).toMatchObject({ dropped: 1, kept: 0 });
-    // The only sentence holds the marker: the formula stays, and the doc still validates (a warning in the audit).
-    const kept = run(['Its spread is σ = √d_k · 1 here.[[m1]]'], notes);
-    expect(kept.paragraphs[0]).toEqual(['Its spread is σ = √d_k · 1 here.[[m1]]']);
-    expect(kept.report).toMatchObject({ kept: 1 });
+  it('keeps one math marker per paragraph, and never touches the dek', () => {
+    const notes = [{ id: 'm1', formula: 'Var(q·k) = d_k', plain: 'Variances add.' }, gloss];
+    const r = run([`The variance is d_k.[[m1]] Then: ${W}. Drag d_k.`], notes);
+    expect(r.paragraphs[0]).toEqual([`The variance is d_k.[[m1]] Then: ${W}. Drag d_k.`]);
+    expect(r.report).toMatchObject({ moved: 0, kept: 1 });
+    const dek = run(['Plain.'], [gloss], paper, { dek: `Scores grow. ${W}. Dividing keeps them soft.[[g]]` });
+    expect(dek.dek).toBe(`Scores grow. ${W}. Dividing keeps them soft.`);
+    expect(dek.report).toMatchObject({ kept: 1, removed: 1 });
   });
 
-  it('never puts a marker in the dek: its formulas are cut or their sentence dropped', () => {
-    const r = run(['Plain.'], [], paper, { dek: 'Scores grow: `Var(q·k) = d_k · Var(qᵢ)`. Dividing keeps them soft.[[m1]]' });
-    expect(r.dek).toBe('Scores grow. Dividing keeps them soft.');
+  it('drops a model note written in LaTeX, with its marker; LaTeX in the text stays and is counted', () => {
+    const r = run(['The weights sum to 1.[[t]] They are soft.', 'Divide by $\\sqrt{d_k}$ first.'], [{ id: 't', formula: '\\frac{e^{s_i}}{\\sum_j e^{s_j}}', plain: 'A share.' }]);
+    expect(r.paragraphs[0]).toEqual(['The weights sum to 1. They are soft.', 'Divide by $\\sqrt{d_k}$ first.']);
     expect(r.notes).toEqual([]);
-  });
-
-  it('moves formulas from the takeaway, and stops at the note budget', () => {
-    const r = run(['Plain.'], [], paper, { takeaway: 'So attention uses softmax(QKᵀ / √d_k) and stays soft.' });
-    expect(r.takeaway).toBe('So attention uses a formula and stays soft.[[m1]]');
-    const many = Array.from({ length: MAX_NOTES + 2 }, (_, i) => `Step ${i}: x = a·b + ${i}.`);
-    const full = plainWords({ dek: 'd', paragraphs: many.map((p) => [p]), takeaway: 't' }, [], paper);
-    expect(full.notes).toHaveLength(MAX_NOTES);
-    expect(full.paragraphs.slice(MAX_NOTES).flat()).toEqual([`Step ${MAX_NOTES}.`, `Step ${MAX_NOTES + 1}.`]);
-    expect(full.paragraphs.flat().some(bodyHasFormula)).toBe(false);
+    expect(r.report).toMatchObject({ removed: 1, kept: 1 });
   });
 });
 
@@ -79,24 +78,44 @@ describe('markers', () => {
     expect(r.report.removed).toBe(3);
   });
 
+  it('stops at the note budget, keeping one place for the source note', () => {
+    const notes = Array.from({ length: 14 }, (_, i) => ({ id: `m${i + 1}`, formula: `x = a·b + ${i}`, plain: `Rule ${i}.` }));
+    const paragraphs = notes.map((n) => `Step ${n.id}.[[${n.id}]]`);
+    expect(run(paragraphs, notes).notes).toHaveLength(MAX_NOTES);
+    const cited = run([...paragraphs, 'Vaswani et al. (2017) show this.'], notes);
+    expect(cited.notes.filter((n) => n.kind === 'math')).toHaveLength(MAX_NOTES - 1);
+    expect(cited.notes.at(-1)?.kind).toBe('source');
+  });
+
   it('turns a marker named after an author into the source marker', () => {
     expect(run(['[[vaswani]] suspect this.']).paragraphs[0]).toEqual(['[[source]] suspect this.']);
   });
 });
 
 describe('citations of the source', () => {
-  it('rewrites author-year, "et al." and parenthetical citations as one source note', () => {
-    const r = run(['Vaswani et al. (2017) suspect this. It holds (Vaswani et al., 2017).', 'As Ashish Vaswani writes, it works.']);
-    expect(r.paragraphs[0]).toEqual(['[[source]] suspect this. It holds ([[source]]).', 'As [[source]] writes, it works.']);
+  it('rewrites author-year, "et al.", parenthetical and full-name citations as one source note', () => {
+    const r = run(['Vaswani et al. (2017) suspect this. It holds (Vaswani et al., 2017).', 'As Ashish Vaswani writes, it works.', 'This follows Vaswani et al., 2017.']);
+    expect(r.paragraphs[0]).toEqual(['[[source]] suspect this. It holds ([[source]]).', 'As [[source]] writes, it works.', 'This follows [[source]]']);
     expect(r.notes).toEqual([sourceNote(paper)]);
-    expect(r.report.cited).toBe(3);
+    expect(r.report.cited).toBe(4);
   });
 
-  it('builds the note from metadata only', () => {
-    expect(sourceNote(paper)).toEqual({
-      id: 'source', kind: 'source', label: 'Vaswani et al.', title: 'Attention Is All You Need',
-      detail: 'Vaswani, Shazeer, Parmar and 2 others, 2017', url: 'https://arxiv.org/abs/1706.03762',
-    });
+  it('catches every surname from the metadata, "and colleagues" and "the authors of <title>"', () => {
+    expect(cite('As Ho, Jain and Abbeel show, it works.')).toBe('As [[source]] show, it works.');
+    expect(cite('Ho and colleagues trained it.')).toBe('[[source]] trained it.');
+    expect(cite('The authors of Denoising Diffusion Probabilistic Models add noise.')).toBe('[[source]] add noise.');
+    expect(cite('The authors of the paper “Attention Is All You Need” divide.', paper)).toBe('[[source]] divide.');
+    // Other papers stay as they are.
+    expect(cite('Ho et al. (2020) build on Sohl-Dickstein et al. (2015).')).toBe('[[source]] build on Sohl-Dickstein et al. (2015).');
+  });
+
+  it('builds the note from metadata only, listing up to four surnames', () => {
+    expect(sourceNote(paper)).toMatchObject({ label: 'Vaswani et al.', detail: 'Vaswani, Shazeer, Parmar and 2 others, 2017', url: 'https://arxiv.org/abs/1706.03762' });
+    const ode: DocSource = { kind: 'arxiv', title: 'Neural ordinary differential equations', authors: ['Ricky T. Q. Chen', 'Yulia Rubanova', 'Jesse Bettencourt', 'David Duvenaud'], year: 2018 };
+    expect(sourceNote(ode).detail).toBe('Chen, Rubanova, Bettencourt and Duvenaud, 2018');
+    // The attention sample's hand-written card comes out the same from its metadata.
+    const sample = attention.notes.find((n) => n.kind === 'source')!;
+    expect(sourceNote(attention.source as DocSource)).toEqual({ ...sample, id: 'source' });
     // An http URL is left out (the schema takes https only); a source with no authors is labelled by its title.
     expect(sourceNote(post)).toEqual({ id: 'source', kind: 'source', label: 'Bill Mill', title: 'Bloom filters by example', detail: 'Mill' });
     expect(sourceLabel(anon)).toBe('Why ropes beat strings for big edits');
@@ -115,15 +134,5 @@ describe('citations of the source', () => {
     expect(markCitations('Bloom (1970) found it.', bloom).text).toBe('[[source]] found it.');
     expect(markCitations('This is the work of Vaswani et al.', paper).text).toBe('This is the work of [[source]]');
     expect(markCitations('It holds (Vaswani et al., 2017).', paper, false).text).toBe('It holds.');
-  });
-});
-
-describe('formula spans', () => {
-  it('takes a formula whole where the kit tokenizer stops inside it, but not the words after it', () => {
-    expect(run(['The weights sum, wᵢ = e^(sᵢ) / Σⱼ e^(sⱼ), to 1.']).notes[0]).toMatchObject({ formula: 'wᵢ = e^(sᵢ) / Σⱼ e^(sⱼ)' });
-    expect(run(['Its spread is σ = √d_k · 1 (see the figure).']).notes[0]).toMatchObject({ formula: 'σ = √d_k · 1' });
-    // A marker before the formula is not part of it.
-    const notes = [{ id: 'm1', formula: 'v = d_k', plain: 'p' }];
-    expect(run(['The variance is d_k.[[m1]] σ = √d_k · 1 follows. Drag it.'], notes).paragraphs[0]).toEqual(['The variance is d_k.[[m1]] Drag it.']);
   });
 });

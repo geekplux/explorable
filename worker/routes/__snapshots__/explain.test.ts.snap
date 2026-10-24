@@ -30,7 +30,7 @@ exports[`/api/explain with a model > sends one JSON-Mode request with capped sou
   "userHead": [
     "SOURCE: arxiv | Attention Is All You Need | https://arxiv.org/abs/1706.03762",
     "HINTS: attention-scaling, softmax-temperature",
-    "<<<ARTICLE",
+    "CITE: [[source]] reads "Vaswani et al." (several people)",
   ],
 }
 `;

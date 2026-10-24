@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { bodyHasFormula, findFormula } from './formula.ts';
+import { bodyHasFormula, findFormula, hasLatex } from './formula.ts';
 
 // The formula sentences of the v1 samples (before the plain-words rewrite).
 const FORMULAS = [
@@ -30,6 +30,9 @@ const FORMULAS = [
   'The energy is E = mc².',
   'A line is y = 2x + 1.',
   'It cools as T(t) = Tₐ + (T₀ − Tₐ)·e^(−kt) from any start.',
+  // Norms and absolute values: ‖ and | pair up like brackets.
+  'The loss is L = ‖ε − ε_θ‖².',
+  'Here |x − y| + 2z is small.',
 ];
 
 // Plain rewrites and settings that read as words: a variable, a value, one root or one operation.
@@ -73,10 +76,19 @@ describe('bodyHasFormula', () => {
     expect(findFormula('It is `q·k = Σᵢ qᵢkᵢ`, a sum.')).toBe('`q·k = Σᵢ qᵢkᵢ`');
     expect(findFormula('So x_t = √ᾱ_t·x₀ + √(1 − ᾱ_t)·ε holds.')).toBe('x_t = √ᾱ_t·x₀ + √(1 − ᾱ_t)·ε');
     expect(findFormula('So T(t) = Tₐ + (T₀ − Tₐ)·e^(−kt) for all t.')).toBe('T(t) = Tₐ + (T₀ − Tₐ)·e^(−kt)');
+    expect(findFormula('The loss is L = ‖ε − ε_θ(x_t, t)‖². Smaller is better.')).toBe('L = ‖ε − ε_θ(x_t, t)‖²');
+    expect(findFormula('Here |x − y| + 2z is small.')).toBe('|x − y| + 2z');
   });
 
   it('ignores note markers and emphasis', () => {
     expect(bodyHasFormula('A softmax.[[m1]] Then *T* = 1.')).toBe(false);
     expect(bodyHasFormula('')).toBe(false);
+  });
+});
+
+describe('hasLatex', () => {
+  it('spots LaTeX commands, braces after _ or ^, and $ delimiters', () => {
+    expect(['\\frac{a}{b}', 'x^{2}', '$\\sqrt{d}$', '$x$'].map(hasLatex)).toEqual([true, true, true, true]);
+    expect(['√d_k', 'e^(−kt)', 'x_t = a·b'].map(hasLatex)).toEqual([false, false, false]);
   });
 });
