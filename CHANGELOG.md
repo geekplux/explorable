@@ -11,8 +11,9 @@ All notable changes to this project are documented here. The format follows [Kee
 - Home page redesign: a hero with a live, draggable figure, a numbered essay index with thumbnails that play once on hover, a "How it works" section, and plain-words copy. The "Try" chips are gone; the essay index lists the same samples. Figure readouts drop the "·" joiner, and the leading bar is drawn in indigo-11.
 - Essay redesign: a 640px column at 20/1.6 with 720px figures, a title block with a "Based on …" byline (plus "Written by AI from the source." for AI essays) in place of the kicker and provenance badge, hanging section numbers, and a takeaway that ends in "Read the original paper/post". Variables are set in italics (d_k, T, q, k) everywhere text is formatted.
 - Figure chrome: a title, the stage, the controls, a mono readout and a "Show data" text button between hairlines; the drag hint, the knob grip and the ▼ top marker are gone, and the knob's native twin slider is kept for assistive tech but hidden.
-- Contents in the left gutter at ≥ 1160px with a reading-progress track and a bracket over the sections in view. Motion: the title travels from the index into the essay (300ms view transition), bars settle in 250ms, figures below the fold enter once, the title block fades in; all of it off under reduced motion.
+- Contents in the left gutter at ≥ 1280px with a reading-progress track and a bracket over the sections in view. Motion: the title travels from the index into the essay (300ms view transition), bars settle in 250ms, figures below the fold enter once, the title block fades in; all of it off under reduced motion.
 - Loading, error and not-found pages restyled in the essay column, with no kickers or skeleton.
+- The serif is pinned at optical size 20 and draws its own √, ∑, ≈, ≤, ≥ and ∞. Figure labels, readouts, legends and table headers set variables the same way as the essay; contents links move focus to their heading, and a link to a section (`#divide-by-root-d`) opens there.
 
 ### Added
 
