@@ -30,7 +30,7 @@ for f in ss ssi g gm; do python -m fontTools.subset $f.ttf --unicodes="$LATIN" -
 python -m fontTools.varLib.instancer NotoSerif.ttf wdth=100 wght=400:700 -o ns.ttf
 python -m fontTools.subset ns.ttf --unicodes="U+0391-03A9,U+03B1-03C9,U+1FB1,U+1FB9,U+0304,U+2070-209F,U+1D40,U+1D62,U+2C7C" \
   --layout-features="kern,mark,mkmk,ccmp,locl" --flavor=woff2 --output-file=greek.woff2
-python -m fontTools.subset STIXTwoMath-Regular.ttf --unicodes="U+00B1,U+00D7,U+00F7,U+2190-2199,U+2202,U+2207,U+2208,U+2211,U+2212,U+221A,U+221D,U+221E,U+2223,U+2227-222B,U+2248,U+2260-2265,U+22C5" \
+python -m fontTools.subset STIXTwoMath-Regular.ttf --unicodes="U+00B1,U+00D7,U+00F7,U+2016,U+2190-2199,U+2202,U+2207,U+2208,U+220B,U+2211,U+2212,U+221A,U+221D,U+221E,U+2223,U+2227-222B,U+2248,U+2260-2265,U+22C5" \
   --layout-features="" --flavor=woff2 --output-file=math.woff2
 ```
 

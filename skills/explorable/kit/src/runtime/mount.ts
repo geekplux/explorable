@@ -170,7 +170,11 @@ export function mountFigure(stage: HTMLElement, spec: FigureSpec, opts: MountOpt
   function sync() {
     const shownAt = stateText(defs, controls, target);
     state.innerHTML = mathHtml(shownAt, { vars });
-    if (opts.link) state.append(`${shownAt ? ' ' : ''}Interactive version at ${opts.link}#${spec.id}`);
+    if (opts.link) {
+      // A real link, so a PDF reader can follow it; it prints as its text.
+      const href = `${opts.link}#${spec.id}`;
+      state.append(`${shownAt ? ' ' : ''}Interactive version at `, Object.assign(document.createElement('a'), { href: `https://${href}`, textContent: href }));
+    }
     for (const [name, r] of ranges) r.set(target[name]!);
     if (view.handle) view.handle.knob.set(target[view.handle.name]!);
   }

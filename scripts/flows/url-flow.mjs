@@ -122,6 +122,9 @@ export default async function urlFlow(ctx) {
   await page.goto(`${baseURL}/x?url=${encodeURIComponent(matchDoc.source.url)}`);
   await page.locator('.essay-takeaway').waitFor();
   assert.equal(await page.locator('.essay-byline p').textContent(), 'Based on Bloom Filters by Example, Bill Mill', 'a matched essay adds nothing to the byline');
+  // Not a built-in sample object: "PDF" opens the print dialog, in sand-11 like the sample link.
+  const printPdf = page.locator('.essay-byline-end').getByRole('button', { name: 'Print or save as PDF' });
+  assert.equal(await printPdf.evaluate((b) => getComputedStyle(b).color), 'rgb(99, 99, 94)', 'the print button is sand-11');
   await shot('result-match');
 
   // Every error code: own copy, focused heading, three sample rows.

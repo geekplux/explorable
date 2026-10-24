@@ -232,6 +232,7 @@
   .xfig + * { margin-top: 24px; }
   .xfig[data-enter] { opacity: 1; transform: none; transition: none; }
   .xfig-state { display: block; margin: 4px 0 0; font: 400 var(--text-12)/1.5 var(--font-ui); color: var(--text-2); }
+  .xfig-state a { color: inherit; text-decoration: none; }
   .xfig-state:empty, .xfig-controls, .xfig-data-toggle, .xnote-mk, .xnote-card { display: none; }
   .xnote-src { text-decoration: none; }
   .xnote { break-inside: avoid; }

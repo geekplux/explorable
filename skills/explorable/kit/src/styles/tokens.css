@@ -46,8 +46,10 @@
 
   --font-text: "Explorable Serif", "Source Serif 4", "Explorable Greek", "Explorable Math", Georgia, "Times New Roman", serif;
   --font-display: var(--font-text);
-  --font-ui: Geist, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Explorable Greek", "Explorable Math", sans-serif;
-  --font-mono: "Geist Mono", ui-monospace, "SF Mono", Menlo, Consolas, "Explorable Greek", "Explorable Math", monospace;
+  /* The symbol faces come right after Geist: their unicode-range holds only Greek and math signs (÷ √ ‖ …), which the
+     Latin subsets lack, so they draw those instead of a system face and never take over Latin text. */
+  --font-ui: Geist, "Explorable Greek", "Explorable Math", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-mono: "Geist Mono", "Explorable Greek", "Explorable Math", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
 
   /* Four sizes (DESIGN §2): 12 labels and numbers, 14 interface, 20 reading, 32 titles. */
   --text-12: .75rem; --text-14: .875rem; --text-20: 1.25rem; --text-32: 2rem;

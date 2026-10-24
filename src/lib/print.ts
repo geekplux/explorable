@@ -10,12 +10,16 @@ export function pdfAction(sampleSlug: string | undefined): PdfAction {
   return sampleSlug ? { kind: 'download', href: `/pdf/${sampleSlug}.pdf`, label: 'Download PDF' } : { kind: 'print', label: 'Print or save as PDF' };
 }
 
-/** "explorable.geekplux.com/s/attention", or the result page's address with its link readable ("/x?url=https://…"). */
+/**
+ * "explorable.geekplux.com/s/attention", or the result page's address with its link readable ("/x?url=https://…")
+ * when the readable form still means the same link (no "&", "#" or "+" inside it); it is printed and linked.
+ */
 export function printLink(sampleSlug: string | undefined, pathname: string, search: string): string {
   if (sampleSlug) return `${SITE}/s/${sampleSlug}`;
   let query = search;
   try {
-    query = decodeURIComponent(search);
+    const readable = decodeURIComponent(search);
+    if (!/#/.test(readable) && new URLSearchParams(readable).toString() === new URLSearchParams(search).toString()) query = readable;
   } catch {
     // a malformed escape stays as typed
   }

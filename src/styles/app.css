@@ -208,8 +208,10 @@
 
 /* PDF (DESIGN §8): a text button at the end of the byline row; print is A4 with a running head (the small mark,
    "Explorable" and the essay's address) in the top margin of every page, and none of the site chrome. */
-.essay-pdf { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; margin-block: -13px; padding: 0; font: 400 var(--text-14)/1.5 var(--font-ui); color: var(--text-2); background: none; border: 0; text-decoration: none; cursor: pointer; white-space: nowrap; }
-.essay-pdf:hover { color: var(--text); }
+.essay-pdf { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; margin-block: -13px; padding: 0; font: 400 var(--text-14)/1.5 var(--font-ui); background: none; border: 0; text-decoration: none; cursor: pointer; white-space: nowrap; }
+/* After `.essay-byline a` (kit.css), which would make the sample link sand-12. */
+.essay-byline .essay-pdf { color: var(--text-2); }
+.essay-byline .essay-pdf:hover { color: var(--text); }
 @media print {
   @page {
     size: A4;

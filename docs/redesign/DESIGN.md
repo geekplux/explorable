@@ -106,7 +106,7 @@ Search results, the offline banner, loading and error states restyle to these to
 
 - A "PDF" text button with a download glyph at the right end of the byline row.
 - A4 (794 × 1123 CSS px at 96dpi), margins as on the board; a running head (small wordmark left, the essay URL right); no header, footer, TOC, Made by GeekPlux or buttons.
-- Figures print in their current state, with one line under the readout: "Shown at *T* = 1. Interactive version at explorable.geekplux.com/s/attention#fig-…". Notes print only if open.
+- Figures print in their current state, with one line under the readout: "Shown at *T* = 1. Interactive version at explorable.geekplux.com/s/attention#fig-…". Notes print only if open; the pre-rendered sample PDFs open every math note (paper has no click).
 - Built-in samples link to pre-rendered PDFs in `public/pdf/<slug>.pdf` (a script renders them with headless Chromium from the built site; committed). Essays from a pasted URL use `window.print()` with the same print stylesheet (the browser's "Save as PDF"). Cloudflare Browser Rendering is a later option, not in this redesign (see DECISIONS).
 
 ## 9. Content model and AI (phases 4 and 5)

@@ -56,5 +56,5 @@
   src: url("/fonts/symbols-math.woff2") format("woff2");
   font-weight: 400;
   font-display: swap;
-  unicode-range: U+00B1, U+00D7, U+00F7, U+2190-21FF, U+2200-22FF;
+  unicode-range: U+00B1, U+00D7, U+00F7, U+2016, U+2190-21FF, U+2200-22FF;
 }

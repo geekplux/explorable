@@ -144,6 +144,7 @@ describe('hydrateFigures: fig-temperature', () => {
     document.body.append(root);
     destroy = hydrateFigures(root, doc, { reducedMotion: true, link: 'explorable.geekplux.com/s/attention' }).destroy;
     expect($('.xfig-state').textContent).toBe('Shown at T = 1. Interactive version at explorable.geekplux.com/s/attention#fig-temperature');
+    expect($('.xfig-state a').getAttribute('href')).toBe('https://explorable.geekplux.com/s/attention#fig-temperature');
   });
 
   it('reads exactly "top weight 0.98 entropy 0.15 bits" at T = 0.25 (native slider)', () => {
