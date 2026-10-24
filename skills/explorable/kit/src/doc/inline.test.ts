@@ -44,6 +44,7 @@ describe('mathVars: variables in italics', () => {
     expect(formatInline('`softmax(QKᵀ / √d_k)`')).toBe(`<code>softmax(QKᵀ / √${sub('d', 'k')})</code>`);
     expect(formatInline('Why attention divides by √d_k')).toBe(`Why attention divides by √${sub('d', 'k')}`);
     expect(mathVars('x_(t−1) and β_t, d_model')).toBe(`${sub('x', 't−1')} and β<span class="sub">t</span>, ${sub('d', 'model')}`);
+    expect(mathVars('two d_k-dimensional vectors')).toBe(`two ${sub('d', 'k')}-dimensional vectors`);
   });
 
   it('italicises lone variables in running text', () => {
@@ -56,6 +57,7 @@ describe('mathVars: variables in italics', () => {
 
   it('italicises any lone letter inside code, except the constant e', () => {
     expect(formatInline('`(1 − e^(−kn/m))^k`')).toBe('<code>(1 − e^(−kn/<i>m</i>))^<i>k</i></code>');
+    expect(formatInline('`wᵢ = exp(sᵢ / T)`, `QKᵀ`, `qᵢkᵢ`')).toBe('<code><i>w</i>ᵢ = exp(<i>s</i>ᵢ / <i>T</i>)</code>, <code>QKᵀ</code>, <code><i>q</i>ᵢ<i>k</i>ᵢ</code>');
     expect(formatInline('`w = f(s) &lt; V`')).toBe('<code><i>w</i> = <i>f</i>(<i>s</i>) &amp;lt; <i>V</i></code>');
   });
 

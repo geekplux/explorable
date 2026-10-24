@@ -26,6 +26,20 @@ export interface HandleOptions {
 
 export type Handle = ReturnType<typeof createHandle>;
 
+/** Set SVG text as math: "d_k" draws an italic d with a subscript k (styled in kit.css). */
+export function setMath(text: Element, value: string) {
+  text.replaceChildren();
+  value.split(/(\p{L})_(\w+)/u).forEach((part, i) => {
+    if (i % 3 === 0) return part && svgEl(text, 'tspan', i ? { dy: -4 } : {}).append(part);
+    svgEl(text, 'tspan', i % 3 === 1 ? { class: 'xfig-var' } : { class: 'xfig-sub', dy: 4 }).textContent = part;
+  });
+}
+
+/** The knob's symbol at the start of its track. */
+export function trackLabel(parent: Element, x: number, y: number, symbol: string) {
+  setMath(svgEl(parent, 'text', { x, y, 'text-anchor': 'end', class: 'xfig-track-label' }), symbol);
+}
+
 export function createHandle(parent: SVGElement, { def, onChange, fill }: HandleOptions) {
   const root = svgEl(parent, 'g', { class: 'xfig-handle' });
   const band = svgEl(root, 'rect', { class: 'xfig-track-hit' });
@@ -36,16 +50,13 @@ export function createHandle(parent: SVGElement, { def, onChange, fill }: Handle
   });
   const move = svgEl(knob, 'g');
   svgEl(move, 'circle', { class: 'xfig-knob-hit', r: 23 });
-  svgEl(move, 'circle', { class: 'xfig-knob-hint', r: 15 });
-  svgEl(move, 'text', { class: 'xfig-knob-hint', y: -21, 'text-anchor': 'middle', 'aria-hidden': 'true' }).textContent = 'drag';
   svgEl(move, 'circle', { class: 'xfig-knob-focus', r: 14 });
   svgEl(move, 'circle', { class: 'xfig-knob-ring', r: 9 });
-  svgEl(move, 'path', { class: 'xfig-knob-grip', d: 'M-2.5 -3.5v7M0 -3.5v7M2.5 -3.5v7' });
 
-  let x0 = 0, x1 = 1, y = 0, x = 0, dx = 0, value = def.default, dragging: number | undefined;
+  let x0 = 0, x1 = 1, y = 0, x = 0, value = def.default, dragging: number | undefined;
   const placeMove = () => {
-    move.setAttribute('transform', `translate(${(x + dx).toFixed(1)} ${y})`);
-    filled?.setAttribute('d', `M${x0} ${y}H${Math.max(x0, x + dx).toFixed(1)}`);
+    move.setAttribute('transform', `translate(${x.toFixed(1)} ${y})`);
+    filled?.setAttribute('d', `M${x0} ${y}H${Math.max(x0, x).toFixed(1)}`);
   };
 
   const posAt = (clientX: number) => {
@@ -123,14 +134,6 @@ export function createHandle(parent: SVGElement, { def, onChange, fill }: Handle
       value = v;
       knob.setAttribute('aria-valuenow', String(v));
       knob.setAttribute('aria-valuetext', valueOnly(def, v));
-    },
-    /** Hint offset in px (the nudge), and the static reduced-motion hint. */
-    nudge(px: number) {
-      dx = px;
-      placeMove();
-    },
-    showHint(on: boolean) {
-      knob.classList.toggle('is-hinting', on);
     },
   };
 }

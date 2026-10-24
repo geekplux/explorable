@@ -150,14 +150,14 @@ describe('bars + switch: attention Fig 2', () => {
   it('starts unscaled at d_k = 4 with dashed "other setting" outlines and a legend that follows the switch', () => {
     expect(readout()).toBe('score SD 2.02 top weight 0.57 entropy 1.85 bits');
     expect(root.querySelectorAll('.xfig-bar-g rect.xfig-bar-other')).toHaveLength(8);
-    expect(texts('.xfig-legend text')).toEqual(['this setting', 'with ÷√d_k']);
+    expect(texts('.xfig-legend text')).toEqual(['this setting', 'with ÷√dk']);
     expect(sw().getAttribute('aria-checked')).toBe('false');
     expect(sw().getAttribute('aria-label')).toBe('divide by square root of d k');
-    expect(sw().textContent).toBe('divide by √d_koff');
+    expect(sw().querySelector('span:last-child')?.innerHTML).toBe('divide by √<i>d</i><span class="sub">k</span>');
     sw().click();
     expect(sw().getAttribute('aria-checked')).toBe('true');
     expect(readout()).toBe('score SD 1.01 top weight 0.34 entropy 2.58 bits');
-    expect(texts('.xfig-legend text')).toEqual(['this setting', 'without ÷√d_k']);
+    expect(texts('.xfig-legend text')).toEqual(['this setting', 'without ÷√dk']);
   });
 
   it('dragging d_k to 512 unscaled saturates the softmax; scaled keeps SD near 1', () => {

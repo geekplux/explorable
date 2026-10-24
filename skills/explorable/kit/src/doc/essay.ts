@@ -1,18 +1,6 @@
 import { escapeHtml, formatInline, safeHttpUrl } from './inline.ts';
 import { mountFigure, type MountOptions } from '../runtime/mount.ts';
-import type { DocSource, ExplorableDoc, FigureSpec, Provenance } from './schema.ts';
-
-const KICKERS: Record<DocSource['kind'], string> = {
-  arxiv: 'arXiv paper',
-  blog: 'Blog post',
-  concept: 'Concept',
-};
-
-const PROVENANCE: Record<Provenance['mode'], string> = {
-  curated: 'Curated',
-  ai: 'Generated with AI from the source: check the original',
-  match: 'Matched to a built-in explainer',
-};
+import type { ExplorableDoc, FigureSpec } from './schema.ts';
 
 /** "Bill Mill", "A and B", or "Vaswani et al." */
 export function authorLine(authors: string[] | undefined): string {
@@ -23,58 +11,56 @@ export function authorLine(authors: string[] | undefined): string {
   return `${surname} et al.`;
 }
 
-function sourceLine(source: DocSource): string {
+/** "Based on <title>, Vaswani et al., 2017", plus one sentence for an AI-written essay (DESIGN §6). */
+function byline(doc: ExplorableDoc): string {
+  const { source } = doc;
   const href = safeHttpUrl(source.url);
   const cite = `<cite>${escapeHtml(source.title)}</cite>`;
-  const titled = href
-    ? `<a href="${escapeHtml(href)}" rel="noopener noreferrer">${cite}<span aria-hidden="true"> ↗</span></a>`
-    : cite;
+  const titled = href ? `<a href="${escapeHtml(href)}" rel="noopener noreferrer">${cite}</a>` : cite;
   const meta = [authorLine(source.authors), source.year ? String(source.year) : '']
     .filter(Boolean)
     .map(escapeHtml)
     .join(', ');
-  return `Based on ${titled}${meta ? `, ${meta}` : ''}`;
+  const ai = doc.provenance.mode === 'ai' ? '. Written by AI from the source.' : '';
+  return `Based on ${titled}${meta ? `, ${meta}` : ''}${ai}`;
 }
 
-function figureShell(fig: FigureSpec, n: number): string {
+function figureShell(fig: FigureSpec): string {
   const id = escapeHtml(fig.id);
   return (
     `<figure class="xfig" id="${id}" data-kind="${escapeHtml(fig.kind)}" ` +
     `data-model="${escapeHtml(fig.model.id)}" aria-labelledby="${id}-title">` +
-    `<div class="xfig-card"><div class="xfig-head"><span class="xfig-num">Fig. ${n}</span> ` +
-    `<span class="xfig-title" id="${id}-title">${escapeHtml(fig.title)}</span></div>` +
-    `<div class="xfig-stage" data-figure-stage><p class="xfig-alt">${escapeHtml(fig.alt)}</p></div></div>` +
+    `<p class="xfig-title" id="${id}-title">${formatInline(fig.title)}</p>` +
+    `<div class="xfig-stage" data-figure-stage><p class="xfig-alt">${escapeHtml(fig.alt)}</p></div>` +
     `<figcaption>${formatInline(fig.caption)}</figcaption>` +
     `</figure>`
   );
 }
 
 /**
- * Static, fully escaped HTML for a doc: hero, sections, figure shells and the
- * takeaway. Figure shells carry their title, caption and `alt` text so the
- * essay reads well before (or without) live figures.
+ * Static, fully escaped HTML for a doc: title block, sections (numbered by CSS), figure
+ * shells and the takeaway. Figure shells carry their title, caption and `alt`
+ * text so the essay reads well before (or without) live figures. The byline row
+ * ends in an empty `.essay-byline-end` slot for page actions.
  */
 export function essayHtml(doc: ExplorableDoc): string {
-  let figureCount = 0;
   const href = safeHttpUrl(doc.source.url);
   const hero =
     `<header class="essay-hero">` +
-    `<p class="essay-kicker">${KICKERS[doc.source.kind]}</p>` +
-    `<h1 tabindex="-1">${escapeHtml(doc.title)}</h1>` +
+    `<h1 tabindex="-1">${formatInline(doc.title)}</h1>` +
     `<p class="essay-dek">${formatInline(doc.dek)}</p>` +
-    `<p class="essay-source">${sourceLine(doc.source)}</p>` +
-    `<p class="essay-provenance" data-mode="${escapeHtml(doc.provenance.mode)}">${PROVENANCE[doc.provenance.mode]}</p>` +
+    `<div class="essay-byline"><p>${byline(doc)}</p><span class="essay-byline-end"></span></div>` +
     `</header>`;
   const sections = doc.sections
     .map((section) => {
       const id = escapeHtml(section.id);
       const body = section.paragraphs.map((p) => `<p>${formatInline(p)}</p>`).join('');
-      const figure = section.figure ? figureShell(section.figure, ++figureCount) : '';
-      return `<section class="essay-section" aria-labelledby="${id}"><h2 id="${id}">${escapeHtml(section.heading)}</h2>${body}${figure}</section>`;
+      const figure = section.figure ? figureShell(section.figure) : '';
+      return `<section class="essay-section" aria-labelledby="${id}"><h2 id="${id}">${formatInline(section.heading)}</h2>${body}${figure}</section>`;
     })
     .join('');
   const original = href
-    ? `<p class="essay-original"><a href="${escapeHtml(href)}" rel="noopener noreferrer">Read the original<span aria-hidden="true"> ↗</span></a></p>`
+    ? `<p class="essay-original"><a href="${escapeHtml(href)}" rel="noopener noreferrer">Read the original ${doc.source.kind === 'arxiv' ? 'paper' : 'post'}</a></p>`
     : '';
   const takeaway =
     `<section class="essay-takeaway" aria-labelledby="essay-takeaway"><h2 id="essay-takeaway">Takeaway</h2>` +

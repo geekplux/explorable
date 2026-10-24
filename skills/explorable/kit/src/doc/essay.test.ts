@@ -39,16 +39,29 @@ function render(doc: ExplorableDoc): Document {
 }
 
 describe('essayHtml', () => {
-  it('renders the hero: h1, dek, source link and provenance', () => {
+  it('renders the title block: h1, dek and the byline row, with no kicker or provenance line', () => {
     const dom = render(makeDoc());
     expect(dom.querySelectorAll('h1')).toHaveLength(1);
     expect(dom.querySelector('h1')?.textContent).toBe('A demo title');
     expect(dom.querySelector('.essay-dek')?.innerHTML).toBe('The one <em>core</em> idea.');
-    const link = dom.querySelector<HTMLAnchorElement>('.essay-source a');
+    const link = dom.querySelector<HTMLAnchorElement>('.essay-byline a');
     expect(link?.getAttribute('href')).toBe('https://arxiv.org/abs/1706.03762');
-    expect(dom.querySelector('.essay-source')?.textContent).toBe('Based on A Paper ↗, Lovelace et al., 2017');
-    expect(dom.querySelector('.essay-provenance')?.textContent).toBe('Curated');
-    expect(dom.querySelector('.essay-provenance')?.getAttribute('data-mode')).toBe('curated');
+    expect(dom.querySelector('.essay-byline p')?.textContent).toBe('Based on A Paper, Lovelace et al., 2017');
+    expect(dom.querySelector('.essay-byline-end')?.innerHTML).toBe('');
+    expect([...dom.querySelector('.essay-hero')!.children].map((el) => el.className || el.tagName)).toEqual(['H1', 'essay-dek', 'essay-byline']);
+    expect(essayHtml(makeDoc())).not.toMatch(/kicker|provenance|↗|·/);
+  });
+
+  it('adds one sentence to the byline for an AI-written essay', () => {
+    const ai = render(makeDoc({ provenance: { mode: 'ai', generatedAt: '2026-10-19T00:00:00.000Z' } }));
+    expect(ai.querySelector('.essay-byline p')?.textContent).toBe('Based on A Paper, Lovelace et al., 2017. Written by AI from the source.');
+    const match = render(makeDoc({ provenance: { mode: 'match', generatedAt: '2026-10-19T00:00:00.000Z' } }));
+    expect(match.querySelector('.essay-byline p')?.textContent).toBe('Based on A Paper, Lovelace et al., 2017');
+  });
+
+  it('sets variables in italics in titles and headings', () => {
+    const dom = render(makeDoc({ title: 'Why attention divides by √d_k' }));
+    expect(dom.querySelector('h1')?.innerHTML).toBe('Why attention divides by √<i>d</i><span class="sub">k</span>');
   });
 
   it('renders one section per doc section plus the takeaway', () => {
@@ -59,20 +72,22 @@ describe('essayHtml', () => {
     expect(sections[1]?.querySelectorAll('p')).toHaveLength(2);
     expect(dom.querySelector('.essay-takeaway p')?.textContent).toBe('Take this away.');
     expect(dom.querySelector('.essay-original a')?.getAttribute('href')).toBe('https://arxiv.org/abs/1706.03762');
+    expect(dom.querySelector('.essay-original')?.textContent).toBe('Read the original paper');
+    const blog = render(makeDoc({ source: { kind: 'blog', url: 'https://example.com/post', title: 'A Post' } }));
+    expect(blog.querySelector('.essay-original')?.textContent).toBe('Read the original post');
   });
 
-  it('renders one numbered figure shell per figure with title, caption and alt', () => {
+  it('renders one figure shell per figure with title, caption and alt, and no figure number', () => {
     const dom = render(makeDoc());
     const figs = [...dom.querySelectorAll('figure.xfig')];
     expect(figs.map((f) => f.id)).toEqual(['fig-a', 'fig-b']);
-    expect(figs.map((f) => f.querySelector('.xfig-num')?.textContent)).toEqual(['Fig. 1', 'Fig. 2']);
+    expect(dom.querySelector('.xfig-num')).toBeNull();
     const second = figs[1];
     expect(second?.querySelector('.xfig-title')?.textContent).toBe('Figure B');
     expect(second?.getAttribute('aria-labelledby')).toBe('fig-b-title');
     expect(second?.querySelector('figcaption')?.innerHTML).toBe('Caption for fig-b with <em>emphasis</em>.');
     expect(second?.querySelector('.xfig-alt')?.textContent).toContain('static description of fig-b');
-    expect([...(second?.children ?? [])].map((el) => el.className || el.tagName)).toEqual(['xfig-card', 'FIGCAPTION']);
-    expect([...(second?.querySelector('.xfig-card')?.children ?? [])].map((el) => el.className)).toEqual(['xfig-head', 'xfig-stage']);
+    expect([...(second?.children ?? [])].map((el) => el.className || el.tagName)).toEqual(['xfig-title', 'xfig-stage', 'FIGCAPTION']);
     expect(second?.closest('section')?.querySelector('h2')?.id).toBe('s3');
   });
 
@@ -91,7 +106,7 @@ describe('essayHtml', () => {
     const dom = render(doc);
     expect(dom.querySelectorAll('script')).toHaveLength(0);
     expect(dom.querySelector('h1')?.textContent).toBe(evil);
-    expect(dom.querySelector('.essay-source a')).toBeNull();
+    expect(dom.querySelector('.essay-byline a')).toBeNull();
     expect(dom.querySelector('.essay-original')).toBeNull();
   });
 });

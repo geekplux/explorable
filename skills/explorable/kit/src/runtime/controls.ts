@@ -2,6 +2,7 @@
  * The labelled native controls (range, toggle, choice). The value rules live
  * in values.ts (DOM-free) and are re-exported here.
  */
+import { escapeHtml, mathVars } from '../doc/inline.ts';
 import type { ParamDef } from '../registry.ts';
 import { fromPos, keyValue, showValue, snap, toPos, valueOnly } from './values.ts';
 
@@ -15,7 +16,7 @@ export function createRange(id: string, def: ParamDef, onChange: (v: number, ins
   el.className = 'xfig-control';
   const [label, input, output] = [document.createElement('label'), document.createElement('input'), document.createElement('output')];
   label.htmlFor = input.id = id;
-  label.textContent = def.label;
+  label.innerHTML = mathVars(escapeHtml(def.label));
   output.setAttribute('for', id);
   // <output> is an implicit live region; the throttled description speaks instead.
   output.setAttribute('aria-live', 'off');
@@ -43,15 +44,13 @@ export function createRange(id: string, def: ParamDef, onChange: (v: number, ins
   };
 }
 
-/** A `role="switch"` button for a 0/1 param; the visible state reads "on" / "off" as well as the knob position. */
+/** A `role="switch"` button for a 0/1 param; the knob's position shows the state (not colour alone). */
 export function createToggle(id: string, def: ParamDef, onChange: (v: number, instant: boolean) => void) {
   const el = Object.assign(document.createElement('div'), { className: 'xfig-control' });
   const button = Object.assign(document.createElement('button'), { type: 'button', id, className: 'xfig-switch' });
   button.setAttribute('role', 'switch');
   if (def.spoken) button.setAttribute('aria-label', def.spoken);
-  const state = Object.assign(document.createElement('span'), { className: 'xfig-switch-state' });
-  state.setAttribute('aria-hidden', 'true');
-  button.append(Object.assign(document.createElement('span'), { className: 'xfig-switch-track' }), def.label, state);
+  button.append(Object.assign(document.createElement('span'), { className: 'xfig-switch-track' }), Object.assign(document.createElement('span'), { innerHTML: mathVars(escapeHtml(def.label)) }));
   el.append(button);
   let value = def.default;
   button.addEventListener('click', () => onChange(value ? def.min : def.max, true));
@@ -60,7 +59,6 @@ export function createToggle(id: string, def: ParamDef, onChange: (v: number, in
     set(v: number) {
       value = v;
       button.setAttribute('aria-checked', String(v === def.max));
-      state.textContent = v === def.max ? 'on' : 'off';
     },
   };
 }

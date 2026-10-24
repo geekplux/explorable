@@ -9,7 +9,7 @@ import { format } from '../format.ts';
 import { BINS, BIN_W, X_MAX, X_MIN, normalPdf } from '../models/diffusion-forward.ts';
 import type { ParamDef } from '../registry.ts';
 import { toPos } from '../runtime/controls.ts';
-import { createHandle, svgEl } from '../runtime/handle.ts';
+import { createHandle, svgEl, trackLabel } from '../runtime/handle.ts';
 import type { FigureMount, FigureView, Outputs, Params } from '../runtime/mount.ts';
 
 const nums = (v: unknown): number[] => (Array.isArray(v) ? v : []);
@@ -51,7 +51,7 @@ export const mountHistogram: FigureMount = (el, { spec, model, setParam }) => {
   // The x domain starts 12 px right of the y axis, so the "0" density label and the "−4" tick label never meet.
   const px = (x: number) => g.L + 12 + ((x - X_MIN) / (X_MAX - X_MIN)) * (g.R - g.L - 12);
   const py = (d: number) => g.bottom - Math.min(1, Math.max(0, d)) * (g.bottom - g.top);
-  let last: [Params, Outputs] | undefined;
+  let last: [Params, Outputs, Outputs?] | undefined;
 
   function layout() {
     // Unrounded size: one SVG unit is exactly one CSS px, so 44-unit hit areas are ≥ 44 px.
@@ -87,7 +87,7 @@ export const mountHistogram: FigureMount = (el, { spec, model, setParam }) => {
     if (knob && handleDef && handleName) {
       const [x0, x1] = [g.L + 12, g.R - 12];
       knob.layout(x0, x1, trackY);
-      svgEl(trackG, 'text', { x: g.L - 6, y: trackY + 4, 'text-anchor': 'end', class: 'xfig-track-label' }).textContent = handleDef.symbol ?? handleName;
+      trackLabel(trackG, g.L - 6, trackY + 4, handleDef.symbol ?? handleName);
       svgEl(trackG, 'path', { class: 'xfig-track-line', d: `M${x0} ${trackY}H${x1}` });
       const ticks = Array.isArray(o.ticks) ? o.ticks.map(Number) : [handleDef.min, handleDef.max];
       for (const t of ticks) {
@@ -99,9 +99,9 @@ export const mountHistogram: FigureMount = (el, { spec, model, setParam }) => {
     if (last) draw(...last);
   }
 
-  function draw(p: Params, out: Outputs) {
-    last = [p, out];
-    const hist = nums(out.hist);
+  function draw(p: Params, out: Outputs, eased = out) {
+    last = [p, out, eased];
+    const hist = nums(eased.hist);
     bars.forEach((b, j) => {
       const y = py(hist[j] ?? 0);
       ATTR(b, { y, height: g.bottom - y });
@@ -127,6 +127,7 @@ export const mountHistogram: FigureMount = (el, { spec, model, setParam }) => {
 
   const view: FigureView = {
     draw,
+    settles: true,
     handle: knob && handleName ? { name: handleName, knob } : undefined,
     rowHeader: 0,
     columns: ['bin from', 'bin to', 'density now', 'density at t = 0', `${refLabel} at bin centre`],

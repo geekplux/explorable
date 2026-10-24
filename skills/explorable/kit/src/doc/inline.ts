@@ -15,11 +15,15 @@ export function escapeHtml(text: string): string {
 // apostrophe) and `&amp;` join words ("can't", "AT&T"); `&lt;` and the like are math. A letter counts as lone when no
 // letter, digit, `_`, apostrophe or hyphen touches it (so "T-shirt", "x-ray", "don't" and words stay as they are), it is
 // not part of an abbreviation ("e.g.", "T.S.") and it does not follow a number ("5 m", "2 x 3").
-const L = String.raw`(?<![\p{L}\p{N}_'’\-]|&#39;|&amp;|\p{L}\.|\d )`;
-const R = String.raw`(?![\p{L}\p{N}_'’\-]|&#39;|\.\p{L})`;
+// Letters here exclude modifier letters, so "wᵢ" and "QKᵀ" read as w and QK with an index.
+const W = String.raw`\p{Lu}\p{Ll}\p{Lt}\p{Lo}\p{N}_'’`;
+const L = String.raw`(?<![${W}\-]|&#39;|&amp;|\p{L}\.|\d )`;
+const R = String.raw`(?![${W}\-]|&#39;|\.\p{L})`;
+/** After a subscript a hyphen may follow ("d_k-dimensional"). */
+const R_SUB = String.raw`(?![${W}]|&#39;|\.\p{L})`;
 /** `d_k` → italic d, subscript k; `x_(t−1)` → italic x, subscript t−1. Then lone letters: in running text only the usual
  * names, inside code (math) any letter but the constant e. One pass, so no markup is matched again. */
-const SUB = String.raw`${L}(\p{L})_(?:\(([^()\s]{1,8})\)|([\p{L}\p{N}]{1,8}))${R}`;
+const SUB = String.raw`${L}(\p{L})_(?:\(([^()\s]{1,8})\)|([\p{L}\p{N}]{1,8}))${R_SUB}`;
 const VARS_TEXT = new RegExp(`${SUB}|${L}[Tqkdnmtx]${R}`, 'gu');
 const VARS_CODE = new RegExp(`${SUB}|${L}[A-DF-Za-df-z]${R}`, 'gu');
 

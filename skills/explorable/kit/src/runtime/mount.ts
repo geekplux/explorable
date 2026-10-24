@@ -18,7 +18,7 @@ import { fillTemplate, getModel, type FigureKind, type ModelDef, type ParamDef }
 import { createAnnouncer } from './announce.ts';
 import { createChoice, createRange, createToggle, fromPos, snap, toPos } from './controls.ts';
 import type { Handle } from './handle.ts';
-import { HINT_DELAY, follow, nudge, reducedMotion } from './motion.ts';
+import { follow, reducedMotion, settle } from './motion.ts';
 import { createDataTable, type Column } from './table.ts';
 
 export type Params = Record<string, number>;
@@ -33,8 +33,10 @@ export interface FigureCtx {
 
 /** What a figure kind returns. */
 export interface FigureView {
-  /** Draw a (possibly in-between, eased) state. */
-  draw(shown: Params, out: Outputs): void;
+  /** Draw a (possibly in-between, eased) state; `eased` (when the view `settles`) are in-between outputs for the marks only. */
+  draw(shown: Params, out: Outputs, eased?: Outputs): void;
+  /** Marks settle in 250 ms after a drag step, while the knob and every number follow 1:1. */
+  settles?: boolean;
   /** The ring knob on the figure, if any, and the param it controls. */
   handle?: { name: string; knob: Handle };
   /** Data-table column headers, fixed or following the current state. */
@@ -53,6 +55,17 @@ const KINDS: Record<FigureKind, FigureMount> = { bars: mountBars, bits: mountBit
 export const BUILT_IN_MODELS = [softmaxTemperature, attentionScaling, bloomFilter, diffusionForward] as unknown as readonly ModelDef[];
 
 const noop = () => {};
+/** In-between outputs: numbers and equal-length number arrays blend, anything else is taken from `b`. */
+function lerp(a: Outputs, b: Outputs, e: number): Outputs {
+  const mix = (x: number, y: number) => x + (y - x) * e;
+  return Object.fromEntries(
+    Object.entries(b).map(([k, v]) => {
+      const f = a[k];
+      if (typeof v === 'number') return [k, typeof f === 'number' ? mix(f, v) : v];
+      return [k, Array.isArray(f) && f.length === v.length ? v.map((y, i) => mix(f[i]!, y)) : v];
+    }),
+  );
+}
 /** Quiet time (ms) after the last drag input before the live description speaks. */
 const DRAG_IDLE = 600;
 const el = (tag: string, cls: string) => Object.assign(document.createElement(tag), { className: cls });
@@ -123,25 +136,27 @@ export function mountFigure(stage: HTMLElement, spec: FigureSpec, opts: MountOpt
   const view = kind(drawing, { spec, model, setParam: (n, v, i) => setParam(n, v, i) });
   const columns = (o: Outputs) => (typeof view.columns === 'function' ? view.columns(target, o) : view.columns);
   const data = createDataTable(`${spec.id}-data`, `Data for: ${spec.title}`, columns(model.compute(target)), view.rowHeader);
-  foot.append(data.button, readout, spokenReadout);
+  foot.append(readout, spokenReadout, data.button);
   stage.append(data.wrap);
+  // The knob on the chart is the slider people see; its native twin stays for assistive tech that cannot step an ARIA slider.
+  const twin = ranges.find(([name]) => name === view.handle?.name)?.[1].el;
+  twin?.classList.add('xfig-sr');
+  twin?.querySelector('input')?.setAttribute('tabindex', '-1');
 
   const labels = spec.options?.labels;
   // A figure may word its own live description (`options.describe`); otherwise the model's sentence.
   const tpl = spec.options?.describe;
   const describe = (out: Outputs) =>
     typeof tpl === 'string' ? fillTemplate(tpl, model, target, out) : model.describe(target, out, Array.isArray(labels) ? labels : undefined);
-  const drawState = (p: Params) => {
+  let drawn: Outputs | undefined;
+  const drawState = (p: Params, out = model.compute(p), eased = out) => {
     shown = p;
-    view.draw(p, model.compute(p));
+    drawn = eased;
+    view.draw(p, out, eased);
   };
   let stopFollow = noop;
   let visible = true;
   let dirty = false;
-  let interacted = false;
-  let hinted = false;
-  let stopHint = noop;
-  let hintTimer: ReturnType<typeof setTimeout> | undefined;
 
   const pos = (p: Params) => eased.map((c) => toPos(defs[c]!, p[c]!));
   function sync() {
@@ -168,7 +183,14 @@ export function mountFigure(stage: HTMLElement, spec: FigureSpec, opts: MountOpt
     data.setNote(view.note?.(target, out) ?? '');
     announcer.say(describe(out), dragging ? DRAG_IDLE : undefined);
     stopFollow();
-    if (instant || reduced) return drawState({ ...target });
+    const from = drawn;
+    if (instant && view.settles && from && !reduced) {
+      const p = { ...target };
+      drawState(p, out, from);
+      stopFollow = settle((e) => drawState(p, out, lerp(from, out, e)));
+      return;
+    }
+    if (instant || reduced) return drawState({ ...target }, out);
     const goal = { ...target };
     stopFollow = follow(pos(shown), pos(goal), (v) =>
       drawState({ ...goal, ...Object.fromEntries(eased.map((c, i) => [c, fromPos(defs[c]!, v[i]!)])) }),
@@ -177,56 +199,42 @@ export function mountFigure(stage: HTMLElement, spec: FigureSpec, opts: MountOpt
   function setParam(name: string, value: number, instant: boolean) {
     const def = defs[name];
     if (!def) return;
-    if (!interacted) {
-      interacted = true;
-      clearTimeout(hintTimer);
-      stopHint();
-      view.handle?.knob.nudge(0);
-      view.handle?.knob.showHint(false);
-    }
     target[name] = snap(def, value);
     sync();
     if (visible) render(instant);
     else dirty = true;
   }
-  function hint() {
-    if (hinted || interacted || !view.handle) return;
-    hinted = true;
-    const knob = view.handle.knob;
-    if (reduced) return knob.showHint(true);
-    hintTimer = setTimeout(() => {
-      if (!interacted && visible) stopHint = nudge((dx) => knob.nudge(dx));
-    }, HINT_DELAY);
-  }
-
   sync();
   render(true);
+  let seen = false;
   const io =
     typeof IntersectionObserver === 'function'
       ? new IntersectionObserver((entries) => {
           visible = entries.some((e) => e.isIntersecting);
+          // A figure below the fold at load enters once (CSS: fade, 0.985 → 1, 250 ms); one on screen stays still.
+          if (!seen && !visible && !reduced) figure.setAttribute('data-enter', '');
+          else if (visible && figure.getAttribute('data-enter') === '') figure.setAttribute('data-enter', 'in');
+          seen = true;
           if (!visible) return stopFollow();
           if (dirty) render(true);
-          hint();
         })
       : undefined;
   if (io) {
     visible = false;
     io.observe(figure);
-  } else hint();
+  }
 
   return {
     setParam,
     destroy() {
       io?.disconnect();
       stopFollow();
-      stopHint();
-      clearTimeout(hintTimer);
       announcer.destroy();
       for (const t of ['pointerup', 'pointercancel'] as const) window.removeEventListener(t, endDrag, { capture: true });
       view.destroy();
       for (const node of [drawing, row, foot, desc, data.wrap]) node.remove();
       alt?.classList.remove('xfig-sr');
+      figure.removeAttribute('data-enter');
       figure.removeAttribute('aria-describedby');
     },
   };
