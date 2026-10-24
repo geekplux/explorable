@@ -16,7 +16,8 @@ export function ResultPage({ url }: { url: string }) {
   useEffect(() => {
     document.title = `${!done ? 'Explaining…' : state.ok ? state.doc.title : 'Could not explain this link'} – Explorable`;
     // The essay's h1 (tabindex -1) takes focus once it replaces the skeleton.
-    if (done && state.ok) document.querySelector<HTMLElement>('main h1')?.focus();
+    // preventScroll: a deep link (#section) has already scrolled the essay to its heading.
+    if (done && state.ok) document.querySelector<HTMLElement>('main h1')?.focus({ preventScroll: true });
   }, [done, state]);
 
   if (!done) {

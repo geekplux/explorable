@@ -52,6 +52,23 @@ export default async function attention({ page, baseURL, shot, assert, cvd, axe 
   await page.goto(`${baseURL}/s/attention`, { waitUntil: 'networkidle' });
   const fig = page.locator(FIG);
   await fig.locator('.xfig-knob').waitFor();
+  // Print shows every figure, including those below the fold that have not entered yet.
+  assert.ok(await page.locator('.xfig[data-enter=""]').count() > 0, 'a figure below the fold waits to enter');
+  await page.emulateMedia({ media: 'print' });
+  const printed = await page.locator('figure.xfig').evaluateAll((els) => els.map((el) => getComputedStyle(el).opacity));
+  assert.deepEqual(printed, printed.map(() => '1'), 'print: every figure at opacity 1');
+  await page.emulateMedia({ media: 'screen' });
+  // Contents (1280 px shows them): a click scrolls to the heading and moves focus there.
+  await page.locator('.essay-toc a[href="#sharp-or-soft"]').click();
+  await page.waitForFunction(() => Math.abs((document.getElementById('sharp-or-soft')?.getBoundingClientRect().top ?? 1e9) - 32) < 4, null, { timeout: 5000 });
+  assert.equal(await page.evaluate(() => document.activeElement?.id), 'sharp-or-soft', 'contents link: focus on its heading');
+  // A deep link lands on its heading once the essay has rendered.
+  await page.goto(`${baseURL}/s/attention#divide-by-root-d`, { waitUntil: 'networkidle' });
+  await fig.locator('.xfig-knob').waitFor();
+  const deep = await page.locator('#divide-by-root-d').evaluate((h) => h.getBoundingClientRect().top);
+  assert.ok(deep >= 0 && deep < 80, `deep link #divide-by-root-d at the top (${deep})`);
+  await page.goto(`${baseURL}/s/attention`, { waitUntil: 'networkidle' });
+  await fig.locator('.xfig-knob').waitFor();
   await fig.scrollIntoViewIfNeeded();
   await page.waitForTimeout(300); // a figure below the fold enters once (250 ms)
   const labels = await fig.locator('.xfig-bar-label').allTextContents();
@@ -231,7 +248,7 @@ async function fig2(page, { shot, assert, axe }) {
   const sw = fig.locator('[role="switch"]');
   assert.equal(await fig.locator('.xfig-readout').textContent(), 'score SD 2.02 top weight 0.57 entropy 1.85 bits');
   assert.equal(await sw.getAttribute('aria-checked'), 'false');
-  assert.equal(await sw.getAttribute('aria-label'), 'divide by square root of d k');
+  assert.equal(await sw.getAttribute('aria-label'), 'Divide by square root of d k');
 
   // Unscaled: d_k 1 → 512 drives the top weight to 1 and the SD toward √d_k.
   const unscaled = await dragDk(page, [1, 64, 512]);

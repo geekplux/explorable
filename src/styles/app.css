@@ -82,6 +82,8 @@
 .essay-index { margin: 0; padding: 0; list-style: none; }
 .essay-index li { border-bottom: var(--hairline) solid var(--line); }
 .essay-row { display: grid; grid-template-columns: 64px minmax(0, 1fr) 240px; gap: 32px; align-items: start; padding: 32px 0; color: var(--text); text-decoration: none; }
+/* A row without a thumbnail (not-found, or thumbs off) is number + body only. */
+.essay-row:where(.is-plain) { grid-template-columns: 64px minmax(0, 1fr); }
 .essay-no { font: 500 var(--text-12)/28px var(--font-ui); color: var(--text-2); }
 .essay-row:focus-visible .essay-no { color: var(--text); }
 @media (hover: hover) { .essay-row:hover .essay-no { color: var(--text); } }
@@ -148,7 +150,7 @@
   .thumb text { fill: CanvasText; }
 }
 
-/* Essay pages (DESIGN §6): a 640px column; contents hang in the left gutter from 1160px. */
+/* Essay pages (DESIGN §6): a 640px column; contents hang in the left gutter from 1280px, never left of the header edge (--gutter). */
 .essay-page { padding: 64px var(--gutter) 0; }
 .essay-col { position: relative; max-width: 640px; margin-inline: auto; }
 .essay-host h1 { view-transition-name: essay-title; }
@@ -159,11 +161,11 @@
   html:active-view-transition .essay-hero > * { animation-duration: 0s; }
   ::view-transition-group(*), ::view-transition-old(*), ::view-transition-new(*) { animation-duration: 300ms; animation-timing-function: var(--ease); }
 }
-.essay-toc { display: none; position: absolute; top: 0; bottom: 0; right: calc(100% + 56px); width: min(224px, 50vw - 392px); font: 400 var(--text-14)/1.4 var(--font-ui); text-align: right; }
-@media (min-width: 1160px) { .essay-toc { display: block; } }
+.essay-toc { display: none; position: absolute; top: 0; bottom: 0; right: calc(100% + 56px); width: min(224px, 50vw - 376px - var(--gutter)); font: 400 var(--text-14)/1.4 var(--font-ui); text-align: right; }
+@media (min-width: 1280px) { .essay-toc { display: block; } }
 .essay-toc-rail { position: sticky; top: 32px; }
 .essay-toc ol { margin: 0; padding: 0 14px 0 0; list-style: none; }
-.essay-toc li { padding: 5px 0; }
+.essay-toc li { padding: 5px 0; text-wrap: balance; }
 .essay-toc a { color: var(--text-2); text-decoration: none; }
 .essay-toc a:hover, .essay-toc .is-on a { color: var(--text); }
 .essay-toc .is-on { transform: translateX(3px); }

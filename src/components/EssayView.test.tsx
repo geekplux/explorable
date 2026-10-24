@@ -1,7 +1,7 @@
 // @vitest-environment happy-dom
 import { StrictMode, act } from 'react';
 import { createRoot } from 'react-dom/client';
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { getSample } from '../samples/index.ts';
 import { EssayView } from './EssayView.tsx';
 
@@ -26,7 +26,7 @@ describe('EssayView', () => {
       ['#divide-by-root-d', 'The fix: divide by √dk'],
       ['#essay-takeaway', 'Takeaway'],
     ]);
-    expect(toc?.querySelector('a[href="#divide-by-root-d"]')?.innerHTML).toBe('The fix: divide by √<i>d</i><span class="sub">k</span>');
+    expect(toc?.querySelector('a[href="#divide-by-root-d"]')?.innerHTML).toBe('The fix: divide by √<i>d</i><span class="xsub">k</span>');
     expect(toc?.textContent).not.toContain('Contents');
     act(() => root.unmount());
     expect(host.innerHTML).toBe('');
@@ -36,5 +36,37 @@ describe('EssayView', () => {
     expect(host.querySelector('#fig-fpr-curve .xfig-readout')?.textContent).toBe('items inserted n 8 false-positive rate 14.7%');
     expect(host.querySelectorAll('figure[data-live]')).toHaveLength(2);
     act(() => bloom.unmount());
+  });
+
+  afterEach(() => {
+    history.replaceState(null, '', '/');
+    vi.restoreAllMocks();
+  });
+
+  it('jumps to a deep link (#section) once the essay has rendered', () => {
+    history.replaceState(null, '', '/s/attention#divide-by-root-d');
+    const seen: string[] = [];
+    vi.spyOn(Element.prototype, 'scrollIntoView').mockImplementation(function (this: Element) {
+      seen.push(this.id);
+    });
+    const host = document.body.appendChild(document.createElement('div'));
+    const root = createRoot(host);
+    act(() => root.render(<EssayView doc={getSample('attention')!} />));
+    expect(seen).toEqual(['divide-by-root-d']);
+    act(() => root.unmount());
+    host.remove();
+  });
+
+  it('a contents link moves focus to its heading', () => {
+    vi.spyOn(Element.prototype, 'scrollIntoView').mockImplementation(() => {});
+    const host = document.body.appendChild(document.createElement('div'));
+    const root = createRoot(host);
+    act(() => root.render(<EssayView doc={getSample('attention')!} />));
+    act(() => host.querySelector<HTMLAnchorElement>('.essay-toc a[href="#sharp-or-soft"]')!.click());
+    expect(document.activeElement?.id).toBe('sharp-or-soft');
+    expect(document.activeElement?.getAttribute('tabindex')).toBe('-1');
+    expect(location.hash).toBe('#sharp-or-soft');
+    act(() => root.unmount());
+    host.remove();
   });
 });

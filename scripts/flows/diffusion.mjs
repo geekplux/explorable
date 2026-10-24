@@ -9,8 +9,8 @@ import { blocking } from '../lib/axe.mjs';
 import { assertHitAreas as hitAreas, assertTableContained, settledBy, textProblems as problemsIn } from '../lib/figure.mjs';
 
 const FIG = '#fig-histogram';
-const READ_T0 = 'signal √ᾱ_t 1.000 noise √(1−ᾱ_t) 0.000 spread (SD) 1.77';
-const READ_T1000 = 'signal √ᾱ_t 0.006 noise √(1−ᾱ_t) 1.000 spread (SD) 1.01';
+const READ_T0 = 'signal √ᾱt 1.000 noise √(1−ᾱt) 0.000 spread (SD) 1.77';
+const READ_T1000 = 'signal √ᾱt 0.006 noise √(1−ᾱt) 1.000 spread (SD) 1.01';
 
 const readout = (page) => page.locator(`${FIG} .xfig-readout`).textContent();
 const value = (page) => page.locator(`${FIG} .xfig-knob`).getAttribute('aria-valuenow');
@@ -77,7 +77,7 @@ async function press(page, key, n) {
 export default async function diffusion({ page, baseURL, shot, assert, cvd, axe }) {
   const fig = await open(page, baseURL);
   assert.equal(await readout(page), READ_T0);
-  assert.equal(await fig.locator('.xfig-chip').textContent(), 't = 0 ᾱ_t = 1.00');
+  assert.equal(await fig.locator('.xfig-chip').textContent(), 't = 0 ᾱt = 1.00');
   assert.equal(await fig.locator('.xfig-ref-label').textContent(), 'N(0, 1)', 'the reference curve is labelled in the SVG');
   assert.equal(await fig.locator('.xfig-ref').evaluate((p) => getComputedStyle(p).strokeDasharray), '1px, 3px', 'the reference is dotted');
   const bar = await fig.locator('rect.xfig-bar').first().evaluate((r) => [getComputedStyle(r).fill, getComputedStyle(r).stroke]);
@@ -95,13 +95,13 @@ export default async function diffusion({ page, baseURL, shot, assert, cvd, axe 
   assert.equal(await value(page), '50', 'PageUp from 0 goes to 50');
   await page.keyboard.press('PageUp');
   assert.equal(await knob.getAttribute('aria-valuetext'), '100 of 1000');
-  assert.equal(await readout(page), 'signal √ᾱ_t 0.947 noise √(1−ᾱ_t) 0.321 spread (SD) 1.71');
+  assert.equal(await readout(page), 'signal √ᾱt 0.947 noise √(1−ᾱt) 0.321 spread (SD) 1.71');
   await settled(page);
   assert.deepEqual(await textProblems(page), [], 'no text overlaps at 1280 px (t = 100)');
   await shot('diffusion-t100');
   await press(page, 'PageUp', 6);
   assert.equal(await value(page), '400');
-  assert.equal(await readout(page), 'signal √ᾱ_t 0.442 noise √(1−ᾱ_t) 0.897 spread (SD) 1.20');
+  assert.equal(await readout(page), 'signal √ᾱt 0.442 noise √(1−ᾱt) 0.897 spread (SD) 1.20');
   await settled(page);
   await shot('diffusion-t400');
   await page.keyboard.press('End');
@@ -219,8 +219,8 @@ async function openSN(page, baseURL) {
 /** Diffusion Fig 2: √ᾱ_t and √(1−ᾱ_t) over t from the registry's precomputed series. */
 async function signalNoise({ page, baseURL, shot, assert, cvd, axe }) {
   const fig = await openSN(page, baseURL);
-  assert.equal(await snReadout(page), 'ᾱ_t 0.897 SNR 9.4 dB');
-  assert.deepEqual(await fig.locator('.xfig-series-label').allTextContents(), ['signal √ᾱ_t', 'noise √(1−ᾱ_t)']);
+  assert.equal(await snReadout(page), 'ᾱt 0.897 SNR 9.4 dB');
+  assert.deepEqual(await fig.locator('.xfig-series-label').allTextContents(), ['signal √ᾱt', 'noise √(1−ᾱt)']);
   assert.equal(await fig.locator('.xfig-marker-label').textContent(), 'signal = noise (t ≈ 260)');
   const dash = (sel) => fig.locator(`svg.xfig-curve ${sel}`).evaluate((p) => getComputedStyle(p).strokeDasharray);
   assert.equal(await dash('.xfig-line.xfig-s0'), 'none', 'signal is solid');
@@ -238,9 +238,9 @@ async function signalNoise({ page, baseURL, shot, assert, cvd, axe }) {
   const knob = fig.locator('.xfig-knob');
   await knob.focus();
   await page.keyboard.press('Home');
-  assert.equal(await snReadout(page), 'ᾱ_t 1.00 SNR ∞ dB', 'non-finite SNR prints as ∞');
+  assert.equal(await snReadout(page), 'ᾱt 1.00 SNR ∞ dB', 'non-finite SNR prints as ∞');
   await page.keyboard.press('End');
-  assert.equal(await snReadout(page), 'ᾱ_t 4.04 × 10⁻⁵ SNR −43.9 dB');
+  assert.equal(await snReadout(page), 'ᾱt 4.04 × 10⁻⁵ SNR −43.9 dB');
   await snSettled(page);
   assert.deepEqual(await problemsIn(page, SN), [], 'Fig 2: no text overlaps at t = 1000');
   await fig.locator('.xfig-data-toggle').click();

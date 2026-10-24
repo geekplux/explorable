@@ -1,25 +1,30 @@
 import { useEffect, useRef, type MouseEvent } from 'react';
+import { essayVars } from '@kit/doc/essay.ts';
 import { formatInline } from '@kit/doc/inline.ts';
 import type { ExplorableDoc } from '@kit/doc/schema.ts';
 
-/** Scroll to a heading (smoothly unless motion is reduced) and set the hash without a route change. */
+/** Scroll to a heading (smoothly unless motion is reduced), focus it and set the hash without a route change. */
 function jumpTo(event: MouseEvent<HTMLAnchorElement>, id: string) {
   const target = document.getElementById(id);
   if (!target) return;
   event.preventDefault();
   target.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
   history.replaceState(null, '', `#${id}`);
+  // Focus follows the jump (keyboard and screen-reader users continue from the heading), without a second scroll.
+  if (!target.hasAttribute('tabindex')) target.setAttribute('tabindex', '-1');
+  target.focus({ preventScroll: true });
 }
 
 /**
- * Contents in the left gutter (≥ 1160 px; DESIGN §6), ported from geekplux.com's Toc: the sections in view get
+ * Contents in the left gutter (≥ 1280 px; DESIGN §6), ported from geekplux.com's Toc: the sections in view get
  * the indigo bracket on the track, shift 3px toward the text and turn to ink; the track fills with reading
  * progress by a CSS scroll timeline (app.css). Visibility is written to the DOM: no state, no re-render.
  */
 export function EssayToc({ doc }: { doc: ExplorableDoc }) {
   const list = useRef<HTMLOListElement>(null);
   const bracket = useRef<HTMLSpanElement>(null);
-  const entries = [...doc.sections.map((s) => [s.id, formatInline(s.heading)]), ['essay-takeaway', 'Takeaway']];
+  const vars = essayVars(doc);
+  const entries = [...doc.sections.map((s) => [s.id, formatInline(s.heading, vars)]), ['essay-takeaway', 'Takeaway']];
   const ids = entries.map(([id]) => id).join(' ');
 
   useEffect(() => {

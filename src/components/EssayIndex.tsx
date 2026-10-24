@@ -1,3 +1,5 @@
+import { essayVars } from '@kit/doc/essay.ts';
+import { formatInline } from '@kit/doc/inline.ts';
 import type { ExplorableDoc } from '@kit/doc/schema.ts';
 import { canPlay, playThumb } from '../lib/thumbPlay.ts';
 import { essayMeta, samples, sourceChip } from '../samples/index.ts';
@@ -24,14 +26,13 @@ export function EssayIndex({ docs = samples, thumbs = false, compact = false }: 
         const thumb = thumbs ? THUMBS[`../samples/thumbs/${doc.id}.svg`] : undefined;
         return (
           <li key={doc.id}>
-            <a className="essay-row" href={`/s/${doc.id}`} onPointerEnter={play} onFocus={play}>
+            <a className={thumb ? 'essay-row' : 'essay-row is-plain'} href={`/s/${doc.id}`} onPointerEnter={play} onFocus={play}>
               <span className="essay-no" aria-hidden="true">
                 {String((samples.indexOf(doc) + 1 || i + 1)).padStart(2, '0')}
               </span>
               <span className="essay-body">
-                <span className="essay-title">
-                  {doc.title}
-                </span>
+                {/* Same formatter as the essay's h1, so the title view transition doesn't morph roman into italic. */}
+                <span className="essay-title" dangerouslySetInnerHTML={{ __html: formatInline(doc.title, essayVars(doc)) }} />
                 {!compact && (
                   <span className="essay-dek">
                     {doc.dek}
