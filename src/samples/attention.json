@@ -179,7 +179,7 @@
       "id": "m4",
       "kind": "math",
       "formula": "softmax(QKᵀ / √d_k) · V",
-      "plain": "Scaled dot-product attention, equation 1 of the paper."
+      "plain": "Q stacks every word's query, K every key and V what each word passes on; each row of scores is divided by √d_k, softmaxed, and used to average V. Equation 1 of the paper."
     },
     {
       "id": "vaswani",

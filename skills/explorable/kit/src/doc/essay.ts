@@ -62,7 +62,13 @@ const POWER = /\^(\((?:[^()]|\([^()]*\))*\)|[\p{L}\p{N}]+)/u;
 /** A formula as HTML: italic variables, upright operator names, and `^(…)` as a superscript without its brackets. */
 function formulaHtml(text: string): string {
   const m = POWER.exec(text);
-  if (!m) return mathHtml(text, { code: true }).replace(OPERATORS, '<span class="xnote-op">$1</span>');
+  if (!m) {
+    // Abbreviations (FPR, SNR) are upright; mathRuns would read them as products of italic variables.
+    return text
+      .split(/(?<![\p{L}\p{N}])(\p{Lu}{2,})(?![\p{L}\p{N}])/u)
+      .map((part, i) => (i % 2 ? `<span class="xnote-op">${escapeHtml(part)}</span>` : mathHtml(part, { code: true }).replace(OPERATORS, '<span class="xnote-op">$1</span>')))
+      .join('');
+  }
   const power = m[1]!.startsWith('(') ? m[1]!.slice(1, -1) : m[1]!;
   return `${formulaHtml(text.slice(0, m.index))}<sup>${formulaHtml(power)}</sup>${formulaHtml(text.slice(m.index + m[0].length))}`;
 }
@@ -71,7 +77,7 @@ function mathPanel(note: MathNote, vars: ReadonlySet<string>): string {
   const formula = formulaHtml(note.formula);
   return (
     `<div class="xnote" id="note-${escapeHtml(note.id)}" hidden>` +
-    `<p class="xnote-f">${formula}</p><p class="xnote-g">${formatInline(note.plain, vars)}</p></div>`
+    `<p class="xnote-f">${formula}</p><p class="xnote-g" id="note-${escapeHtml(note.id)}-g">${formatInline(note.plain, vars)}</p></div>`
   );
 }
 
@@ -99,7 +105,7 @@ function bodyHtml(text: string, vars: ReadonlySet<string>, notes: ReadonlyMap<st
     const id = escapeHtml(note.id);
     if (note.kind === 'math') {
       panels.push(mathPanel(note, vars));
-      return `<button class="xnote-mk" type="button" aria-expanded="false" aria-controls="note-${id}" aria-label="Show the math">${SIGMA}</button>`;
+      return `<button class="xnote-mk" type="button" aria-expanded="false" aria-controls="note-${id}" aria-describedby="note-${id}-g" aria-label="Show the math">${SIGMA}</button>`;
     }
     const n = (cites.get(note.id) ?? 0) + 1;
     cites.set(note.id, n);

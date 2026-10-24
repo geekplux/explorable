@@ -158,6 +158,17 @@ describe('parseDoc v2 notes', () => {
     expect(result.ok ? 'accepted' : result.errors.join('\n')).toContain(message);
   });
 
+  it('reports a malformed note id once, not also as unknown or unreferenced', () => {
+    const doc = v2();
+    doc.notes[0].id = 'M1';
+    doc.sections[0].paragraphs[0] = doc.sections[0].paragraphs[0].replace('[[m1]]', '[[M1]]');
+    const result = parseDoc(doc);
+    expect(result.ok ? [] : result.errors.filter((e) => /M1|notes\[0\]/.test(e))).toEqual([
+      'notes[0].id: must be a lowercase letter, then up to 23 lowercase letters, digits or dashes',
+      'sections[0].paragraphs[0]: unknown note "M1"; the notes are m2, vaswani',
+    ]);
+  });
+
   it('reports every note problem at once', () => {
     const doc = v2();
     doc.sections[1].paragraphs[0] = 'See [[m9]] and [[m8]].';

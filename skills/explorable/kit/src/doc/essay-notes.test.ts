@@ -36,6 +36,8 @@ describe('essayHtml notes', () => {
     expect(mark.getAttribute('aria-expanded')).toBe('false');
     expect(mark.getAttribute('aria-controls')).toBe('note-m1');
     expect(mark.getAttribute('aria-label')).toBe('Show the math');
+    expect(mark.getAttribute('aria-describedby')).toBe('note-m1-g');
+    expect(dom.getElementById('note-m1-g')?.className).toBe('xnote-g');
     expect(mark.querySelector('svg')?.getAttribute('aria-hidden')).toBe('true');
     expect(mark.previousSibling?.textContent).toBe('Weights add up to 1.');
     expect(p.innerHTML).toContain('</button> Then <em>more</em>.');
@@ -101,7 +103,21 @@ describe('formula panels', () => {
   it('set a power as a superscript without its brackets', () => {
     const notes = [{ id: 'm1', kind: 'math' as const, formula: 'FPR ≈ (1 − e^(−kn/m))^k', plain: 'Rate.' }, { id: 'm2', kind: 'math' as const, formula: 'x^(a(b)) + y²', plain: 'P.' }];
     const dom = render(doc({ notes, sections: [{ id: 's1', heading: 'One', paragraphs: ['A.[[m1]]', 'B.[[m2]]'] }, { id: 's2', heading: 'Two', paragraphs: ['P.'] }], takeaway: 'T.' }));
-    expect(dom.querySelector('#note-m1 .xnote-f')?.innerHTML).toBe('FPR ≈ (1 − e<sup>−<i>k</i><i>n</i>/<i>m</i></sup>)<sup><i>k</i></sup>');
+    expect(dom.querySelector('#note-m1 .xnote-f')?.innerHTML).toBe('<span class="xnote-op">FPR</span> ≈ (1 − e<sup>−<i>k</i><i>n</i>/<i>m</i></sup>)<sup><i>k</i></sup>');
     expect(dom.querySelector('#note-m2 .xnote-f')?.innerHTML).toBe('<i>x</i><sup><i>a</i>(<i>b</i>)</sup> + <i>y</i>²');
+  });
+});
+
+describe('formula abbreviations', () => {
+  it('set runs of capitals upright and keep single capitals italic', () => {
+    const notes = [
+      { id: 'm1', kind: 'math' as const, formula: 'FPR ≈ SNR / L', plain: 'A.' },
+      { id: 'm2', kind: 'math' as const, formula: 'softmax(QKᵀ / √d_k) · V + T', plain: 'B.' },
+    ];
+    const dom = render(doc({ notes, sections: [{ id: 's1', heading: 'One', paragraphs: ['A.[[m1]]', 'B.[[m2]]'] }, { id: 's2', heading: 'Two', paragraphs: ['P.'] }], takeaway: 'T.' }));
+    expect(dom.querySelector('#note-m1 .xnote-f')?.innerHTML).toBe('<span class="xnote-op">FPR</span> ≈ <span class="xnote-op">SNR</span> / <i>L</i>');
+    const m2 = dom.querySelector('#note-m2 .xnote-f')!;
+    expect([...m2.querySelectorAll('i')].map((i) => i.textContent)).toEqual(['Q', 'K', 'd', 'V', 'T']);
+    expect(m2.querySelector('.xnote-op')?.textContent).toBe('softmax');
   });
 });

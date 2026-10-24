@@ -191,7 +191,7 @@ function auditPalette(css) {
       }
     }
   }
-  const css2 = css.replace(/url\(data:[^)]*\)/g, '').replace(/--[\w-]+\s*:\s*#[0-9a-f]{6}\b/gi, '');
+  const css2 = css.replace(/url\(data:[^)]*\)/g, '').replace(/--[\w-]+\s*:\s*#(?:[0-9a-f]{8}|[0-9a-f]{6}|[0-9a-f]{3,4})\b/gi, '');
   // Fully transparent (#0000, #rrggbb00: the minifier's `transparent`) is not a colour.
   const raw = new Set([...css2.matchAll(/[:\s,(](#[0-9a-f]{3,8})\b/gi)].map((m) => m[1]).filter((c) => !/^#(?:[0-9a-f]{3}0|[0-9a-f]{6}00)$/i.test(c)));
   if (raw.size) out.push(`colours used outside the palette tokens: ${[...raw].join(', ')}`);

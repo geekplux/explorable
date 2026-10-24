@@ -83,13 +83,13 @@
       "heading": "Choosing k",
       "paragraphs": [
         "More hashes cut both ways. Each extra hash is one more bit a word you never added has to match, which helps, but it also fills the bits faster, which hurts. In the first figure at n = 8, the predicted rate is 22% at k = 1, 14.7% at k = 3 and 22% again at k = 6. Somewhere in between is a best k.",
-        "The best k is about 0.69 times the number of bits per word, m divided by n. That is the point where about half the bits are set, and there each extra bit per word cuts the false-positive rate to about 62% of what it was.[[best-k]] The curve below plots the rate against n for your m and k. The marker shows the n at which your k is the best choice, and the dotted curve is the best any k could do. Drag along the curve and watch it touch the dotted line at the marker."
+        "The best k is about 0.69 times the number of bits per word, m divided by n. That is the point where about half the bits are set, and there each extra bit per word cuts the false-positive rate to about 62% of what it was.[[best-k]] Drag along the curve and watch it touch the dotted curve at the marker."
       ],
       "figure": {
         "id": "fig-fpr-curve",
         "kind": "curve",
         "title": "False positives as the filter fills",
-        "caption": "The curve is the predicted rate of false positives for your m and k as n grows. The dotted line is the best any number of hashes could do; the marker shows where your k is the best choice.",
+        "caption": "The curve is the predicted rate of false positives for your m and k as n grows. The dotted curve is the best any number of hashes could do; the marker shows where your k is the best choice.",
         "alt": "Line chart of the false-positive rate against the number of items inserted, for 32 bits and 3 hashes: the rate rises from near 0 at 1 item to 14.7% at 8 items and 86% at 32 items. A dotted curve shows the best possible rate, which the line touches at about 7.4 items, where 3 hashes is optimal.",
         "model": {
           "id": "expr-curve",

@@ -33,9 +33,16 @@ describe('tokens.css', () => {
 
   it('writes hex only on the scale steps, and nowhere in kit.css', () => {
     const literal = [...css.matchAll(/--([\w-]+):\s*#/g)].map((m) => m[1]);
-    expect(literal.every((n) => /^(sand|indigo|orange)-\d+$/.test(n ?? ''))).toBe(true);
-    expect(literal).toHaveLength(72);
+    expect(literal.every((n) => /^((sand|indigo|orange)-\d+|black-a\d+)$/.test(n ?? ''))).toBe(true);
+    expect(literal).toHaveLength(74);
     expect(kitCss.match(/#[0-9a-f]{3,8}\b|rgba?\(|hsla?\(/gi)).toBeNull();
+  });
+
+  it('uses Radix blackA for the floating card shadow and a light glyph on a solid in the dark scheme', () => {
+    expect([scheme('light')['black-a2'], scheme('light')['black-a6']]).toEqual(['#0000001a', '#00000066']);
+    expect(scheme('light')['float-shadow']).toContain('var(--black-a2)');
+    expect(scheme('dark')['float-shadow']).toContain('var(--black-a6)');
+    expect([scheme('light')['on-solid'], scheme('dark')['on-solid']]).toEqual(['var(--sand-1)', 'var(--sand-12)']);
   });
 
   it('swaps the handle to orange-9 in the dark scheme', () => {

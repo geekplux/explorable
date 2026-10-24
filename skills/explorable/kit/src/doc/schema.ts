@@ -6,7 +6,7 @@
  * paragraphs and the takeaway reference with `[[id]]`; see `notes.ts`.
  */
 import * as v from 'valibot';
-import { noteIssues } from './notes.ts';
+import { NOTE_ID as NOTE_ID_RE, noteIssues } from './notes.ts';
 
 export const FIGURE_KINDS = ['bars', 'bits', 'histogram', 'curve'] as const;
 
@@ -102,7 +102,7 @@ const SectionSchema = v.strictObject({
   figure: v.optional(FigureSchema),
 });
 
-const NOTE_ID = v.pipe(v.string(), v.regex(/^[a-z][a-z0-9-]{0,23}$/, 'must be a lowercase letter, then up to 23 lowercase letters, digits or dashes'));
+const NOTE_ID = v.pipe(v.string(), v.regex(NOTE_ID_RE, 'must be a lowercase letter, then up to 23 lowercase letters, digits or dashes'));
 const MathNoteSchema = v.strictObject({ id: NOTE_ID, kind: v.literal('math'), formula: text(160), plain: text(240) });
 const SourceNoteSchema = v.strictObject({
   id: NOTE_ID,

@@ -4,6 +4,9 @@
  * opens a panel under the paragraph, a source marker renders as the note's label and opens a small card.
  */
 
+/** A valid note id (the schema checks it; `noteIssues` skips notes without one). */
+export const NOTE_ID = /^[a-z][a-z0-9-]{0,23}$/;
+
 /** A note marker, `[[id]]`. Anything between the brackets counts, so a mistyped id is reported, not shown. */
 export const NOTE_MARK = /\[\[([^[\]\n]{1,40})\]\]/g;
 
@@ -60,9 +63,10 @@ export function noteIssues(doc: NotesDoc): NoteIssue[] {
     }
     return out;
   }
-  const notes = doc.notes ?? [];
   const byId = new Map<string, { kind: string; at: number }>();
-  notes.forEach((note, i) => {
+  (doc.notes ?? []).forEach((note, i) => {
+    // A malformed id already has its own error: skip the note so it is not also reported unknown or unreferenced.
+    if (!NOTE_ID.test(note.id)) return;
     if (byId.has(note.id)) out.push({ path: ['notes', i, 'id'], message: `duplicate note id "${note.id}"` });
     else byId.set(note.id, { kind: note.kind, at: i });
   });
