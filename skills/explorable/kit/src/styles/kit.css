@@ -29,6 +29,7 @@
 :is(.essay-section, .essay-takeaway) > .xnote + p { margin-top: 20px; }
 .xnote-f { font: italic 400 var(--text-20)/1.5 var(--font-text); text-align: center; overflow-wrap: anywhere; }
 .xnote-op { font-style: normal; }
+.xnote-f sup { font-size: var(--text-14); line-height: 0; }
 .xnote-f .xsub { font-style: normal; }
 .essay .xnote-g { margin-top: 8px; font: 400 var(--text-14)/1.5 var(--font-ui); color: var(--text-2); }
 .xnote-g .xsub { font-size: var(--text-12); }

@@ -1,6 +1,6 @@
 // Attention Fig 1 is live: mouse drag, keyboard-only End, "Show data", CVD,
 // axe, and a touch drag at 390 px with ≥ 44 px hit areas. Fig 2: drag d_k
-// unscaled, then flip the √d_k switch by keyboard and drag again.
+// unscaled, then flip the √d_k switch by keyboard and drag again. Notes: math by keyboard, the source card by focus.
 import { blocking } from '../lib/axe.mjs';
 
 const FIG = '#fig-temperature';
@@ -183,6 +183,8 @@ export default async function attention({ page, baseURL, shot, assert, cvd, axe 
 
   await page.setViewportSize({ width: 1280, height: 800 });
   await page.goto(`${baseURL}/s/attention`, { waitUntil: 'networkidle' });
+  await notes(page, { shot, assert, axe });
+  await page.goto(`${baseURL}/s/attention`, { waitUntil: 'networkidle' });
   await fig2(page, { shot, assert, axe });
   await fig2Narrow(page, { baseURL, shot, assert });
 }
@@ -218,6 +220,57 @@ async function fig2Narrow(page, { baseURL, shot, assert }) {
   assert.deepEqual(await textOverlaps(page), [], 'no Fig 2 text overlaps at 320 px after End');
   await shot('attention-fig2-320');
   await page.setViewportSize({ width: 1280, height: 800 });
+}
+
+/** Notes: the first math note by keyboard, the source card by focus and Esc; axe with both open. */
+async function notes(page, { shot, assert, axe }) {
+  const mark = page.locator('button.xnote-mk[aria-controls="note-m1"]');
+  await mark.waitFor();
+  assert.equal(await mark.getAttribute('aria-label'), 'Show the math');
+  assert.equal(await mark.getAttribute('aria-expanded'), 'false');
+  assert.ok(await page.locator('#note-m1').isHidden(), 'math note closed at load');
+  const box = await mark.boundingBox();
+  assert.ok(box.width >= 20 && box.height >= 20, `marker is 20 px: ${box.width}×${box.height}`);
+  // Keyboard: Tab to the marker, Enter opens, focus stays, Space closes and Enter opens again.
+  let tabs = 0;
+  while (!(await mark.evaluate((el) => el === document.activeElement))) {
+    assert.ok(++tabs < 20, 'could not Tab to the first math marker');
+    await page.keyboard.press('Tab');
+  }
+  await page.keyboard.press('Enter');
+  assert.equal(await mark.getAttribute('aria-expanded'), 'true', 'Enter opens the math note');
+  assert.ok(await page.locator('#note-m1').isVisible(), 'math panel visible');
+  assert.equal(await page.locator('#note-m1 .xnote-f').textContent(), 'wᵢ = exp(sᵢ / T) / Σⱼ exp(sⱼ / T)');
+  assert.ok(await mark.evaluate((el) => el === document.activeElement), 'focus stays on the marker');
+  await page.keyboard.press('Space');
+  assert.equal(await mark.getAttribute('aria-expanded'), 'false', 'Space closes it');
+  await page.keyboard.press('Enter');
+  // A second math note opens too: several may be open.
+  await page.locator('button.xnote-mk[aria-controls="note-m2"]').click();
+  assert.equal(await page.locator('.xnote:not([hidden])').count(), 2, 'two math notes open at once');
+  // The source card opens on focus and closes with Esc, focus back on the label.
+  const src = page.locator('button.xnote-src');
+  assert.equal(await src.textContent(), 'Vaswani et al.');
+  await src.focus();
+  assert.equal(await src.getAttribute('aria-expanded'), 'true', 'focus opens the source card');
+  const card = page.locator('#note-vaswani');
+  assert.ok(await card.isVisible(), 'source card visible');
+  assert.equal(await card.locator('a').getAttribute('href'), 'https://arxiv.org/abs/1706.03762');
+  await page.waitForTimeout(300); // the 250 ms fade-in ends before axe measures contrast
+  assert.deepEqual(blocking(await axe()).map((v) => `${v.id}: ${v.help}`), [], 'axe clean with notes and the card open');
+  await shot('attention-notes-open');
+  await page.keyboard.press('Escape');
+  assert.ok(await card.isHidden(), 'Esc closes the card');
+  assert.equal(await src.getAttribute('aria-expanded'), 'false');
+  assert.ok(await src.evaluate((el) => el === document.activeElement), 'Esc returns focus to the label');
+  // Hover opens it after a short delay; leaving closes it.
+  await src.hover();
+  await page.waitForTimeout(400);
+  assert.ok(await card.isVisible(), 'hover opens the card');
+  await page.mouse.move(5, 5);
+  await page.locator('h1').focus();
+  await page.waitForTimeout(100);
+  assert.ok(await card.isHidden(), 'leaving closes the card');
 }
 
 const FIG2 = '#fig-scaling';

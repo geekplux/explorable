@@ -96,3 +96,12 @@ describe('essayHtml notes', () => {
     expect(essayHtml(v1)).not.toMatch(/xnote/);
   });
 });
+
+describe('formula panels', () => {
+  it('set a power as a superscript without its brackets', () => {
+    const notes = [{ id: 'm1', kind: 'math' as const, formula: 'FPR ≈ (1 − e^(−kn/m))^k', plain: 'Rate.' }, { id: 'm2', kind: 'math' as const, formula: 'x^(a(b)) + y²', plain: 'P.' }];
+    const dom = render(doc({ notes, sections: [{ id: 's1', heading: 'One', paragraphs: ['A.[[m1]]', 'B.[[m2]]'] }, { id: 's2', heading: 'Two', paragraphs: ['P.'] }], takeaway: 'T.' }));
+    expect(dom.querySelector('#note-m1 .xnote-f')?.innerHTML).toBe('FPR ≈ (1 − e<sup>−<i>k</i><i>n</i>/<i>m</i></sup>)<sup><i>k</i></sup>');
+    expect(dom.querySelector('#note-m2 .xnote-f')?.innerHTML).toBe('<i>x</i><sup><i>a</i>(<i>b</i>)</sup> + <i>y</i>²');
+  });
+});

@@ -14,9 +14,11 @@ All notable changes to this project are documented here. The format follows [Kee
 - Contents in the left gutter at ≥ 1280px with a reading-progress track and a bracket over the sections in view. Motion: the title travels from the index into the essay (300ms view transition), bars settle in 250ms, figures below the fold enter once, the title block fades in; all of it off under reduced motion.
 - Loading, error and not-found pages restyled in the essay column, with no kickers or skeleton.
 - The serif is pinned at optical size 20 and draws its own √, ∑, ≈, ≤, ≥ and ∞. Figure labels, readouts, legends and table headers set variables the same way as the essay; contents links move focus to their heading, and a link to a section (`#divide-by-root-d`) opens there.
+- Plain words first: the three samples are rewritten for a curious reader with no background beyond school maths. Formulas sit behind a small Σ marker that opens a panel with the formula and a one-sentence gloss, and author citations ("Vaswani et al.") open a card with the paper's title and link on focus, hover or tap. Data tables set variables in their caption and cells too.
 
 ### Added
 
+- ExplorableDoc v2: optional doc-level `notes` (math and source) referenced from paragraphs and the takeaway with `[[id]]`, validated with path-specific errors; v1 stays valid. `hydrateNotes` in the kit runtime (called by `hydrateFigures`) so standalone skill pages get the same notes, and `bodyHasFormula`/`findFormula`, a shared check for body text that reads like a formula; the skill audit warns with it.
 - A gallery of three built-in sample explorables that open instantly and work offline with no key: why attention divides by √d (`attention`), how a Bloom filter says "maybe" (`bloom-filter`) and noise one step at a time in diffusion models (`diffusion`).
 - A visual identity: the wordmark and mark, Fraunces and Newsreader type, a paper-and-ink palette with 3 colour-vision-checked series colours, and small self-hosted symbol fonts for Greek and math glyphs.
 - The figure kit, framework-free and shared by the app and the skill: the `ExplorableDoc` v1 schema, a model registry with seeded randomness, and four figure kinds (`bars`, `bits`, `histogram`, `curve`) with a draggable knob, labelled native controls, a live readout, a spoken description and a "Show data" table on every figure.

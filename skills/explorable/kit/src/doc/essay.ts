@@ -56,8 +56,19 @@ function openLabel(url: string): string {
   return /^https:\/\/(?:www\.)?arxiv\.org\//i.test(url) ? 'Open the paper on arXiv' : 'Open the source';
 }
 
+/** An exponent: `^(…)` (one level of nested brackets) or `^x`. */
+const POWER = /\^(\((?:[^()]|\([^()]*\))*\)|[\p{L}\p{N}]+)/u;
+
+/** A formula as HTML: italic variables, upright operator names, and `^(…)` as a superscript without its brackets. */
+function formulaHtml(text: string): string {
+  const m = POWER.exec(text);
+  if (!m) return mathHtml(text, { code: true }).replace(OPERATORS, '<span class="xnote-op">$1</span>');
+  const power = m[1]!.startsWith('(') ? m[1]!.slice(1, -1) : m[1]!;
+  return `${formulaHtml(text.slice(0, m.index))}<sup>${formulaHtml(power)}</sup>${formulaHtml(text.slice(m.index + m[0].length))}`;
+}
+
 function mathPanel(note: MathNote, vars: ReadonlySet<string>): string {
-  const formula = mathHtml(note.formula, { code: true }).replace(OPERATORS, '<span class="xnote-op">$1</span>');
+  const formula = formulaHtml(note.formula);
   return (
     `<div class="xnote" id="note-${escapeHtml(note.id)}" hidden>` +
     `<p class="xnote-f">${formula}</p><p class="xnote-g">${formatInline(note.plain, vars)}</p></div>`
