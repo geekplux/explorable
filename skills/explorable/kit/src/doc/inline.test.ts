@@ -37,8 +37,9 @@ describe('formatInline', () => {
   });
 });
 
+const sub = (v: string, s: string) => `<i>${v}</i><span class="sub">${s}</span>`;
+
 describe('mathVars: variables in italics', () => {
-  const sub = (v: string, s: string) => `<i>${v}</i><span class="sub">${s}</span>`;
   it('sets d_k as an italic d with a subscript, in text, code and headings', () => {
     expect(formatInline('variance d_k and √d_k.')).toBe(`variance ${sub('d', 'k')} and √${sub('d', 'k')}.`);
     expect(formatInline('`softmax(QKᵀ / √d_k)`')).toBe(`<code>softmax(QKᵀ / √${sub('d', 'k')})</code>`);

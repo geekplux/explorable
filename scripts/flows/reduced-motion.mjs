@@ -1,6 +1,7 @@
-// Motion rules for Fig 1: with reduced motion there is no nudge, a static
-// "drag" hint, and keyboard steps are instant. Without it there is exactly one
-// nudge (1.2 s after the figure first enters view) that never repeats.
+// Motion rules (DESIGN, Motion): nothing moves on its own. With reduced motion
+// keyboard steps and drags are instant, no figure enters and the title does not
+// rise. Without it keyboard steps ease, a figure below the fold enters once, and
+// the title block fades in.
 const FIG = '#fig-temperature';
 
 const knobX = (page) =>
@@ -31,11 +32,12 @@ export default async function reducedMotion({ page, baseURL, shot, assert, axe }
 
   await page.goto(`${baseURL}/s/attention`, { waitUntil: 'networkidle' });
   await page.locator(`${FIG} .xfig-knob`).waitFor();
+  assert.equal(await page.locator('.essay-hero h1').evaluate((h) => getComputedStyle(h).animationName), 'none', 'reduced motion: the title does not rise');
   await page.locator(FIG).scrollIntoViewIfNeeded();
-  assert.equal((await watch(page, 2200)).size, 1, 'reduced motion: the knob never nudges');
-  assert.ok(await page.locator(`${FIG} .xfig-knob.is-hinting`).count(), 'reduced motion: static dashed "drag" hint');
-  assert.equal(await page.locator(`${FIG} text.xfig-knob-hint`).textContent(), 'drag');
-  await shot('reduced-motion-hint');
+  assert.equal((await watch(page, 1500)).size, 1, 'reduced motion: the knob never moves on its own');
+  assert.equal(await page.locator('.xfig-knob-hint, .xfig-knob-grip').count(), 0, 'no drag hint');
+  assert.equal(await page.locator('figure.xfig[data-enter]').count(), 0, 'reduced motion: no figure entrance');
+  await shot('reduced-motion-fig');
   await page.locator(`${FIG} .xfig-knob`).focus();
   const h0 = await catHeight(page);
   await page.keyboard.press('PageDown');
@@ -43,22 +45,23 @@ export default async function reducedMotion({ page, baseURL, shot, assert, axe }
   await page.waitForTimeout(400);
   assert.notEqual(h1, h0, 'keyboard step applies at once');
   assert.equal(await catHeight(page), h1, 'reduced motion: no easing after a keyboard step');
-  assert.equal(await page.locator(`${FIG} .xfig-knob.is-hinting`).count(), 0, 'hint goes away after the first interaction');
   const blockingViolations = (await axe()).filter((v) => v.impact === 'serious' || v.impact === 'critical');
   assert.deepEqual(blockingViolations.map((v) => v.id), [], 'axe clean under reduced motion');
 
   await page.emulateMedia({ reducedMotion: 'no-preference' });
   await page.goto(`${baseURL}/s/attention`, { waitUntil: 'networkidle' });
   await page.locator(`${FIG} .xfig-knob`).waitFor();
+  assert.equal(await page.locator('.essay-hero h1').evaluate((h) => getComputedStyle(h).animationName), 'enter', 'the title block fades in and rises');
+  assert.equal(await page.locator('#fig-scaling').getAttribute('data-enter'), '', 'a figure below the fold waits to enter');
   await page.locator(FIG).scrollIntoViewIfNeeded();
-  const first = await watch(page, 2600);
-  assert.ok(first.size > 2, `one nudge after first view (saw ${first.size} positions)`);
-  const rest = await knobX(page);
-  await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
-  await page.waitForTimeout(300);
+  const rest = await watch(page, 2600);
+  assert.equal(rest.size, 1, `nothing moves on its own (saw ${rest.size} positions)`);
+  await page.locator('#fig-scaling').scrollIntoViewIfNeeded();
+  await page.waitForTimeout(400);
+  assert.equal(await page.locator('#fig-scaling').getAttribute('data-enter'), 'in', 'it enters once in view');
+  assert.equal(await page.locator('#fig-scaling').evaluate((f) => getComputedStyle(f).opacity), '1');
   await page.locator(FIG).scrollIntoViewIfNeeded();
-  const again = await watch(page, 2600);
-  assert.deepEqual([...again], [rest], 'the nudge never repeats');
+  await page.waitForTimeout(300); // drawing resumes once the figure is back in view
   await page.locator(`${FIG} .xfig-knob`).focus();
   const e0 = await catHeight(page);
   await page.keyboard.press('Home');

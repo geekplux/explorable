@@ -67,7 +67,7 @@ export default async function urlFlow(ctx) {
   assert.equal(await page.locator('.try, .chip').count(), 0, 'no Try chips');
   await shot('input-empty');
 
-  // Paste + Enter → /x?url=, skeleton, stages in order, then the AI result.
+  // Paste + Enter → /x?url=, the steps in order (no skeleton), then the AI result.
   await mock(page, 200, { ok: true, doc: aiDoc, cache: 'miss', mode: 'ai' }, 6500);
   await page.getByLabel('Paste a link or type a topic').focus();
   await page.keyboard.insertText(URL_IN);
@@ -84,9 +84,9 @@ export default async function urlFlow(ctx) {
   });
   await page.keyboard.press('Enter');
   await page.waitForURL(`${baseURL}/x?url=https%3A%2F%2Farxiv.org%2Fabs%2F1706.03762`);
-  await page.locator('[aria-busy="true"]').waitFor();
+  await page.locator('.loading-steps').waitFor();
   assert.equal(await focusedId(page), 'H1', 'focus moves to the loading heading');
-  assert.equal(await page.locator('.bar').first().evaluate((el) => getComputedStyle(el).animationName), 'shimmer');
+  assert.equal(await page.locator('.skeleton, .bar, .kicker').count(), 0, 'no skeleton or kicker');
   await noBlocking(ctx, 'loading');
   await shot('loading-desktop');
   await page.setViewportSize({ width: 390, height: 844 });
@@ -96,8 +96,9 @@ export default async function urlFlow(ctx) {
   await page.setViewportSize({ width: 1280, height: 800 });
   await page.locator('.essay-takeaway').waitFor({ timeout: 15_000 });
   assert.deepEqual(JSON.parse((await page.locator('html').getAttribute('data-stages')) ?? '[]'), STAGES, 'stages announced in order');
-  assert.equal(await page.locator('.essay-provenance').textContent(), 'Generated with AI from the source: check the original');
-  assert.ok(await page.locator('.essay-source a[href="https://arxiv.org/abs/1706.03762"]').count(), 'AI label sits next to the source link');
+  assert.equal(await page.locator('.essay-byline p').textContent(), 'Based on Attention Is All You Need, Vaswani et al., 2017. Written by AI from the source.');
+  assert.ok(await page.locator('.essay-byline a[href="https://arxiv.org/abs/1706.03762"]').count(), 'the AI sentence sits in the byline with the source link');
+  assert.equal(await page.getByText('Written by AI', { exact: false }).count(), 1, 'said once');
   assert.ok((await page.locator('figure.xfig .xfig-knob').count()) >= 1, 'live figures are hydrated');
   assert.equal(await focusedId(page), 'H1', 'focus moves to the essay heading');
   await noBlocking(ctx, 'result-ai');
@@ -120,7 +121,7 @@ export default async function urlFlow(ctx) {
   await mock(page, 200, { ok: true, doc: matchDoc, cache: 'hit', mode: 'match' });
   await page.goto(`${baseURL}/x?url=${encodeURIComponent(matchDoc.source.url)}`);
   await page.locator('.essay-takeaway').waitFor();
-  assert.equal(await page.locator('.essay-provenance').textContent(), 'Matched to a built-in explainer');
+  assert.equal(await page.locator('.essay-byline p').textContent(), 'Based on Bloom Filters by Example, Bill Mill', 'a matched essay adds nothing to the byline');
   await shot('result-match');
 
   // Every error code: own copy, focused heading, three sample rows.
@@ -140,9 +141,9 @@ export default async function urlFlow(ctx) {
       await mock(page, status, { ok: false, error: { code, message: 'm', hint: 'h' } }, 1000);
       await page.getByRole('button', { name: 'Try again' }).focus();
       await page.keyboard.press('Enter');
-      await page.locator('[aria-busy="true"]').waitFor();
+      await page.locator('.loading-steps').waitFor();
       assert.equal(await page.evaluate(() => document.activeElement?.tagName), 'H1', 'Try again: focus on the loading h1');
-      assert.equal(await page.locator('.loading-title').textContent(), 'Reading notes.example.org', 'loading h1 names the host only');
+      assert.equal(await page.locator('.loading h1').textContent(), 'Reading notes.example.org', 'loading h1 names the host only');
       await page.locator(`.error-panel[data-code="${code}"]`).waitFor();
     }
     if (code === 'AI_UNAVAILABLE') {
@@ -164,7 +165,7 @@ export default async function urlFlow(ctx) {
   await mock(page, 200, { ok: true, doc: aiDoc, cache: 'miss', mode: 'ai' }, 5000);
   await page.goto(`${baseURL}/`, { waitUntil: 'networkidle' });
   await submit(page);
-  await page.locator('[aria-busy="true"]').waitFor();
+  await page.locator('.loading-steps').waitFor();
   await page.keyboard.press('Tab');
   assert.equal(await page.evaluate(() => document.activeElement?.textContent), 'Cancel');
   await page.keyboard.press('Enter');
@@ -184,21 +185,13 @@ export default async function urlFlow(ctx) {
   await page.locator('.essay-takeaway').waitFor();
   await page.goBack();
   await submit(page);
-  await page.locator('.essay-provenance[data-mode="ai"]').waitFor();
+  await page.getByText('Written by AI from the source.').waitFor();
   await page.goBack();
   await page.waitForURL(`${baseURL}/`);
   assert.equal(await page.locator('.url-row input').inputValue(), URL_IN, 'input filled after Back');
   await page.goForward();
-  await page.locator('.essay-provenance[data-mode="ai"]').waitFor();
+  await page.getByText('Written by AI from the source.').waitFor();
 
-  // Reduced motion: no shimmer on the skeleton.
-  await page.emulateMedia({ reducedMotion: 'reduce' });
-  await mock(page, 200, { ok: true, doc: aiDoc, cache: 'miss', mode: 'ai' }, 1500);
-  await page.goto(`${baseURL}/x?url=${encodeURIComponent(URL_IN)}`);
-  await page.locator('[aria-busy="true"]').waitFor();
-  assert.equal(await page.locator('.bar').first().evaluate((el) => getComputedStyle(el).animationName), 'none');
-  await page.locator('.essay-takeaway').waitFor();
-  await page.emulateMedia({ reducedMotion: 'no-preference' });
 
   // Offline: banner above the input; submitting a link explains why instead of fetching.
   await page.goto(`${baseURL}/`, { waitUntil: 'networkidle' });

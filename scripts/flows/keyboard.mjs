@@ -32,7 +32,8 @@ export default async function keyboard({ page, baseURL, shot, assert }) {
   assert.equal(focused, 'H1', 'focus moves to the essay heading after navigation');
   await shot('keyboard-essay');
 
-  await tabTo(page, '.site-header a.site-home', assert, 8, 'Shift+Tab');
+  // Back past the contents in the gutter (five entries at this width) and the header nav.
+  await tabTo(page, '.site-header a.site-home', assert, 12, 'Shift+Tab');
   assert.ok((await ringWidth(page)) >= 2, 'home link shows a ≥ 2px focus ring');
   await shot('keyboard-back-focus');
   await page.keyboard.press('Enter');

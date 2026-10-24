@@ -20,13 +20,14 @@ export function EssayToc({ doc }: { doc: ExplorableDoc }) {
   const list = useRef<HTMLOListElement>(null);
   const bracket = useRef<HTMLSpanElement>(null);
   const entries = [...doc.sections.map((s) => [s.id, formatInline(s.heading)]), ['essay-takeaway', 'Takeaway']];
+  const ids = entries.map(([id]) => id).join(' ');
 
   useEffect(() => {
     const ol = list.current;
     const mark = bracket.current;
     if (!ol || !mark || typeof IntersectionObserver !== 'function') return;
     const items = [...ol.children] as HTMLElement[];
-    const sections = items.map((li) => document.getElementById(li.dataset.id ?? '')?.closest('section'));
+    const sections = ids.split(' ').map((id) => document.getElementById(id)?.closest('section'));
     const on = new Set<number>();
     // A section counts as in view while it crosses the band from 10% to 80% of the viewport height.
     const io = new IntersectionObserver(
@@ -46,14 +47,15 @@ export function EssayToc({ doc }: { doc: ExplorableDoc }) {
     );
     for (const s of sections) if (s) io.observe(s);
     return () => io.disconnect();
-  }, [doc]);
+  }, [ids]);
 
   return (
     <nav className="essay-toc" aria-label="Contents">
       <div className="essay-toc-rail">
         <ol ref={list}>
           {entries.map(([id, html]) => (
-            <li key={id} data-id={id}>
+            <li key={id}>
+              {/* oxlint-disable-next-line jsx-a11y/control-has-associated-label -- the heading HTML (escaped by formatInline) is the label */}
               <a href={`#${id}`} onClick={(e) => jumpTo(e, id!)} dangerouslySetInnerHTML={{ __html: html! }} />
             </li>
           ))}

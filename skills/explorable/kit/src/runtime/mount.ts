@@ -149,10 +149,10 @@ export function mountFigure(stage: HTMLElement, spec: FigureSpec, opts: MountOpt
   const describe = (out: Outputs) =>
     typeof tpl === 'string' ? fillTemplate(tpl, model, target, out) : model.describe(target, out, Array.isArray(labels) ? labels : undefined);
   let drawn: Outputs | undefined;
-  const drawState = (p: Params, out = model.compute(p), eased = out) => {
+  const drawState = (p: Params, out = model.compute(p), marks = out) => {
     shown = p;
-    drawn = eased;
-    view.draw(p, out, eased);
+    drawn = marks;
+    view.draw(p, out, marks);
   };
   let stopFollow = noop;
   let visible = true;

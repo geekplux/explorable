@@ -34,9 +34,9 @@ async function settled(page) {
   }, FIG, { polling: 100, timeout: 10_000 });
 }
 
-/** Hit areas of every control in Fig 1 are ≥ 44 × 44 CSS px. */
+/** Hit areas of every pointer target in Fig 1 are ≥ 44 × 44 CSS px (the knob's native twin is for assistive tech only). */
 async function assertHitAreas(page, assert, width) {
-  for (const sel of ['.xfig-knob-hit', '.xfig-track-hit', 'input[type=range]', '.xfig-data-toggle']) {
+  for (const sel of ['.xfig-knob-hit', '.xfig-track-hit', '.xfig-data-toggle']) {
     const box = await page.locator(`${FIG} ${sel}`).boundingBox();
     assert.ok(box.width >= 44 && box.height >= 44, `${sel} hit area ${box.width}×${box.height} ≥ 44 px at ${width} px`);
   }
@@ -53,10 +53,12 @@ export default async function attention({ page, baseURL, shot, assert, cvd, axe 
   const fig = page.locator(FIG);
   await fig.locator('.xfig-knob').waitFor();
   await fig.scrollIntoViewIfNeeded();
+  await page.waitForTimeout(300); // a figure below the fold enters once (250 ms)
   const labels = await fig.locator('.xfig-bar-label').allTextContents();
   assert.deepEqual(labels, ['the', 'cat', 'sat', 'on', 'the', 'mat'], 'six token-labelled bars');
   assert.equal((await state(page)).readout, 'top weight 0.51 entropy 2.05 bits');
-  assert.equal(await fig.locator('.xfig-top text').textContent(), 'top', 'top bar carries ▼ + "top"');
+  assert.equal(await fig.locator('.xfig-top, .xfig-knob-hint, .xfig-knob-grip').count(), 0, 'no ▼ marker, drag hint or grip (the tallest bar and its value lead)');
+  assert.equal(await fig.locator('.xfig-num, .xfig-card').count(), 0, 'no "Fig. n" and no card');
   const describedBy = await fig.getAttribute('aria-describedby');
   assert.ok((await page.locator(`#${describedBy}`).textContent()).startsWith('Bar chart'), 'alt text kept via aria-describedby');
   const live = await page.evaluate((sel) => {
@@ -78,10 +80,14 @@ export default async function attention({ page, baseURL, shot, assert, cvd, axe 
   await page.mouse.down();
   const before = await state(page);
   await page.mouse.move(await trackX(page, 0.3), y, { steps: 4 });
+  // The readout jumps; the bars settle in 250 ms.
+  assert.notEqual((await state(page)).readout, before.readout, 'readout changes at once mid-drag');
+  await page.waitForTimeout(400);
   const mid = await state(page);
-  assert.ok(Math.abs(mid.catShare - topWeight(mid.readout)) < 0.01, `bars and readout agree mid-drag: ${JSON.stringify(mid)}`);
+  assert.ok(Math.abs(mid.catShare - topWeight(mid.readout)) < 0.01, `bars and readout agree once settled mid-drag: ${JSON.stringify(mid)}`);
   await page.mouse.move(await trackX(page, 0.1), y, { steps: 6 });
   await page.mouse.up();
+  await page.waitForTimeout(400);
   const sharp = await state(page);
   assert.notEqual(sharp.readout, before.readout, 'readout changes while dragging');
   assert.ok(Math.abs(sharp.value - 0.1) <= 0.011, `knob near T = 0.1, got ${sharp.value}`);
@@ -137,6 +143,7 @@ export default async function attention({ page, baseURL, shot, assert, cvd, axe 
   await page.goto(`${baseURL}/s/attention`, { waitUntil: 'networkidle' });
   await fig.locator('.xfig-knob').waitFor();
   await fig.scrollIntoViewIfNeeded();
+  await page.waitForTimeout(300); // a figure below the fold enters once (250 ms)
   await assertHitAreas(page, assert, 390);
   assert.equal(await page.evaluate(() => document.documentElement.scrollWidth - innerWidth), 0, 'no horizontal scroll at 390 px');
   await page.evaluate(() => {
@@ -185,6 +192,7 @@ async function fig2Narrow(page, { baseURL, shot, assert }) {
   const fig = page.locator(FIG2);
   await fig.locator('.xfig-knob').waitFor();
   await fig.scrollIntoViewIfNeeded();
+  await page.waitForTimeout(300); // a figure below the fold enters once (250 ms)
   assert.deepEqual(await textOverlaps(page), [], 'no Fig 2 text overlaps at 320 px (default)');
   await fig.locator('.xfig-knob').focus();
   await page.keyboard.press('End');
@@ -219,6 +227,7 @@ async function fig2(page, { shot, assert, axe }) {
   const fig = page.locator(FIG2);
   await fig.locator('.xfig-knob').waitFor();
   await fig.scrollIntoViewIfNeeded();
+  await page.waitForTimeout(300); // a figure below the fold enters once (250 ms)
   const sw = fig.locator('[role="switch"]');
   assert.equal(await fig.locator('.xfig-readout').textContent(), 'score SD 2.02 top weight 0.57 entropy 1.85 bits');
   assert.equal(await sw.getAttribute('aria-checked'), 'false');
@@ -230,7 +239,7 @@ async function fig2(page, { shot, assert, axe }) {
   assert.ok(sd(unscaled[0]) < 1.5 && topWeight(unscaled[0]) < 0.5, `d_k = 1 is soft: ${unscaled[0]}`);
   assert.ok(sd(unscaled[1]) > 6 && sd(unscaled[1]) < 10, `SD ≈ √64 = 8: ${unscaled[1]}`);
   assert.equal(unscaled[2], 'score SD 23.95 top weight 1.00 entropy 0.00 bits', 'SD ≈ √512 and one-hot at 512');
-  assert.deepEqual(await fig.locator('.xfig-legend text').allTextContents(), ['this setting', 'with ÷√d_k']);
+  assert.deepEqual(await fig.locator('.xfig-legend text').allTextContents(), ['this setting', 'with ÷√dk']);
   await page.waitForTimeout(200);
   await shot('attention-fig2-unscaled');
 
@@ -242,7 +251,7 @@ async function fig2(page, { shot, assert, axe }) {
   assert.equal(await sw.getAttribute('aria-checked'), 'false', 'Enter turns it off');
   await page.keyboard.press('Space');
   assert.equal(await fig.locator('.xfig-readout').textContent(), 'score SD 1.06 top weight 0.61 entropy 2.00 bits');
-  assert.deepEqual(await fig.locator('.xfig-legend text').allTextContents(), ['this setting', 'without ÷√d_k']);
+  assert.deepEqual(await fig.locator('.xfig-legend text').allTextContents(), ['this setting', 'without ÷√dk']);
 
   // Scaled: the SD stays near 1 across the whole drag.
   const scaled = await dragDk(page, [1, 8, 64, 512]);

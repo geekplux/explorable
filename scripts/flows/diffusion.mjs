@@ -52,9 +52,9 @@ const textProblems = (page) =>
     return hits;
   }, FIG);
 
-/** Every control's pointer target is ≥ 44 × 44 CSS px. */
+/** Every pointer target is ≥ 44 × 44 CSS px (the knob's native twin is for assistive tech, out of sight). */
 async function assertHitAreas(page, assert, width) {
-  for (const sel of ['.xfig-knob-hit', '.xfig-track-hit', 'input[type=range]', '.xfig-data-toggle']) {
+  for (const sel of ['.xfig-knob-hit', '.xfig-track-hit', '.xfig-data-toggle']) {
     const box = await page.locator(`${FIG} ${sel}`).boundingBox();
     assert.ok(box.width >= 44 && box.height >= 44, `${sel} hit area ${box.width}×${box.height} ≥ 44 px at ${width} px`);
   }
@@ -65,6 +65,7 @@ async function open(page, baseURL) {
   const fig = page.locator(FIG);
   await fig.locator('.xfig-knob').waitFor();
   await fig.scrollIntoViewIfNeeded();
+  await page.waitForTimeout(300); // a figure below the fold enters once (250 ms)
   return fig;
 }
 
@@ -120,10 +121,11 @@ export default async function diffusion({ page, baseURL, shot, assert, cvd, axe 
   await page.mouse.up();
   const dragged = Number(await value(page));
   assert.ok(Math.abs(dragged - 250) <= 10, `drag lands near t = 250 (${dragged})`);
+  await page.waitForTimeout(400); // the bars settle over 250 ms after the last move
   assert.notEqual(await heights(page), before, 'dragging morphs the histogram');
   assert.notEqual(await readout(page), READ_T1000, 'the readout follows the drag');
 
-  // The native range by keyboard stays in sync with the knob.
+  // The knob's native twin (hidden, out of the Tab order, for assistive tech) stays in sync with it.
   await fig.locator('#fig-histogram-t').focus();
   await page.keyboard.press('Home');
   await page.keyboard.press('PageUp');
@@ -141,6 +143,8 @@ export default async function diffusion({ page, baseURL, shot, assert, cvd, axe 
   await fig.locator('.xfig-data-toggle').click();
 
   await fig.scrollIntoViewIfNeeded();
+
+  await page.waitForTimeout(300); // a figure below the fold enters once (250 ms)
   await knob.focus();
   await press(page, 'PageUp', 7);
   await settled(page);
@@ -207,6 +211,7 @@ async function openSN(page, baseURL) {
   const fig = page.locator(SN);
   await fig.locator('.xfig-knob').waitFor();
   await fig.scrollIntoViewIfNeeded();
+  await page.waitForTimeout(300); // a figure below the fold enters once (250 ms)
   await snSettled(page);
   return fig;
 }
