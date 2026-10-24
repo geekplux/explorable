@@ -17,8 +17,10 @@ async function check(page, route, viewportName) {
   const where = `${route} @ ${viewportName}`;
   await page.locator('main h1').first().waitFor({ timeout: 10_000 });
   if (route === '/') {
-    const cards = await page.locator('.card a').count();
-    if (cards < 3) problems.push(`${where}: expected ≥ 3 sample cards, found ${cards}`);
+    const rows = await page.locator('#essays a.essay-row').count();
+    if (rows < 3) problems.push(`${where}: expected ≥ 3 essay rows, found ${rows}`);
+    const slider = await page.locator('.hero-fig .xfig-knob[role="slider"][tabindex="0"]').count();
+    if (slider !== 1) problems.push(`${where}: the hero figure has no live keyboard slider`);
   } else if (route.startsWith('/s/')) {
     const figures = await page.locator('figure.xfig').count();
     const takeaway = await page.locator('.essay-takeaway').count();

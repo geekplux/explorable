@@ -47,7 +47,7 @@ async function fits(page, assert, what) {
 const focusedId = (page) => page.evaluate(() => document.activeElement?.id || document.activeElement?.tagName);
 
 async function submit(page, url = URL_IN) {
-  const input = page.getByLabel('Paste an arXiv or blog link, or type a topic');
+  const input = page.getByLabel('Paste a link or type a topic');
   await input.fill('');
   await input.focus();
   await page.keyboard.insertText(url); // what a paste does
@@ -61,15 +61,15 @@ export default async function urlFlow(ctx) {
   const aborted = [];
   page.on('requestfailed', (req) => req.url().includes('/api/explain') && aborted.push(req.failure()?.errorText));
 
-  // Empty state: placeholder and three Try chips.
+  // Empty state: the placeholder, and no Try chips (the essay index lists the samples).
   await page.goto(`${baseURL}/`, { waitUntil: 'networkidle' });
   assert.equal(await page.locator('.url-row input').getAttribute('placeholder'), URL_IN);
-  assert.equal(await page.locator('.try .chip').count(), 3, 'three Try chips');
+  assert.equal(await page.locator('.try, .chip').count(), 0, 'no Try chips');
   await shot('input-empty');
 
   // Paste + Enter → /x?url=, skeleton, stages in order, then the AI result.
   await mock(page, 200, { ok: true, doc: aiDoc, cache: 'miss', mode: 'ai' }, 6500);
-  await page.getByLabel('Paste an arXiv or blog link, or type a topic').focus();
+  await page.getByLabel('Paste a link or type a topic').focus();
   await page.keyboard.insertText(URL_IN);
   await shot('input-typed');
   await page.evaluate(() => {
@@ -123,7 +123,7 @@ export default async function urlFlow(ctx) {
   assert.equal(await page.locator('.essay-provenance').textContent(), 'Matched to a built-in explainer');
   await shot('result-match');
 
-  // Every error code: own copy, focused heading, three sample mini cards.
+  // Every error code: own copy, focused heading, three sample rows.
   const headings = new Set();
   for (const [code, status] of [...Object.entries(ERRORS), ['NETWORK', 0]]) {
     await mock(page, status, code === 'NETWORK' ? 'network' : { ok: false, error: { code, message: 'm', hint: code === 'AI_UNAVAILABLE' ? ROPE : 'h' } });
@@ -131,7 +131,7 @@ export default async function urlFlow(ctx) {
     await page.locator(`.error-panel[data-code="${code}"]`).waitFor();
     assert.equal(await focusedId(page), 'error-heading', `${code}: heading takes focus`);
     assert.equal(await page.locator('#error-heading').getAttribute('tabindex'), '-1');
-    assert.equal(await page.locator('.error-state .mini-card').count(), 3, `${code}: three sample mini cards`);
+    assert.equal(await page.locator('.error-state a.essay-row').count(), 3, `${code}: three sample rows`);
     headings.add(await page.locator('#error-heading').textContent());
     if (code === 'FETCH_FAILED') {
       await noBlocking(ctx, 'error');
@@ -176,7 +176,7 @@ export default async function urlFlow(ctx) {
 
   // Back and forward between /, /s and /x.
   await mock(page, 200, { ok: true, doc: aiDoc, cache: 'hit', mode: 'ai' });
-  await page.locator('.card-title a').first().click();
+  await page.locator('#essays a.essay-row').first().click();
   await page.waitForURL(`${baseURL}/s/attention`);
   await page.goBack();
   await page.waitForURL(`${baseURL}/`);

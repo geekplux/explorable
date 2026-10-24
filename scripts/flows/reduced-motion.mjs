@@ -20,6 +20,15 @@ async function watch(page, ms) {
 
 export default async function reducedMotion({ page, baseURL, shot, assert, axe }) {
   await page.emulateMedia({ reducedMotion: 'reduce' });
+  // Home: hovering an essay row leaves its thumbnail still.
+  await page.goto(`${baseURL}/`, { waitUntil: 'networkidle' });
+  const row = page.locator('#essays a.essay-row').first();
+  const cx = () => row.locator('.th-handle').getAttribute('cx');
+  const still = await cx();
+  await row.hover();
+  await page.waitForTimeout(300);
+  assert.equal(await cx(), still, 'reduced motion: the row thumbnail does not play');
+
   await page.goto(`${baseURL}/s/attention`, { waitUntil: 'networkidle' });
   await page.locator(`${FIG} .xfig-knob`).waitFor();
   await page.locator(FIG).scrollIntoViewIfNeeded();
