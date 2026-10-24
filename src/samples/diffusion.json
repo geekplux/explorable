@@ -179,7 +179,7 @@
       "id": "snr",
       "kind": "math",
       "formula": "SNR = ᾱ_t / (1 − ᾱ_t)",
-      "plain": "The signal’s share of the variance divided by the noise’s share; in decibels it is 10 times its logarithm, so a ratio of 1 is 0 dB."
+      "plain": "The signal’s share of the variance divided by the noise’s share; in decibels it is 10 times its base-10 logarithm, so a ratio of 1 is 0 dB."
     },
     {
       "id": "loss",
