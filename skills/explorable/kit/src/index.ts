@@ -4,7 +4,7 @@
  * @packageDocumentation
  */
 
-/** ExplorableDoc v1 schema, its inferred types and `parseDoc`. */
+/** ExplorableDoc v1 and v2 schema, its inferred types and `parseDoc`. */
 export {
   ExplorableDocSchema,
   FIGURE_KINDS,
@@ -16,10 +16,17 @@ export {
   type ExprParam,
   type FigureKind,
   type FigureSpec,
+  type MathNote,
+  type Note,
   type ParseResult,
   type Provenance,
   type RegistryModelRef,
+  type SourceNote,
 } from './doc/schema.ts';
+/** Notes (v2): the `[[id]]` marker syntax, its checks, and the body-text formula check shared with the Worker. */
+export { NOTE_MARK, noteIssues, noteRefs, type NoteIssue } from './doc/notes.ts';
+export { bodyHasFormula, findFormula } from './doc/formula.ts';
+export { hydrateNotes } from './runtime/notes.ts';
 /** Static, escaped essay HTML and the inline formatter it uses. */
 export { authorLine, essayHtml, hydrateFigures } from './doc/essay.ts';
 /** Live figure runtime: mount one figure into a shell, and the built-in models. */

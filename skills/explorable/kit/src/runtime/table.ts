@@ -27,7 +27,7 @@ export function createDataTable(id: string, caption: string, columns: readonly C
   wrap.append(table);
   const cap = table.createCaption();
   cap.id = `${id}-caption`;
-  cap.textContent = caption;
+  setMath(cap, caption, { vars });
   const head = table.createTHead().insertRow();
   const body = table.createTBody();
   let shown = '';
@@ -62,7 +62,7 @@ export function createDataTable(id: string, caption: string, columns: readonly C
     setColumns,
     /** A one-line summary after the caption, e.g. the current verdict. */
     setNote(note: string) {
-      cap.textContent = note ? `${caption} — ${note}` : caption;
+      setMath(cap, note ? `${caption} — ${note}` : caption, { vars });
     },
     /** Replace the body rows; the `rowHeader` cell of each row is a row header. */
     setRows(rows: readonly (readonly string[])[]) {
@@ -72,7 +72,7 @@ export function createDataTable(id: string, caption: string, columns: readonly C
           cells.forEach((text, i) => {
             const cell = document.createElement(i === rowHeader ? 'th' : 'td');
             if (i === rowHeader) cell.setAttribute('scope', 'row');
-            cell.textContent = text;
+            setMath(cell, text, { vars });
             tr.append(cell);
           });
           return tr;
