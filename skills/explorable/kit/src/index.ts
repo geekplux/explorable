@@ -35,5 +35,5 @@ export { getModel, registerModel, searchModels, type ModelDef, type OutputDef, t
 export { mulberry32, type Rng } from './rng.ts';
 export { format, type Format } from './format.ts';
 /** Palette tokens and colour-vision checks. */
-export { PALETTE, SERIES, SURFACES, type Token } from './color/palette.ts';
+export { PALETTE, PALETTE_DARK, PALETTES, RADIX, SERIES, SERIES_DARK, SURFACES, SURFACES_DARK, type Scheme, type Token } from './color/palette.ts';
 export { contrast, deltaE, seriesFailures, simulate, type Vision } from './color/cvd.ts';

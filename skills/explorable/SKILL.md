@@ -53,7 +53,7 @@ Two ways this fails:
    mkdir -p /tmp/explorable-draft
    cp examples/newton-cooling/explorable.json /tmp/explorable-draft/explorable.json
    ```
-4. **Build it.** `build.mjs` validates the spec and writes `index.html` next to it (`--out page.html` to choose the path, `--no-fonts` to skip the inlined Newsreader font, about 56 KB smaller).
+4. **Build it.** `build.mjs` validates the spec and writes `index.html` next to it (`--out page.html` to choose the path, `--no-fonts` to skip the inlined Source Serif 4 font, about 44 KB smaller).
    ```sh
    node scripts/build.mjs /tmp/explorable-draft/explorable.json
    ```

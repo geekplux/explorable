@@ -1,9 +1,9 @@
-Copyright 2018 The Fraunces Project Authors (https://github.com/undercasetype/Fraunces)
-Copyright 2020 The Newsreader Project Authors (http://github.com/productiontype/Newsreader)
+Copyright 2014-2021 Adobe Systems Incorporated (http://www.adobe.com/), with Reserved Font Name "Source".
+Copyright 2024 The Geist Project Authors (https://github.com/vercel/geist-font)
 Copyright 2022 The Noto Project Authors (https://github.com/notofonts/latin-greek-cyrillic)
 Copyright 2001-2021 The STIX Fonts Project Authors (https://github.com/stipub/stixfonts), with Reserved Font Name "TM Math". STIX Fonts™ is a trademark of The Institute of Electrical and Electronics Engineers, Inc.
 
-The subsets "Explorable Greek" (from Noto Serif) and "Explorable Math" (from STIX Two Math) are Modified Versions renamed as required by the licence.
+The subsets "Explorable Serif" (from Source Serif 4), "Explorable Greek" (from Noto Serif) and "Explorable Math" (from STIX Two Math) are Modified Versions renamed as required by the licence. "Geist" and "Geist Mono" are Latin subsets of the originals (no Reserved Font Name).
 
 This Font Software is licensed under the SIL Open Font License, Version 1.1.
 This license is copied below, and is also available with a FAQ at:

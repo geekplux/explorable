@@ -139,30 +139,45 @@ export function auditDoc(input) {
   return figures.flatMap((fig) => auditFigure(fig).map((p) => `figure "${fig.id}": ${p}`));
 }
 
-/** Last value of each `--token: #hex` in the CSS (the cascade winner in one :root). */
-const tokens = (css) => Object.fromEntries([...css.matchAll(/--([\w-]+)\s*:\s*(#[0-9a-f]{6})\b/gi)].map((m) => [m[1], m[2].toUpperCase()]));
+const DARK = /@media\s*\(\s*prefers-color-scheme\s*:\s*dark\s*\)\s*\{((?:[^{}]*\{[^{}]*\})*[^{}]*)\}/gi;
+const decls = (css) => [...css.matchAll(/--([\w-]+)\s*:\s*([^;}]+)/g)].map((m) => [m[1], m[2].trim()]);
 
-/** Palette problems, measured with the kit's colour-vision and contrast functions. */
+/** Each colour token as the cascade resolves it in one scheme (last value wins; `var(--x)` chains followed to a #hex). */
+function tokens(css, dark = false) {
+  const vars = Object.fromEntries([...decls(css.replace(DARK, '')), ...(dark ? [...css.matchAll(DARK)].flatMap((m) => decls(m[1])) : [])]);
+  const hex = (name, depth = 0) => {
+    const v = vars[name];
+    const ref = v && depth < 8 && /^var\(\s*--([\w-]+)\s*\)$/.exec(v);
+    if (ref) return hex(ref[1], depth + 1);
+    return v && /^#[0-9a-f]{6}$/i.test(v) ? v.toUpperCase() : undefined;
+  };
+  return Object.fromEntries(Object.keys(vars).flatMap((k) => (hex(k) ? [[k, hex(k)]] : [])));
+}
+
+/** Palette problems, measured with the kit's colour-vision and contrast functions, in the light and (if present) dark scheme. */
 function auditPalette(css) {
-  const t = tokens(css);
   const out = [];
-  const surfaces = ['paper', 'well'].filter((s) => t[s]);
-  if (surfaces.length < 2) out.push('the --paper and --well surface tokens are missing');
-  const series = Object.keys(t).filter((k) => /^(series-\d+|live)$/.test(k));
-  if (series.length > 3) out.push(`${series.length} hue-coded series (${series.map((k) => `--${k}`).join(', ')}); at most 3 pass the colour-vision checks, so encode the rest with line style or pattern`);
-  for (const f of kit.seriesFailures(series.map((k) => t[k]))) out.push(`series ${f.a} and ${f.b} are too close for ${f.vision} vision (ΔE ${f.deltaE.toFixed(1)})`);
-  const need = [...series.map((k) => [k, 3]), ...['ink', 'ink-2', 'live-ink'].filter((k) => t[k]).map((k) => [k, 4.5])];
-  for (const [k, min] of need) {
-    for (const s of surfaces) {
-      const c = kit.contrast(t[k], t[s]);
-      if (c < min) out.push(`--${k} on --${s} has contrast ${c.toFixed(2)}:1; it needs ${min}:1`);
+  for (const dark of /prefers-color-scheme\s*:\s*dark/i.test(css) ? [false, true] : [false]) {
+    const t = tokens(css, dark);
+    const tag = dark ? ' in the dark scheme' : '';
+    const surfaces = ['paper', 'well'].filter((s) => t[s]);
+    if (surfaces.length < 2) out.push(`the --paper and --well surface tokens are missing${tag}`);
+    const series = Object.keys(t).filter((k) => /^(series-\d+|live)$/.test(k));
+    if (series.length > 3) out.push(`${series.length} hue-coded series (${series.map((k) => `--${k}`).join(', ')}); at most 3 pass the colour-vision checks, so encode the rest with line style or pattern`);
+    for (const f of kit.seriesFailures(series.map((k) => t[k]))) out.push(`series ${f.a} and ${f.b} are too close for ${f.vision} vision (ΔE ${f.deltaE.toFixed(1)})${tag}`);
+    const need = [...series.map((k) => [k, 3]), ...['ink', 'ink-2', 'live-ink', 'link'].filter((k) => t[k]).map((k) => [k, 4.5])];
+    for (const [k, min] of need) {
+      for (const s of surfaces) {
+        const c = kit.contrast(t[k], t[s]);
+        if (c < min) out.push(`--${k} on --${s} has contrast ${c.toFixed(2)}:1${tag}; it needs ${min}:1`);
+      }
     }
   }
   const css2 = css.replace(/url\(data:[^)]*\)/g, '').replace(/--[\w-]+\s*:\s*#[0-9a-f]{6}\b/gi, '');
   // Fully transparent (#0000, #rrggbb00: the minifier's `transparent`) is not a colour.
   const raw = new Set([...css2.matchAll(/[:\s,(](#[0-9a-f]{3,8})\b/gi)].map((m) => m[1]).filter((c) => !/^#(?:[0-9a-f]{3}0|[0-9a-f]{6}00)$/i.test(c)));
   if (raw.size) out.push(`colours used outside the palette tokens: ${[...raw].join(', ')}`);
-  return out;
+  return [...new Set(out)];
 }
 
 /** Problems with the page itself: landmarks, title, network, motion and palette. */

@@ -179,10 +179,15 @@ describe('audit: failing fixtures', () => {
     fails(auditSpec(doc), /options\.colors sets a colour/);
   });
   it('series colours too close under colour-vision deficiency', () => {
-    fails(auditHtml(page().replace('--series-2:#0f8a6e', '--series-2:#2a55c4')), /too close for (normal|protan|deutan|tritan) vision/);
+    fails(auditHtml(page().replace('--series-2:var(--sand-12)', '--series-2:#3a5fd0')), /too close for (normal|protan|deutan|tritan) vision/);
   });
   it('low-contrast text token', () => {
-    fails(auditHtml(page().replace('--ink-2:#5a554b', '--ink-2:#c8c2b5')), /--ink-2 on --paper has contrast/);
+    fails(auditHtml(page().replace('--ink-2:var(--sand-11)', '--ink-2:#c8c2b5')), /--ink-2 on --paper has contrast/);
+  });
+  it('low-contrast token in the dark scheme only', () => {
+    const problems = auditHtml(page().replace('--sand-11:#b5b3ad', '--sand-11:#3b3a37'));
+    fails(problems, /--ink-2 on --paper has contrast [\d.]+:1 in the dark scheme/);
+    assert.ok(!problems.some((p) => /--ink-2 on --paper has contrast [\d.]+:1;/.test(p)), 'light is unaffected');
   });
   it('raw colour outside the tokens', () => {
     fails(auditHtml(page().replace('</style>', '.x{fill:#ff00aa}</style>')), /colours used outside the palette tokens: #ff00aa/);
