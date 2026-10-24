@@ -64,7 +64,7 @@
   --shell: 60rem;
   --gutter: clamp(16px, 8.3vw, 120px);
 }
-@media (prefers-color-scheme: dark) {
+@media screen and (prefers-color-scheme: dark) {
   :root {
     --sand-1: #111110; --sand-2: #191918; --sand-3: #222221; --sand-4: #2a2a28; --sand-5: #31312e; --sand-6: #3b3a37;
     --sand-7: #494844; --sand-8: #62605b; --sand-9: #6f6d66; --sand-10: #7c7b74; --sand-11: #b5b3ad; --sand-12: #eeeeec;

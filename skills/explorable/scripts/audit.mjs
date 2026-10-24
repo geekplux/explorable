@@ -157,7 +157,7 @@ export function docWarnings(input) {
   });
 }
 
-const DARK = /@media\s*\(\s*prefers-color-scheme\s*:\s*dark\s*\)\s*\{((?:[^{}]*\{[^{}]*\})*[^{}]*)\}/gi;
+const DARK = /@media\s*(?:screen\s+and\s*)?\(\s*prefers-color-scheme\s*:\s*dark\s*\)\s*\{((?:[^{}]*\{[^{}]*\})*[^{}]*)\}/gi;
 const decls = (css) => [...css.matchAll(/--([\w-]+)\s*:\s*([^;}]+)/g)].map((m) => [m[1], m[2].trim()]);
 
 /** Each colour token as the cascade resolves it in one scheme (last value wins; `var(--x)` chains followed to a #hex). */

@@ -6,7 +6,7 @@ import { PALETTES, RADIX, type Scheme } from '../color/palette.ts';
 const css = readFileSync(new URL('./tokens.css', import.meta.url), 'utf8');
 const kitCss = readFileSync(new URL('./kit.css', import.meta.url), 'utf8');
 
-const DARK = /@media \(prefers-color-scheme: dark\) \{([\s\S]*)\}\s*$/;
+const DARK = /@media screen and \(prefers-color-scheme: dark\) \{([\s\S]*)\}\s*$/;
 const decls = (block: string) => Object.fromEntries([...block.matchAll(/--([\w-]+):\s*([^;]+);/g)].map((m) => [m[1], m[2]?.trim() ?? '']));
 
 /** Custom properties as the cascade sees them in one scheme: the dark block overrides :root. */

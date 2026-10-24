@@ -3,7 +3,8 @@
 // the fonts under a cache name hashed from the build, so a new deploy gets a new
 // cache. Matching ignores Vary (static files; vite preview adds Vary: Origin).
 // Navigations are network-first with the cached shell as the offline
-// fallback; files are cache-first. `/api/*` and other origins are never touched.
+// fallback; files are cache-first. `/api/*`, the sample PDFs (`/pdf/*`, downloaded on demand, never precached)
+// and other origins are never touched.
 import { createHash } from 'node:crypto';
 import { existsSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -12,7 +13,7 @@ import { pathToFileURL } from 'node:url';
 const SW = 'sw.js';
 /** Not precached: the shell is cached as `/` (Static Assets redirects /index.html), and platform files. */
 const SKIP = new Set(['index.html', SW, '_headers', '_redirects', '.assetsignore']);
-const SKIP_EXT = /\.(?:map|txt)$/;
+const SKIP_EXT = /\.(?:map|txt|pdf)$/;
 
 /** Every file under `dir`, as sorted posix paths relative to it. @returns {string[]} */
 export function listFiles(dir, prefix = '') {
@@ -53,7 +54,7 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (event) => {
   const { request } = event;
   const url = new URL(request.url);
-  if (request.method !== 'GET' || url.origin !== self.location.origin || url.pathname.startsWith('/api/')) return;
+  if (request.method !== 'GET' || url.origin !== self.location.origin || ['/api/', '/pdf/'].some((p) => url.pathname.startsWith(p))) return;
   if (request.mode === 'navigate') {
     event.respondWith(fetch(request).catch(() => caches.match('/', { cacheName: CACHE, ignoreVary: true }).then((shell) => shell || Response.error())));
     return;

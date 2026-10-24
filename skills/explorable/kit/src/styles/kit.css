@@ -216,4 +216,23 @@
   .xfig[data-enter] { transition: opacity var(--dur) var(--ease), transform var(--dur) var(--ease); }
   .xfig[data-enter=""] { opacity: 0; transform: scale(.985); }
 }
-@media print { .xfig[data-enter] { opacity: 1; transform: none; transition: none; } }
+/* Print (DESIGN §8, board Print): white paper, 14px text, figures whole and in the state they were left in, with a state
+   line; open math notes print, closed ones and source cards do not; no buttons. */
+.xfig-state { display: none; }
+@media print {
+  :root { color-scheme: light; }
+  html, body { background: none; }
+  .essay { max-width: none; font-size: var(--text-14); }
+  .essay .essay-dek { font-size: var(--text-14); }
+  .essay h2 { margin-bottom: 8px; font-size: var(--text-14); break-after: avoid; }
+  .essay-section, .essay-section:first-of-type, .essay-takeaway { margin-top: 28px; }
+  .essay-section > p + p { margin-top: 10px; }
+  .essay .xfig { margin: 24px 0 0; break-inside: avoid; }
+  .xfig-drawing:has(> .xfig-bars) { height: 240px; }
+  .xfig + * { margin-top: 24px; }
+  .xfig[data-enter] { opacity: 1; transform: none; transition: none; }
+  .xfig-state { display: block; margin: 4px 0 0; font: 400 var(--text-12)/1.5 var(--font-ui); color: var(--text-2); }
+  .xfig-state:empty, .xfig-controls, .xfig-data-toggle, .xnote-mk, .xnote-card { display: none; }
+  .xnote-src { text-decoration: none; }
+  .xnote { break-inside: avoid; }
+}

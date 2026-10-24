@@ -10,3 +10,8 @@
 /assets/*
   ! Cache-Control
   Cache-Control: public, max-age=31536000, immutable
+
+# The sample PDFs keep their names across deploys (`pnpm build:pdf`), so they revalidate after an hour.
+/pdf/*
+  ! Cache-Control
+  Cache-Control: public, max-age=3600

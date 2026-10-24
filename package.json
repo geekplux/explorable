@@ -19,6 +19,7 @@
     "build:kit": "vite build -c vite.kit.config.ts",
     "build:examples": "node scripts/build-examples.mjs",
     "build:images": "node scripts/social-image.mjs",
+    "build:pdf": "node scripts/build-pdf.mjs",
     "preview": "vite preview",
     "smoke": "node scripts/smoke.mjs",
     "e2e": "node scripts/e2e.mjs",

@@ -17,7 +17,7 @@ import { exprCurveModel } from '../models/expr-curve.ts';
 import { softmaxTemperature } from '../models/softmax-temperature.ts';
 import { fillTemplate, getModel, type FigureKind, type ModelDef, type ParamDef } from '../registry.ts';
 import { createAnnouncer } from './announce.ts';
-import { createChoice, createRange, createToggle, fromPos, snap, toPos, varsOf } from './controls.ts';
+import { createChoice, createRange, createToggle, fromPos, snap, stateText, toPos, varsOf } from './controls.ts';
 import type { Handle } from './handle.ts';
 import { follow, reducedMotion, settle } from './motion.ts';
 import { createDataTable, type Column } from './table.ts';
@@ -74,6 +74,8 @@ const el = (tag: string, cls: string) => Object.assign(document.createElement(ta
 export interface MountOptions {
   /** Override `prefers-reduced-motion` detection (tests). */
   reducedMotion?: boolean;
+  /** Where the interactive version lives ("explorable.geekplux.com/s/attention"): the print state line links to `<link>#<figure id>`. */
+  link?: string;
 }
 
 /** An `expr-curve` spec's own model, or undefined if one of its expressions is invalid. */
@@ -117,7 +119,10 @@ export function mountFigure(stage: HTMLElement, spec: FigureSpec, opts: MountOpt
   const spokenReadout = el('p', 'xfig-sr');
   const desc = el('p', 'xfig-sr');
   desc.id = `${spec.id}-desc`;
-  stage.append(drawing, row, foot, desc);
+  // Print only (kit.css): the state the figure is shown in, and where to drag it.
+  const state = el('p', 'xfig-state');
+  state.setAttribute('aria-hidden', 'true');
+  stage.append(drawing, row, foot, state, desc);
 
   const announcer = createAnnouncer(desc);
   // While a pointer drags (knob or native slider), announce only once input has rested (keys keep the 500 ms throttle).
@@ -163,6 +168,9 @@ export function mountFigure(stage: HTMLElement, spec: FigureSpec, opts: MountOpt
 
   const pos = (p: Params) => eased.map((c) => toPos(defs[c]!, p[c]!));
   function sync() {
+    const shownAt = stateText(defs, controls, target);
+    state.innerHTML = mathHtml(shownAt, { vars });
+    if (opts.link) state.append(`${shownAt ? ' ' : ''}Interactive version at ${opts.link}#${spec.id}`);
     for (const [name, r] of ranges) r.set(target[name]!);
     if (view.handle) view.handle.knob.set(target[view.handle.name]!);
   }
@@ -236,7 +244,7 @@ export function mountFigure(stage: HTMLElement, spec: FigureSpec, opts: MountOpt
       announcer.destroy();
       for (const t of ['pointerup', 'pointercancel'] as const) window.removeEventListener(t, endDrag, { capture: true });
       view.destroy();
-      for (const node of [drawing, row, foot, desc, data.wrap]) node.remove();
+      for (const node of [drawing, row, foot, state, desc, data.wrap]) node.remove();
       alt?.classList.remove('xfig-sr');
       figure.removeAttribute('data-enter');
       figure.removeAttribute('aria-describedby');

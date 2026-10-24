@@ -1,4 +1,5 @@
 // @vitest-environment happy-dom
+import { statSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { essayHtml } from '@kit/doc/essay.ts';
 import { findFormula } from '@kit/doc/formula.ts';
@@ -64,6 +65,10 @@ describe('built-in samples', () => {
     expect(sourceChip({ kind: 'arxiv', url: 'https://arxiv.org/pdf/2006.11239v2', title: 't' })).toBe('arXiv 2006.11239');
     expect(sourceChip({ kind: 'blog', url: 'https://llimllib.github.io/bloomfilter-tutorial/', title: 't' })).toBe('llimllib.github.io');
     expect(sourceChip({ kind: 'concept', title: 'Newton cooling' })).toBe('Newton cooling');
+  });
+
+  it('each has a committed PDF (pnpm build:pdf) of at most 600 KB', () => {
+    for (const { id } of samples) expect(statSync(`public/pdf/${id}.pdf`).size).toBeLessThanOrEqual(600 * 1024);
   });
 
   it('counts sections and figures for the index meta line', () => {

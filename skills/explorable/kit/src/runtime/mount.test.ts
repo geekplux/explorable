@@ -131,6 +131,21 @@ describe('hydrateFigures: fig-temperature', () => {
     expect(knob().getAttribute('aria-valuenow')).toBe('0.05');
   });
 
+  it('keeps a print-only state line in step with T, linked to the interactive version when given a link', () => {
+    mount();
+    const state = $('#fig-temperature .xfig-state');
+    expect(state.innerHTML).toBe('Shown at <i>T</i> = 1.');
+    expect(state.getAttribute('aria-hidden')).toBe('true');
+    key(knob(), 'End');
+    expect(state.textContent).toBe('Shown at T = 5.');
+    destroy();
+    root.remove();
+    root.innerHTML = essayHtml(doc);
+    document.body.append(root);
+    destroy = hydrateFigures(root, doc, { reducedMotion: true, link: 'explorable.geekplux.com/s/attention' }).destroy;
+    expect($('.xfig-state').textContent).toBe('Shown at T = 1. Interactive version at explorable.geekplux.com/s/attention#fig-temperature');
+  });
+
   it('reads exactly "top weight 0.98 entropy 0.15 bits" at T = 0.25 (native slider)', () => {
     mount();
     const input = $<HTMLInputElement>('input[type=range]');

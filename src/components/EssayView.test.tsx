@@ -57,6 +57,32 @@ describe('EssayView', () => {
     host.remove();
   });
 
+  it('ends the byline with "PDF": a sample downloads its file, any other essay opens the print dialog', () => {
+    vi.spyOn(Element.prototype, 'scrollIntoView').mockImplementation(() => {});
+    history.replaceState(null, '', '/s/attention');
+    const host = document.body.appendChild(document.createElement('div'));
+    const root = createRoot(host);
+    act(() => root.render(<EssayView doc={getSample('attention')!} />));
+    const link = host.querySelector<HTMLAnchorElement>('.essay-byline-end a.essay-pdf')!;
+    expect([link.getAttribute('href'), link.hasAttribute('download'), link.getAttribute('aria-label'), link.textContent]).toEqual(['/pdf/attention.pdf', true, 'Download PDF', 'PDF']);
+    expect(host.querySelector('#fig-temperature .xfig-state')?.textContent).toBe('Shown at T = 1. Interactive version at explorable.geekplux.com/s/attention#fig-temperature');
+    expect(document.documentElement.style.getPropertyValue('--print-url')).toBe('"explorable.geekplux.com/s/attention"');
+    // An essay from a pasted link (not a built-in sample object): print, with the result page's address.
+    history.replaceState(null, '', '/x?url=https%3A%2F%2Fexample.com%2Fpost');
+    const print = vi.fn<() => void>();
+    vi.stubGlobal('print', print);
+    act(() => root.render(<EssayView doc={{ ...getSample('attention')! }} />));
+    const button = host.querySelector<HTMLButtonElement>('.essay-byline-end button.essay-pdf')!;
+    expect([button.getAttribute('aria-label'), host.querySelectorAll('.essay-pdf').length]).toEqual(['Print or save as PDF', 1]);
+    act(() => button.click());
+    expect(print).toHaveBeenCalledOnce();
+    expect(host.querySelector('#fig-scaling .xfig-state')?.textContent).toBe('Shown at dk = 4, divide by √dk off. Interactive version at explorable.geekplux.com/x?url=https://example.com/post#fig-scaling');
+    act(() => root.unmount());
+    expect(document.documentElement.style.getPropertyValue('--print-url')).toBe('');
+    vi.unstubAllGlobals();
+    host.remove();
+  });
+
   it('a contents link moves focus to its heading', () => {
     vi.spyOn(Element.prototype, 'scrollIntoView').mockImplementation(() => {});
     const host = document.body.appendChild(document.createElement('div'));

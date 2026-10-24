@@ -47,3 +47,22 @@ export const valueOnly = (def: ParamDef, v: number) => `${showValue(def, v)}${de
 export const spoken = (def: ParamDef) => def.spoken ?? def.label;
 /** "temperature 1.00" (plus the unit in words, if any) for aria-valuetext. */
 export const valueText = (def: ParamDef, v: number) => `${spoken(def)} ${valueOnly(def, v)}`;
+
+/** A choice or switch label inside a sentence: "Divide by √d_k" → "divide by √d_k" (an acronym such as "SNR" keeps its case). */
+const inSentence = (label: string) => (/^\p{Lu}\p{Ll}/u.test(label) ? label[0]!.toLowerCase() + label.slice(1) : label);
+
+/**
+ * The state a figure is shown in, for print (DESIGN §8): "Shown at d_k = 4, divide by √d_k off." Sliders as
+ * `symbol = value` (trailing zeros dropped), switches as on/off, choices by name. Math text: set it with `setMath`.
+ */
+export function stateText(defs: Readonly<Record<string, ParamDef>>, controls: readonly string[], values: Readonly<Record<string, number>>): string {
+  const parts = controls.flatMap((name) => {
+    const def = defs[name];
+    const v = values[name];
+    if (!def || v === undefined) return [];
+    if (def.control === 'toggle') return [`${inSentence(def.label)} ${v === def.max ? 'on' : 'off'}`];
+    if (def.control === 'choice') return [`${inSentence(def.label)} “${def.choices?.[v] ?? v}”`];
+    return [`${def.symbol ?? name} = ${Number(showValue(def, v))}`];
+  });
+  return parts.length ? `Shown at ${parts.join(', ')}.` : '';
+}
