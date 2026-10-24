@@ -34,9 +34,7 @@ export function EssayIndex({ docs = samples, thumbs = false, compact = false }: 
                 {/* Same formatter as the essay's h1, so the title view transition doesn't morph roman into italic. */}
                 <span className="essay-title" dangerouslySetInnerHTML={{ __html: formatInline(doc.title, essayVars(doc)) }} />
                 {!compact && (
-                  <span className="essay-dek">
-                    {doc.dek}
-                  </span>
+                  <span className="essay-dek" dangerouslySetInnerHTML={{ __html: formatInline(doc.dek, essayVars(doc)) }} />
                 )}
                 <span className="essay-meta">
                   <span className="essay-src">{sourceChip(doc.source)}</span>

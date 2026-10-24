@@ -62,7 +62,7 @@ Where the others win: a hand-built notebook by a skilled author is richer and mo
 
 - [x] Deployed (Workers Builds from `main`), and the live demo link, https://explorable.geekplux.com, is in the README and in these drafts.
 - [ ] Repository is public; the description and topics are set (explorable-explanations, interactive, visualization, react, vite, cloudflare-workers, agent-skill).
-- [ ] `docs/assets/social-preview.png` uploaded by hand in the repository settings (Settings → General → Social preview).
+- [ ] `public/social-preview.png` uploaded by hand in the repository settings (Settings → General → Social preview).
 - [ ] `ci/github-workflow.yml` moved to `.github/workflows/ci.yml` (needs a token with workflow scope) and green on `main`.
 - [ ] `pnpm check`, `pnpm build`, `pnpm smoke`, `pnpm e2e` and `pnpm build:examples` all pass on a fresh clone; the README quick start works as written, including the `npx degit` skill command.
 - [ ] Every sample opens on a phone, a desktop and with a screen reader; reduced motion checked.

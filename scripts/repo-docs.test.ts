@@ -190,23 +190,25 @@ describe('contributor docs', () => {
   it('README leads with the pitch, the hero image and the quick start', () => {
     const headings = readFileSync('README.md', 'utf8').split('\n').filter((l) => l.startsWith('## '));
     const top = readFileSync('README.md', 'utf8').split('## ')[0]!;
-    expect(top).toContain('docs/assets/hero.png');
+    expect(top).toContain('docs/assets/hero.webp');
     expect(top).toContain('Live demo: https://explorable.geekplux.com');
     expect(headings[0]).toBe('## Quick start');
   });
 
-  it.each([
-    ['docs/assets/hero.png', 400 * 1024],
-    ['docs/assets/social-preview.png', 1024 * 1024],
-  ] as const)('%s is a PNG within its size budget', (path, maxBytes) => {
-    const png = readFileSync(path);
-    expect(png.subarray(1, 4).toString()).toBe('PNG');
-    expect(png.length).toBeLessThan(maxBytes);
+  it('the README hero is a WebP within its size budget', () => {
+    const webp = readFileSync('docs/assets/hero.webp');
+    expect([webp.subarray(0, 4).toString(), webp.subarray(8, 12).toString()]).toEqual(['RIFF', 'WEBP']);
+    expect(webp.length).toBeLessThan(200 * 1024);
   });
 
-  it('the social preview is 1280 × 640', () => {
-    const png = readFileSync('docs/assets/social-preview.png');
+  it('the social preview is a 1280 × 640 PNG that the og:image tag names', () => {
+    const png = readFileSync('public/social-preview.png');
+    expect(png.subarray(1, 4).toString()).toBe('PNG');
+    expect(png.length).toBeLessThan(1024 * 1024);
     expect([png.readUInt32BE(16), png.readUInt32BE(20)]).toEqual([1280, 640]);
+    const html = readFileSync('index.html', 'utf8');
+    expect(html).toContain('<meta property="og:image" content="https://explorable.geekplux.com/social-preview.png" />');
+    expect(html).toContain('<meta name="twitter:card" content="summary_large_image" />');
   });
 
   it('LICENSE is MIT with the project copyright line', () => {

@@ -11,8 +11,8 @@ import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
 const SW = 'sw.js';
-/** Not precached: the shell is cached as `/` (Static Assets redirects /index.html), and platform files. */
-const SKIP = new Set(['index.html', SW, '_headers', '_redirects', '.assetsignore']);
+/** Not precached: the shell is cached as `/` (Static Assets redirects /index.html), platform files, and the social card (read by link previews, not the app). */
+const SKIP = new Set(['index.html', SW, '_headers', '_redirects', '.assetsignore', 'social-preview.png']);
 const SKIP_EXT = /\.(?:map|txt|pdf)$/;
 
 /** Every file under `dir`, as sorted posix paths relative to it. @returns {string[]} */

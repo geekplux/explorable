@@ -2,6 +2,8 @@ STATE: DONE
 
 explorable is **shipped and live** at https://explorable.geekplux.com. All 15 phases are merged to `main`. Cloudflare Workers Builds (Git integration) deploys `main` on every merge; nobody runs `wrangler deploy` by hand.
 
+The October 2026 redesign (docs/redesign/PLAN.md, 8 stacked PRs) is built and **awaiting Sean's review**. Nothing is merged; merging the stack to `main` deploys it.
+
 # Status
 
 - Live: https://explorable.geekplux.com (`/api/health` → `{"ok":true,"ai":true,"kv":true}`)
@@ -27,11 +29,30 @@ explorable is **shipped and live** at https://explorable.geekplux.com. All 15 ph
 | 14 | phase-14-readme-launch | https://github.com/geekplux/explorable/pull/15 | Merged |
 | 15 | phase-15-deploy-prep | https://github.com/geekplux/explorable/pull/16 | Merged, deployed (KV id: #17) |
 
+## Redesign 2026-10 (stacked PRs, each based on the previous branch)
+
+| # | Branch | PR | State |
+|---|---|---|---|
+| 1 | redesign-1-tokens | https://github.com/geekplux/explorable/pull/22 | Open, awaiting review |
+| 2 | redesign-2-logo-chrome | https://github.com/geekplux/explorable/pull/23 | Open, awaiting review |
+| 3 | redesign-3-home | https://github.com/geekplux/explorable/pull/24 | Open, awaiting review |
+| 4 | redesign-4-essay | https://github.com/geekplux/explorable/pull/26 | Open, awaiting review |
+| 5 | redesign-5-notes | https://github.com/geekplux/explorable/pull/27 | Open, awaiting review |
+| 6 | redesign-6-ai-plain | https://github.com/geekplux/explorable/pull/28 | Open, awaiting review |
+| 7 | redesign-7-pdf | https://github.com/geekplux/explorable/pull/29 | Open, awaiting review |
+| 8 | redesign-8-skill-docs | to be opened (skill, docs, README, social image) | Ready for review |
+
+Redesign follow-ups:
+
+- Check prompt p3 live with Workers AI on the PR 6 preview (only unit tests and fixtures have run it so far).
+- Firefox and Safari print without the PDF running head (CSS page-margin boxes are Chromium-only); the essay prints the same otherwise.
+- Delete the stale remote branch `redesign-1-foundation` (replaced by `redesign-1-tokens` and `redesign-2-logo-chrome`).
+- After merge, upload `public/social-preview.png` as the repository's social preview (Settings → General).
+
 ## Open items
 
 - Move `ci/github-workflow.yml` to `.github/workflows/` (needs a token with `workflow` scope).
-- Upload the social preview image in GitHub repo settings (manual).
 - Create issue labels `figure` and `sample` on GitHub (the issue forms apply them; `bug` exists by default).
 - Review docs/LAUNCH.md drafts; nothing has been posted.
 
-Last updated: 2026-10-21
+Last updated: 2026-10-24

@@ -1,3 +1,5 @@
+> **Superseded** on 2026-10-24 by [`docs/redesign/DESIGN.md`](../redesign/DESIGN.md): Radix Colors (sand, indigo, orange), Source Serif 4 and Geist, the spiral logo, and plain words with notes. This file is kept as the history of the first identity; where the two disagree, DESIGN.md wins.
+
 # Identity spec for Phase 2: "Field notebook, live ink"
 
 Written by `explorable-designer` on 2026-10-19 for `phase-2-design-system`. This spec confirms PLAN.md §4 and makes it implementable. **Where this file and PLAN §4 disagree, this file wins** (deltas listed in §0). Figure internals (bars, bits, histogram, curve, knobs that move) are Phase 4+ and are out of scope here, apart from the class names Phase 4 will fill in.

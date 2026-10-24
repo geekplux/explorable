@@ -25,8 +25,8 @@ The two worked examples that ship with the `/explorable` skill. They are the spe
 
 | Example | What it shows | Source | Spec |
 |---|---|---|---|
-| [How a Bloom filter says "maybe"](../skills/explorable/examples/bloom-filter/index.html) | a registry model (`bloom-filter`) with `bits` and `curve` figures | [Bloom Filters by Example](https://llimllib.github.io/bloomfilter-tutorial/) | [explorable.json](../skills/explorable/examples/bloom-filter/explorable.json) |
-| [Why coffee cools fast, then slowly](../skills/explorable/examples/newton-cooling/index.html) | `expr-curve`: a formula, two knobs and a half-life marker | Newton's law of cooling (a concept, no source page) | [explorable.json](../skills/explorable/examples/newton-cooling/explorable.json) |
+| [How a Bloom filter says "maybe"](../skills/explorable/examples/bloom-filter/index.html) | a registry model (`bloom-filter`) with `bits` and `curve` figures, four math notes and a source note | [Bloom Filters by Example](https://llimllib.github.io/bloomfilter-tutorial/) | [explorable.json](../skills/explorable/examples/bloom-filter/explorable.json) |
+| [Why coffee cools fast, then slowly](../skills/explorable/examples/newton-cooling/index.html) | `expr-curve`: a curve with knobs, a half-life marker and three math notes | Newton's law of cooling (a concept, no source page) | [explorable.json](../skills/explorable/examples/newton-cooling/explorable.json) |
 
 Rebuild and audit one:
 
