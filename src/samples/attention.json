@@ -35,7 +35,7 @@
         "id": "fig-temperature",
         "kind": "bars",
         "title": "Temperature sets how sharp the softmax is",
-        "caption": "The scores are fixed by hand; the softmax is computed live. Drag the temperature T and watch one word take over or the weights even out.",
+        "caption": "The scores are fixed by hand; the softmax is computed live. Drag the temperature T and watch how the word “sat” spreads its attention: one word takes over or the weights even out.",
         "alt": "Bar chart of how much attention the word “sat” pays to each word of “the cat sat on the mat” at temperature 1: cat 0.51, mat 0.17, sat 0.14, on 0.06, and each “the” 0.06. Lower temperatures sharpen the bars into a single spike on “cat”.",
         "model": {
           "id": "softmax-temperature",

@@ -10,8 +10,8 @@
 import { format } from '../format.ts';
 import { exprCurveOptions } from '../models/expr-curve.ts';
 import { fillTemplate, type ParamDef } from '../registry.ts';
-import { showValue, toPos } from '../runtime/controls.ts';
-import { createHandle, svgEl } from '../runtime/handle.ts';
+import { showValue, toPos, varsOf } from '../runtime/controls.ts';
+import { createHandle, setMath, svgEl } from '../runtime/handle.ts';
 import type { FigureMount, FigureView, Outputs, Params } from '../runtime/mount.ts';
 
 const nums = (v: unknown): number[] => (Array.isArray(v) ? v : []);
@@ -56,6 +56,8 @@ export const mountCurve: FigureMount = (el, { spec, model, setParam }) => {
   const xName = String(o.xParam ?? spec.controls[0]);
   if (!defs[xName]) throw new Error(`curve: x param "${xName}" is not a model param`);
   const xDef: ParamDef = defs[xName];
+  // One-letter parameters are variables in every label ("n", "k").
+  const vars = varsOf(xName, ...spec.controls);
   const labels = strs(o.seriesLabels);
   // Spoken forms for the plot's name, where a label has symbols a screen reader would mangle ("√ᾱ_t").
   const spokenLabels = strs(o.seriesSpoken);
@@ -102,6 +104,7 @@ export const mountCurve: FigureMount = (el, { spec, model, setParam }) => {
   }));
   const drop = svgEl(plot, 'path', { class: 'xfig-drop' });
   const atKnob = series.filter((d) => d.s > 0).map((d) => [d, svgEl(plot, 'path', { class: `xfig-marks xfig-s${d.s}` })] as const);
+  const endRaw: string[] = [];
   const endLabels = series.map((d) => svgEl(plot, 'text', { class: d.ref ? 'xfig-ref-label' : 'xfig-series-label', 'text-anchor': 'end' }));
   const legendText = series.map((d) => {
     const li = legend.appendChild(document.createElement('li'));
@@ -151,7 +154,7 @@ export const mountCurve: FigureMount = (el, { spec, model, setParam }) => {
       svgEl(axis, 'path', { class: i ? 'xfig-grid' : 'xfig-baseline', d: `M${g.L} ${py(v)}H${g.R}` });
       svgEl(axis, 'text', { x: g.L - 6, y: py(v) + 4, 'text-anchor': 'end' }).textContent = yTick(v);
     }
-    svgEl(axis, 'text', { x: 4, y: 16 }).textContent = String(o.yLabel ?? '');
+    setMath(svgEl(axis, 'text', { x: 4, y: 16 }), String(o.yLabel ?? ''), { vars });
     const step = niceStep(xDef.max - xDef.min);
     const ticks = Array.isArray(o.ticks)
       ? o.ticks.map(Number)
@@ -161,7 +164,7 @@ export const mountCurve: FigureMount = (el, { spec, model, setParam }) => {
       svgEl(axis, 'path', { class: 'xfig-tick', d: `M${x} ${g.bottom}v4` });
       svgEl(axis, 'text', { x, y: g.bottom + 17, 'text-anchor': 'middle' }).textContent = format(t, Number.isInteger(t) ? 'int' : 'fixed2');
     }
-    svgEl(axis, 'text', { x: g.R, y: g.bottom + 36, 'text-anchor': 'end' }).textContent = xDef.label;
+    setMath(svgEl(axis, 'text', { x: g.R, y: g.bottom + 36, 'text-anchor': 'end' }), xDef.label, { vars });
     // The whole plot is the knob's pointer band: press anywhere to move along the curve.
     knob.layout(px(0), px(1), g.bottom, [g.top - 6, g.bottom + 6]);
     if (last) draw(...last);
@@ -189,7 +192,10 @@ export const mountCurve: FigureMount = (el, { spec, model, setParam }) => {
       const path = linePath(s);
       for (const n of [part.halo, part.line]) n.setAttribute('d', path);
       part.marks.setAttribute('d', d.ref ? '' : markPath(s, d.s, 3.5));
-      legendText[i]!.textContent = endLabels[i]!.textContent = fillTemplate(d.label, model, p, out);
+      const text = fillTemplate(d.label, model, p, out);
+      endRaw[i] = text;
+      setMath(legendText[i]!, text, { vars });
+      setMath(endLabels[i]!, text, { vars });
     });
     // Direct labels at the right end, clear of their own line: the highest line's label above it (below if there is no room), the others below
     // theirs (above if there is no room); then ≥ 16 px apart.
@@ -204,7 +210,7 @@ export const mountCurve: FigureMount = (el, { spec, model, setParam }) => {
         const [a, b] = [(g.R - 8 - textWidth(t) - g.L) / (g.R - g.L), (g.R - g.L - 8) / (g.R - g.L)];
         const ys = Array.from({ length: 9 }, (_, j) => yAt(s, a + ((b - a) * j) / 8)).filter(Number.isFinite).map(py);
         // No finite point under the label's span means no line there to label (and no finite place to put it).
-        const hide = !ys.length || (textWidth(t) > (g.R - g.L) / 2 && (series.length > 1 || t.textContent === yTitle));
+        const hide = !ys.length || (textWidth(t) > (g.R - g.L) / 2 && (series.length > 1 || endRaw[i] === yTitle));
         t.classList.toggle('is-hidden', hide);
         return { t, hide, end: py(lastFinite(s)), hi: Math.min(...ys), lo: Math.max(...ys) };
       })
@@ -230,7 +236,7 @@ export const mountCurve: FigureMount = (el, { spec, model, setParam }) => {
       const side = xv < xDef.min ? -1 : xv > xDef.max ? 1 : 0;
       const mpos = toPos(xDef, xv);
       const [mx, row] = [px(mpos), g.top - 15];
-      m.text.textContent = `${fillTemplate(markerLabels[i] ?? '', model, p, out, { marker: xv })}${side ? ' (off the chart)' : ''}`;
+      setMath(m.text, `${fillTemplate(markerLabels[i] ?? '', model, p, out, { marker: xv })}${side ? ' (off the chart)' : ''}`, { vars });
       m.line.setAttribute('d', side ? '' : `M${f1(mx)} ${g.top}V${g.bottom}`);
       // On the chart, a filled ● where the marker meets the primary line (filled: a ring means draggable); off it, an edge ▶ or ◀.
       const mv = yAt(primary, mpos);

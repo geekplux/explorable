@@ -2,14 +2,14 @@
 .essay { counter-reset: sec; max-width: 640px; margin-inline: auto; font: 400 var(--text-20)/1.6 var(--font-text); }
 :where(.essay) p { margin: 0; }
 .essay h1 { margin: 0; font: 600 var(--text-32)/1.15 var(--font-display); letter-spacing: -.015em; text-wrap: balance; }
-.essay-dek { margin-top: 16px; line-height: 1.5; color: var(--text-2); }
+.essay .essay-dek { margin-top: 16px; line-height: 1.5; color: var(--text-2); }
 .essay-byline { display: flex; justify-content: space-between; align-items: center; gap: 16px; margin-top: 16px; font: 400 var(--text-14)/1.5 var(--font-ui); color: var(--text-2); }
 .essay-byline a { color: var(--text); }
 .essay cite { font-style: normal; }
 .essay i { font-style: italic; }
-.sub { font-size: var(--text-14); font-style: normal; line-height: 0; vertical-align: -.2em; }
+.xsub { font-size: var(--text-14); font-style: normal; line-height: 0; vertical-align: -.2em; }
 /* In 14px text (figure chrome, byline, contents) a subscript steps down to 12. */
-:is(.xfig, .essay-byline, .essay-toc) .sub { font-size: var(--text-12); }
+:is(.xfig, .xfig-stage, .essay-byline, .essay-toc, .hero-fig) .xsub { font-size: var(--text-12); }
 .essay code { font: inherit; overflow-wrap: anywhere; }
 .essay-section { counter-increment: sec; margin-top: 56px; }
 .essay-section:first-of-type { margin-top: 64px; }
@@ -39,7 +39,7 @@
 .xfig-svg .xfig-bar-value { font: 500 var(--text-12) var(--font-mono); font-variant-numeric: tabular-nums; fill: var(--text); }
 .xfig-svg .xfig-track-label { font: italic 400 var(--text-14) var(--font-text); fill: var(--text); }
 .xfig-svg .xfig-var { font-style: italic; }
-.xfig-svg .xfig-sub { font-style: normal; }
+.xfig-svg .xfig-sub { font-style: normal; font-size: var(--text-12); }
 .xfig-bar { fill: var(--data); stroke: none; }
 .xfig-bar.is-top { fill: var(--data-top); }
 .xfig-grid { stroke: var(--sand-5); stroke-width: .5; }
@@ -86,9 +86,11 @@
 .xfig-choice label { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 0 12px 0 8px; border-radius: var(--radius); box-shadow: inset 0 0 0 var(--hairline) var(--line-2); cursor: pointer; }
 .xfig-choice label:has(:checked) { box-shadow: inset 0 0 0 1px var(--text); font-weight: 500; }
 .xfig-choice input { width: 18px; height: 18px; margin: 0; accent-color: var(--ink); outline: none; }
-.xfig-choice label:has(:focus-visible), .xfig-switch:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.xfig-choice label:has(:focus-visible), .xfig-switch:focus-visible .xfig-switch-face { outline: 2px solid var(--focus); outline-offset: 2px; }
+.xfig-switch:focus-visible { outline: none; }
 /* A switch: 32 × 18 track, the knob in the handle colour; its position (not colour) shows the state. */
-.xfig-switch { display: inline-flex; align-items: center; gap: 10px; min-height: 44px; margin-block: -13px; padding: 0; font: 400 var(--text-14) var(--font-ui); color: var(--text); background: none; border: 0; cursor: pointer; }
+.xfig-switch { display: inline-flex; align-items: center; min-height: 44px; margin-block: -13px; padding: 0; font: 400 var(--text-14) var(--font-ui); color: var(--text); background: none; border: 0; cursor: pointer; }
+.xfig-switch-face { display: inline-flex; align-items: center; gap: 10px; border-radius: 4px; }
 .xfig-switch-track { position: relative; flex: none; width: 32px; height: 18px; border-radius: 9px; background: var(--line); }
 .xfig-switch-track::after { content: ""; position: absolute; top: 2px; left: 2px; width: 14px; height: 14px; border-radius: 7px; background: var(--handle); }
 .xfig-switch[aria-checked="true"] .xfig-switch-track { background: var(--text); }
@@ -138,7 +140,7 @@
 .xfig-legend li { display: inline-flex; align-items: center; gap: .4rem; }
 @media (forced-colors: active) {
   .xfig-knob-focus { stroke: Highlight; }
-  .xfig-control input:focus-visible, .xfig-data-toggle:focus-visible, .xfig-table-wrap:focus-visible, .xfig-switch:focus-visible, .xfig-choice label:has(:focus-visible) { outline-color: Highlight; }
+  .xfig-control input:focus-visible, .xfig-data-toggle:focus-visible, .xfig-table-wrap:focus-visible, .xfig-switch:focus-visible .xfig-switch-face, .xfig-choice label:has(:focus-visible) { outline-color: Highlight; }
   .xfig-probe { stroke: Highlight; }
   /* SVG paint is not forced, so every stroke and fill that carries meaning names a system colour here. */
   .xfig-line, .xfig-line:is(.xfig-s0, .xfig-s1, .xfig-s2), .xfig-ref, .xfig-ghost, .xfig-sigma, .xfig-marker-line, .xfig-axis path, .xfig-baseline, .xfig-tick, .xfig-drop,
@@ -175,9 +177,9 @@
 }
 @media (max-width: 480px) { .xfig-table th, .xfig-table td { padding: .25rem .375rem; } }
 @media (max-width: 340px) { .xfig-drawing { aspect-ratio: 1; } }
-/* Motion (DESIGN, Motion 05): a figure below the fold at load enters once; print shows every figure. */
-@media (prefers-reduced-motion: no-preference) {
+/* Motion (DESIGN, Motion 05): a figure below the fold at load enters once, on screen only; print shows every figure. */
+@media screen and (prefers-reduced-motion: no-preference) {
   .xfig[data-enter] { transition: opacity var(--dur) var(--ease), transform var(--dur) var(--ease); }
   .xfig[data-enter=""] { opacity: 0; transform: scale(.985); }
 }
-@media print { .xfig[data-enter] { opacity: 1; transform: none; } }
+@media print { .xfig[data-enter] { opacity: 1; transform: none; transition: none; } }

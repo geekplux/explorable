@@ -109,7 +109,7 @@ export const mountBars: FigureMount = (el, { spec, model, setParam }) => {
       bars = weights.map((_, i) => {
         const bg = svgEl(plot, 'g', { class: 'xfig-bar-g' });
         const name = svgEl(bg, 'text', { class: 'xfig-bar-label', 'text-anchor': 'middle' });
-        name.textContent = label(i);
+        setMath(name, label(i));
         const rect = svgEl(bg, 'rect', { class: 'xfig-bar' });
         // The dashed outline gets a paper halo so it stays ≥ 3:1 against the cobalt bar.
         const other = compare ? [svgEl(bg, 'rect', { class: 'xfig-bar-other-halo' }), svgEl(bg, 'rect', { class: 'xfig-bar-other' })] : undefined;

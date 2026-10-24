@@ -9,7 +9,7 @@ import { format } from '../format.ts';
 import { BINS, BIN_W, X_MAX, X_MIN, normalPdf } from '../models/diffusion-forward.ts';
 import type { ParamDef } from '../registry.ts';
 import { toPos } from '../runtime/controls.ts';
-import { createHandle, svgEl, trackLabel } from '../runtime/handle.ts';
+import { createHandle, setMath, svgEl, trackLabel } from '../runtime/handle.ts';
 import type { FigureMount, FigureView, Outputs, Params } from '../runtime/mount.ts';
 
 const nums = (v: unknown): number[] => (Array.isArray(v) ? v : []);
@@ -18,7 +18,11 @@ const ATTR = (el: Element, attrs: Record<string, string | number>) => {
 };
 const edge = (j: number) => X_MIN + j * BIN_W;
 
-const span = (text: string) => Object.assign(document.createElement('span'), { textContent: text });
+const span = (text: string) => {
+  const el = document.createElement('span');
+  setMath(el, text);
+  return el;
+};
 
 export const mountHistogram: FigureMount = (el, { spec, model, setParam }) => {
   const o = spec.options ?? {};
@@ -41,9 +45,9 @@ export const mountHistogram: FigureMount = (el, { spec, model, setParam }) => {
   const refHalo = svgEl(plot, 'path', { class: 'xfig-line-halo' });
   const ref = svgEl(plot, 'path', { class: 'xfig-ref' });
   const ghostText = ghost ? svgEl(plot, 'text', { class: 'xfig-ghost-label', 'text-anchor': 'middle' }) : undefined;
-  if (ghostText) ghostText.textContent = 'data (t = 0)';
+  if (ghostText) setMath(ghostText, 'data (t = 0)');
   const refText = svgEl(plot, 'text', { class: 'xfig-ref-label' });
-  refText.textContent = refLabel;
+  setMath(refText, refLabel);
   const trackG = svgEl(svg, 'g', { class: 'xfig-track', 'aria-hidden': 'true' });
   const knob = handleDef ? createHandle(svg, { def: handleDef, onChange: (v, instant) => setParam(handleName!, v, instant), fill: true }) : undefined;
 

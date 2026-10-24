@@ -49,7 +49,7 @@ export const attentionScaling = registerModel<ScalingParams, ScalingOutputs>({
   keywords: ['attention', 'scaled', 'dot product', 'transformer', 'softmax', 'saturation', 'dimension', 'sqrt'],
   params: {
     dk: { label: 'key width d_k', spoken: 'key width d k', symbol: 'd_k', min: 1, max: MAX_DK, step: 1, default: 4, unit: 'dimensions', scale: 'log' },
-    scaled: { label: 'divide by √d_k', spoken: 'divide by square root of d k', min: 0, max: 1, step: 1, default: 0, control: 'toggle' },
+    scaled: { label: 'Divide by √d_k', spoken: 'Divide by square root of d k', min: 0, max: 1, step: 1, default: 0, control: 'toggle' },
     seed: { label: 'seed', min: 0, max: 2 ** 32 - 1, step: 1, default: 229 },
   },
   outputs: {

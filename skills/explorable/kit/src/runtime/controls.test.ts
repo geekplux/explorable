@@ -63,7 +63,7 @@ describe('control value rules', () => {
     const def = attentionScaling.params.scaled;
     const button = createToggle('fig-s', def, () => {}).el.querySelector('button')!;
     const visible = def.label.split(/[^\p{L}\s]/u)[0]!.trim();
-    expect(visible).toBe('divide by');
+    expect(visible).toBe('Divide by');
     expect(button.getAttribute('aria-label')?.startsWith(visible)).toBe(true);
   });
 
@@ -72,6 +72,6 @@ describe('control value rules', () => {
     const r = createRange('fig-dk', def, () => {});
     r.set(64);
     expect(r.el.querySelector('input')?.getAttribute('aria-label')).toBe('key width d k');
-    expect(r.el.querySelector('output')?.textContent).toBe('d_k = 64');
+    expect(r.el.querySelector('output')?.textContent).toBe('dk = 64');
   });
 });

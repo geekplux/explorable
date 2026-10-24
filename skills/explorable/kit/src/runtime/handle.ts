@@ -5,6 +5,9 @@
  */
 import type { ParamDef } from '../registry.ts';
 import { keyValue, snap, fromPos, spoken, valueOnly } from './controls.ts';
+import { setMath } from './math.ts';
+
+export { setMath };
 
 const NS = 'http://www.w3.org/2000/svg';
 
@@ -25,15 +28,6 @@ export interface HandleOptions {
 }
 
 export type Handle = ReturnType<typeof createHandle>;
-
-/** Set SVG text as math: "d_k" draws an italic d with a subscript k (styled in kit.css). */
-export function setMath(text: Element, value: string) {
-  text.replaceChildren();
-  value.split(/(\p{L})_(\w+)/u).forEach((part, i) => {
-    if (i % 3 === 0) return part && svgEl(text, 'tspan', i ? { dy: -4 } : {}).append(part);
-    svgEl(text, 'tspan', i % 3 === 1 ? { class: 'xfig-var' } : { class: 'xfig-sub', dy: 4 }).textContent = part;
-  });
-}
 
 /** The knob's symbol at the start of its track. */
 export function trackLabel(parent: Element, x: number, y: number, symbol: string) {

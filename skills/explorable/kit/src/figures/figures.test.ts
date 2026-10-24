@@ -152,8 +152,8 @@ describe('bars + switch: attention Fig 2', () => {
     expect(root.querySelectorAll('.xfig-bar-g rect.xfig-bar-other')).toHaveLength(8);
     expect(texts('.xfig-legend text')).toEqual(['this setting', 'with ÷√dk']);
     expect(sw().getAttribute('aria-checked')).toBe('false');
-    expect(sw().getAttribute('aria-label')).toBe('divide by square root of d k');
-    expect(sw().querySelector('span:last-child')?.innerHTML).toBe('divide by √<i>d</i><span class="sub">k</span>');
+    expect(sw().getAttribute('aria-label')).toBe('Divide by square root of d k');
+    expect(sw().querySelector('.xfig-switch-face > span:last-child')?.innerHTML).toBe('Divide by √<i>d</i><span class="xsub">k</span>');
     sw().click();
     expect(sw().getAttribute('aria-checked')).toBe('true');
     expect(readout()).toBe('score SD 1.01 top weight 0.34 entropy 2.58 bits');
@@ -193,7 +193,7 @@ describe('histogram: diffusion Fig 1', () => {
   beforeEach(() => mount(diffusionDoc, 'fig-histogram'));
 
   it('draws 60 ink-outlined bars, the labelled dotted reference and the ±2σ bracket', () => {
-    expect(readout()).toBe('signal √ᾱ_t 1.000 noise √(1−ᾱ_t) 0.000 spread (SD) 1.77');
+    expect(readout()).toBe('signal √ᾱt 1.000 noise √(1−ᾱt) 0.000 spread (SD) 1.77');
     expect(root.querySelectorAll('rect.xfig-bar')).toHaveLength(60);
     expect(texts('.xfig-ref-label')).toEqual(['N(0, 1)']);
     expect(texts('.xfig-ghost-label')).toEqual(['data (t = 0)']);
@@ -222,7 +222,7 @@ describe('histogram: diffusion Fig 1', () => {
     expect(($('.xfig-ghost').previousElementSibling as Element).classList.contains('is-hidden')).toBe(true);
     expect($('.xfig-foot .xfig-sr').textContent).toBe('signal 1.000, noise 0.000, spread 1.77');
     expect($('.xfig-ghost').classList.contains('is-hidden')).toBe(true);
-    expect($('.xfig-chip').textContent).toBe('t = 0 ᾱ_t = 1.00');
+    expect($('.xfig-chip').textContent).toBe('t = 0 ᾱt = 1.00');
     expect(texts('.xfig-track text')).toEqual(['t', '0', '250', '500', '750', '1000']);
   });
 
@@ -240,8 +240,8 @@ describe('histogram: diffusion Fig 1', () => {
     expect($('.xfig-ghost').classList.contains('is-hidden')).toBe(false);
     key(knob, 'End');
     expect(knob.getAttribute('aria-valuenow')).toBe('1000');
-    expect(readout()).toBe('signal √ᾱ_t 0.006 noise √(1−ᾱ_t) 1.000 spread (SD) 1.01');
-    expect($('.xfig-chip').textContent).toBe('t = 1000 ᾱ_t = 4.04 × 10⁻⁵');
+    expect(readout()).toBe('signal √ᾱt 0.006 noise √(1−ᾱt) 1.000 spread (SD) 1.01');
+    expect($('.xfig-chip').textContent).toBe('t = 1000 ᾱt = 4.04 × 10⁻⁵');
     expect(yAxis()).toEqual(axis0);
   });
 
@@ -408,9 +408,9 @@ describe('curve: diffusion Fig 2 (registry series)', () => {
   beforeEach(() => mount(diffusionDoc, 'fig-signal-noise'));
 
   it('signal is solid with ● markers, noise dashed with ■, both labelled, the crossing marked', () => {
-    expect(readout()).toBe('ᾱ_t 0.897 SNR 9.4 dB');
+    expect(readout()).toBe('ᾱt 0.897 SNR 9.4 dB');
     expect($('.xfig-foot .xfig-sr').textContent).toBe('alpha-bar 0.897, signal-to-noise ratio 9.4 dB');
-    expect(texts('.xfig-series-label')).toEqual(['signal √ᾱ_t', 'noise √(1−ᾱ_t)']);
+    expect(texts('.xfig-series-label')).toEqual(['signal √ᾱt', 'noise √(1−ᾱt)']);
     expect($('.xfig-marker-label').textContent).toBe('signal = noise (t ≈ 260)');
     const s0 = ($('svg.xfig-curve .xfig-marks.xfig-s0').getAttribute('d') ?? '').match(/M[^M]+/g)!;
     const s1 = ($('svg.xfig-curve .xfig-marks.xfig-s1').getAttribute('d') ?? '').match(/M[^M]+/g)!;
@@ -436,11 +436,11 @@ describe('curve: diffusion Fig 2 (registry series)', () => {
 
   it('reads ∞ dB at t = 0 and lists t ± 50 in steps of 10', () => {
     key($('.xfig-knob'), 'Home');
-    expect(readout()).toBe('ᾱ_t 1.00 SNR ∞ dB');
+    expect(readout()).toBe('ᾱt 1.00 SNR ∞ dB');
     key($('.xfig-knob'), 'PageUp');
     key($('.xfig-knob'), 'PageUp');
     const rows = [...root.querySelectorAll('tbody tr')].map((r) => [...r.children].map((c) => c.textContent));
-    expect(texts('thead th')).toEqual(['t', 'ᾱ_t', 'signal √ᾱ_t', 'noise √(1−ᾱ_t)', 'SNR (dB)']);
+    expect(texts('thead th')).toEqual(['t', 'ᾱt', 'signal √ᾱt', 'noise √(1−ᾱt)', 'SNR (dB)']);
     expect(rows.map((r) => r[0])).toEqual(['50', '60', '70', '80', '90', '100', '110', '120', '130', '140', '150']);
     expect(rows[5]).toEqual(['100', '0.897', '0.947', '0.321', '9.4']);
   });

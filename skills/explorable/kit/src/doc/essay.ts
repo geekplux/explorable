@@ -1,4 +1,4 @@
-import { escapeHtml, formatInline, safeHttpUrl } from './inline.ts';
+import { docVars, escapeHtml, formatInline, safeHttpUrl } from './inline.ts';
 import { mountFigure, type MountOptions } from '../runtime/mount.ts';
 import type { ExplorableDoc, FigureSpec } from './schema.ts';
 
@@ -25,17 +25,36 @@ function byline(doc: ExplorableDoc): string {
   return `Based on ${titled}${meta ? `, ${meta}` : ''}${ai}`;
 }
 
-function figureShell(fig: FigureSpec): string {
+/**
+ * The letters this essay uses as variables (see `docVars`): set in italics everywhere in it, so "Drag T down" reads
+ * like "At T = 1". The app's contents and essay index use the same set, so their titles match the essay's.
+ */
+export function essayVars(doc: ExplorableDoc): Set<string> {
+  return docVars([
+    doc.title,
+    doc.dek,
+    doc.takeaway,
+    ...doc.sections.flatMap((s) => [s.heading, ...s.paragraphs, ...(s.figure ? [s.figure.title, s.figure.caption] : [])]),
+  ]);
+}
+
+function figureShell(fig: FigureSpec, vars: ReadonlySet<string>): string {
   const id = escapeHtml(fig.id);
   return (
     `<figure class="xfig" id="${id}" data-kind="${escapeHtml(fig.kind)}" ` +
     `data-model="${escapeHtml(fig.model.id)}" aria-labelledby="${id}-title">` +
-    `<p class="xfig-title" id="${id}-title">${formatInline(fig.title)}</p>` +
+    `<p class="xfig-title" id="${id}-title">${formatInline(fig.title, vars)}</p>` +
     `<div class="xfig-stage" data-figure-stage><p class="xfig-alt">${escapeHtml(fig.alt)}</p></div>` +
-    `<figcaption>${formatInline(fig.caption)}</figcaption>` +
+    `<figcaption>${formatInline(fig.caption, vars)}</figcaption>` +
     `</figure>`
   );
 }
+
+const ORIGINAL: Record<ExplorableDoc['source']['kind'], string> = {
+  arxiv: 'Read the original paper',
+  blog: 'Read the original post',
+  concept: 'Read the original',
+};
 
 /**
  * Static, fully escaped HTML for a doc: title block, sections (numbered by CSS), figure
@@ -45,26 +64,27 @@ function figureShell(fig: FigureSpec): string {
  */
 export function essayHtml(doc: ExplorableDoc): string {
   const href = safeHttpUrl(doc.source.url);
+  const vars = essayVars(doc);
   const hero =
     `<header class="essay-hero">` +
-    `<h1 tabindex="-1">${formatInline(doc.title)}</h1>` +
-    `<p class="essay-dek">${formatInline(doc.dek)}</p>` +
+    `<h1 tabindex="-1">${formatInline(doc.title, vars)}</h1>` +
+    `<p class="essay-dek">${formatInline(doc.dek, vars)}</p>` +
     `<div class="essay-byline"><p>${byline(doc)}</p><span class="essay-byline-end"></span></div>` +
     `</header>`;
   const sections = doc.sections
     .map((section) => {
       const id = escapeHtml(section.id);
-      const body = section.paragraphs.map((p) => `<p>${formatInline(p)}</p>`).join('');
-      const figure = section.figure ? figureShell(section.figure) : '';
-      return `<section class="essay-section" aria-labelledby="${id}"><h2 id="${id}">${formatInline(section.heading)}</h2>${body}${figure}</section>`;
+      const body = section.paragraphs.map((p) => `<p>${formatInline(p, vars)}</p>`).join('');
+      const figure = section.figure ? figureShell(section.figure, vars) : '';
+      return `<section class="essay-section" aria-labelledby="${id}"><h2 id="${id}">${formatInline(section.heading, vars)}</h2>${body}${figure}</section>`;
     })
     .join('');
   const original = href
-    ? `<p class="essay-original"><a href="${escapeHtml(href)}" rel="noopener noreferrer">Read the original ${doc.source.kind === 'arxiv' ? 'paper' : 'post'}</a></p>`
+    ? `<p class="essay-original"><a href="${escapeHtml(href)}" rel="noopener noreferrer">${ORIGINAL[doc.source.kind]}</a></p>`
     : '';
   const takeaway =
     `<section class="essay-takeaway" aria-labelledby="essay-takeaway"><h2 id="essay-takeaway">Takeaway</h2>` +
-    `<p>${formatInline(doc.takeaway)}</p>${original}</section>`;
+    `<p>${formatInline(doc.takeaway, vars)}</p>${original}</section>`;
   return `<article class="essay" data-doc="${escapeHtml(doc.id)}">${hero}${sections}${takeaway}</article>`;
 }
 

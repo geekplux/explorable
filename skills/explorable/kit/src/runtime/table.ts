@@ -2,10 +2,12 @@
  * "Show data": a toggle button and a real `<table>` of the current values (A3),
  * in a focusable, labelled scroll region so a wide table never scrolls the page.
  */
+import { setMath } from './math.ts';
+
 /** A column header: its text, or the text plus a spoken form for screen readers (e.g. "signal" for "signal √ᾱ_t"). */
 export type Column = string | { text: string; spoken?: string };
 
-export function createDataTable(id: string, caption: string, columns: readonly Column[], rowHeader = 0) {
+export function createDataTable(id: string, caption: string, columns: readonly Column[], rowHeader = 0, vars?: ReadonlySet<string>) {
   const button = document.createElement('button');
   button.type = 'button';
   button.className = 'xfig-data-toggle';
@@ -37,7 +39,8 @@ export function createDataTable(id: string, caption: string, columns: readonly C
     shown = key;
     head.replaceChildren(
       ...parts.map(({ text, spoken }) => {
-        const th = Object.assign(document.createElement('th'), { scope: 'col', textContent: text });
+        const th = Object.assign(document.createElement('th'), { scope: 'col' });
+        setMath(th, text, { vars });
         if (spoken && spoken !== text) th.setAttribute('aria-label', spoken);
         return th;
       }),

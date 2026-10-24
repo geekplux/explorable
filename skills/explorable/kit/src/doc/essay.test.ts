@@ -61,7 +61,7 @@ describe('essayHtml', () => {
 
   it('sets variables in italics in titles and headings', () => {
     const dom = render(makeDoc({ title: 'Why attention divides by √d_k' }));
-    expect(dom.querySelector('h1')?.innerHTML).toBe('Why attention divides by √<i>d</i><span class="sub">k</span>');
+    expect(dom.querySelector('h1')?.innerHTML).toBe('Why attention divides by √<i>d</i><span class="xsub">k</span>');
   });
 
   it('renders one section per doc section plus the takeaway', () => {
@@ -75,6 +75,8 @@ describe('essayHtml', () => {
     expect(dom.querySelector('.essay-original')?.textContent).toBe('Read the original paper');
     const blog = render(makeDoc({ source: { kind: 'blog', url: 'https://example.com/post', title: 'A Post' } }));
     expect(blog.querySelector('.essay-original')?.textContent).toBe('Read the original post');
+    const concept = render(makeDoc({ source: { kind: 'concept', url: 'https://example.com/idea', title: 'An idea' } }));
+    expect(concept.querySelector('.essay-original')?.textContent).toBe('Read the original');
   });
 
   it('renders one figure shell per figure with title, caption and alt, and no figure number', () => {

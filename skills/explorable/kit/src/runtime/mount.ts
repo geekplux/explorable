@@ -7,6 +7,7 @@ import { mountBars } from '../figures/bars.ts';
 import { mountBits } from '../figures/bits.ts';
 import { mountCurve } from '../figures/curve.ts';
 import { mountHistogram } from '../figures/histogram.ts';
+import { mathHtml } from '../doc/inline.ts';
 import type { FigureSpec } from '../doc/schema.ts';
 import { format } from '../format.ts';
 import { attentionScaling } from '../models/attention-scaling.ts';
@@ -16,7 +17,7 @@ import { exprCurveModel } from '../models/expr-curve.ts';
 import { softmaxTemperature } from '../models/softmax-temperature.ts';
 import { fillTemplate, getModel, type FigureKind, type ModelDef, type ParamDef } from '../registry.ts';
 import { createAnnouncer } from './announce.ts';
-import { createChoice, createRange, createToggle, fromPos, snap, toPos } from './controls.ts';
+import { createChoice, createRange, createToggle, fromPos, snap, toPos, varsOf } from './controls.ts';
 import type { Handle } from './handle.ts';
 import { follow, reducedMotion, settle } from './motion.ts';
 import { createDataTable, type Column } from './table.ts';
@@ -130,12 +131,14 @@ export function mountFigure(stage: HTMLElement, spec: FigureSpec, opts: MountOpt
     const make = CONTROLS[defs[name]!.control ?? 'range']!;
     return [name, make(`${spec.id}-${name}`, defs[name]!, (v, i) => setParam(name, v, i), defs[name]!.symbol ?? name)] as const;
   });
+  // The figure's one-letter parameters (T, t, k) are variables in its readout ("step t").
+  const vars = varsOf(...controls);
   // Only sliders ease; a switch or a choice jumps.
   const eased = controls.filter((c) => (defs[c]!.control ?? 'range') === 'range');
   row.append(...ranges.map(([, r]) => r.el));
   const view = kind(drawing, { spec, model, setParam: (n, v, i) => setParam(n, v, i) });
   const columns = (o: Outputs) => (typeof view.columns === 'function' ? view.columns(target, o) : view.columns);
-  const data = createDataTable(`${spec.id}-data`, `Data for: ${spec.title}`, columns(model.compute(target)), view.rowHeader);
+  const data = createDataTable(`${spec.id}-data`, `Data for: ${spec.title}`, columns(model.compute(target)), view.rowHeader, vars);
   foot.append(readout, spokenReadout, data.button);
   stage.append(data.wrap);
   // The knob on the chart is the slider people see; its native twin stays for assistive tech that cannot step an ARIA slider.
@@ -173,7 +176,8 @@ export function mountFigure(stage: HTMLElement, spec: FigureSpec, opts: MountOpt
     readout.replaceChildren(
       ...shownOuts.flatMap(([def, v], i) => {
         const span = document.createElement('span');
-        span.append(`${def.label} `, Object.assign(document.createElement('b'), { textContent: v }), def.unit ? ` ${def.unit}` : '');
+        span.innerHTML = `${mathHtml(def.label, { vars })} `;
+        span.append(Object.assign(document.createElement('b'), { textContent: v }), def.unit ? ` ${def.unit}` : '');
         return i ? [' ', span] : [span];
       }),
     );

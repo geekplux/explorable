@@ -2,7 +2,7 @@
  * The labelled native controls (range, toggle, choice). The value rules live
  * in values.ts (DOM-free) and are re-exported here.
  */
-import { escapeHtml, mathVars } from '../doc/inline.ts';
+import { setMath } from './math.ts';
 import type { ParamDef } from '../registry.ts';
 import { fromPos, keyValue, showValue, snap, toPos, valueOnly } from './values.ts';
 
@@ -10,13 +10,16 @@ export * from './values.ts';
 
 const RANGE_STEPS = 1000;
 
+/** A one-letter parameter name is a variable in its own label ("step t"). */
+export const varsOf = (...names: string[]) => new Set(names.filter((n) => /^[A-Za-z]$/.test(n)));
+
 /** A labelled native `<input type=range>` with an `<output>`, driven in track positions. */
 export function createRange(id: string, def: ParamDef, onChange: (v: number, instant: boolean) => void, name = def.symbol ?? def.label) {
   const el = document.createElement('div');
   el.className = 'xfig-control';
   const [label, input, output] = [document.createElement('label'), document.createElement('input'), document.createElement('output')];
   label.htmlFor = input.id = id;
-  label.innerHTML = mathVars(escapeHtml(def.label));
+  setMath(label, def.label, { vars: varsOf(name) });
   output.setAttribute('for', id);
   // <output> is an implicit live region; the throttled description speaks instead.
   output.setAttribute('aria-live', 'off');
@@ -39,9 +42,16 @@ export function createRange(id: string, def: ParamDef, onChange: (v: number, ins
       input.value = String(Math.round(toPos(def, v) * RANGE_STEPS));
       // The value only (with its unit): the label already names the slider, so a reader would hear it twice.
       input.setAttribute('aria-valuetext', valueOnly(def, v));
-      output.textContent = `${name} = ${showValue(def, v)}`;
+      setMath(output, `${name} = ${showValue(def, v)}`);
     },
   };
+}
+
+/** A span with the label's variables in italics. */
+function labelSpan(text: string) {
+  const span = document.createElement('span');
+  setMath(span, text);
+  return span;
 }
 
 /** A `role="switch"` button for a 0/1 param; the knob's position shows the state (not colour alone). */
@@ -50,7 +60,10 @@ export function createToggle(id: string, def: ParamDef, onChange: (v: number, in
   const button = Object.assign(document.createElement('button'), { type: 'button', id, className: 'xfig-switch' });
   button.setAttribute('role', 'switch');
   if (def.spoken) button.setAttribute('aria-label', def.spoken);
-  button.append(Object.assign(document.createElement('span'), { className: 'xfig-switch-track' }), Object.assign(document.createElement('span'), { innerHTML: mathVars(escapeHtml(def.label)) }));
+  // The 44px button is the hit area; the face (track + label) carries the focus ring, clear of the readout below.
+  const face = Object.assign(document.createElement('span'), { className: 'xfig-switch-face' });
+  face.append(Object.assign(document.createElement('span'), { className: 'xfig-switch-track' }), labelSpan(def.label));
+  button.append(face);
   el.append(button);
   let value = def.default;
   button.addEventListener('click', () => onChange(value ? def.min : def.max, true));
