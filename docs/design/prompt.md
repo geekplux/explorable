@@ -2,6 +2,8 @@
 
 One `env.AI.run` per uncached URL (PLAN §5.5): `@cf/meta/llama-3.3-70b-instruct-fp8-fast`, JSON mode, `temperature: 0.2`, `max_tokens: 1800`. The input is the system prompt below, then a user message with the source metadata, the match hints and ≤ 12,000 characters of article text. The output is one **Plan**. Changing any wording here means bumping `PROMPT_VERSION`.
 
+**p3 (redesign, docs/redesign/DESIGN.md §9).** `worker/plan/prompt.ts` is now the source of truth for the wording; the sections below describe p2. p3 writes for a curious reader with school maths only, keeps formulas out of the text (the Plan gains `notes: {id, formula ≤160, plain ≤240}[]`, referenced as `[[id]]` after the sentence, at most one per paragraph), cites the source only as `[[source]]`, ends with a takeaway in words, and adds the copy rules (sentence case, no "·" between words, no labels before headings). The examples below are superseded by `worker/plan/examples.json`. After the call, `worker/plan/plain.ts` repairs what the model missed and `worker/plan/reading.ts` logs the Flesch–Kincaid grade.
+
 ## Plan shape (what `worker/plan/schema.ts` validates)
 ```
 Plan = { coreIdea ≤220, title ≤90, dek ≤220, takeaway ≤300,

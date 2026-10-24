@@ -1,0 +1,95 @@
+{
+ "response": {
+  "coreIdea": "Dot products of longer random vectors spread out more, so attention divides them by the square root of the length to keep its weights soft.",
+  "title": "Why attention divides by √d_k",
+  "dek": "Attention scores spread out as vectors grow (Vaswani et al., 2017). Dividing by √d_k keeps them in check.",
+  "sections": [
+   {
+    "heading": "Scores from dot products",
+    "paragraphs": [
+     "In “Attention Is All You Need”, every word scores every other word with a dot product, `q·k`. A softmax turns those scores into weights that add up to 1.[[m1]]"
+    ]
+   },
+   {
+    "heading": "Wider vectors, wilder scores",
+    "paragraphs": [
+     "A dot product adds up d_k random terms, so its spread grows like √d_k (Vaswani et al., 2017). Drag d_k up and watch one key take all the weight."
+    ]
+   },
+   {
+    "heading": "The square-root law",
+    "paragraphs": [
+     "Vaswani et al. (2017) suspect that large scores push the softmax into a flat region. Their fix divides every score by √d_k. Drag x along the curve to read the spread for any width."
+    ]
+   }
+  ],
+  "figures": [
+   {
+    "section": 1,
+    "model": "attention-scaling",
+    "title": "Scaling keeps attention soft",
+    "caption": "Attention weights over eight keys for one random query. Drag d_k, then divide by √d_k.",
+    "alt": "Bar chart of attention weights over eight keys at width 4, fairly even. As d_k grows without scaling, one bar takes almost all the weight; with scaling the bars stay spread.",
+    "params": [
+     {
+      "name": "dk",
+      "value": 4
+     },
+     {
+      "name": "scaled",
+      "value": 0
+     }
+    ],
+    "controls": [
+     "dk",
+     "scaled"
+    ],
+    "readouts": [
+     "sd",
+     "top"
+    ]
+   },
+   {
+    "section": 2,
+    "model": "expr-curve",
+    "title": "Spread grows like √d_k",
+    "caption": "The standard deviation of a dot product of two random d_k-wide vectors.",
+    "alt": "Line chart of score spread against key width from 1 to 512, rising like a square root: 2 at width 4, 8 at width 64, about 22.6 at width 512.",
+    "params": [
+     {
+      "name": "x",
+      "value": 64
+     }
+    ],
+    "controls": [
+     "x"
+    ],
+    "readouts": [
+     "x",
+     "y"
+    ],
+    "curve": {
+     "expr": "sqrt(x)",
+     "x": {
+      "label": "key width d_k",
+      "min": 1,
+      "max": 512
+     },
+     "y": {
+      "label": "score spread",
+      "min": 0
+     },
+     "vars": []
+    }
+   }
+  ],
+  "takeaway": "The longer the vectors, the wider the scores spread, so attention divides every score by the square root of their length and its weights stay soft at any width.",
+  "notes": [
+   {
+    "id": "m1",
+    "formula": "wᵢ = e^(sᵢ) / Σⱼ e^(sⱼ)",
+    "plain": "Each weight is e raised to its score, as a share of the total over every key."
+   }
+  ]
+ }
+}

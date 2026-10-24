@@ -14,6 +14,7 @@ import type { FetchFn } from '../fetch';
 import { type AiBinding, DEFAULT_AI_MODEL, requestPlan } from '../plan/ai';
 import { assemblePlan, clean, matchDoc } from '../plan/assemble';
 import { bestMatch, matchModels } from '../plan/match';
+import { readingLevel } from '../plan/reading';
 import { MODELS } from '../plan/schema';
 import { normaliseUrl } from '../url';
 import type { ExplorableDoc } from '../../skills/explorable/kit/src/doc/schema.ts';
@@ -59,7 +60,10 @@ async function build(ex: Extracted, env: ExplainEnv, onStage: OnStage): Promise<
     onStage('planning');
     const plan = await requestPlan(env.AI, model, ex, matches.map((m) => m.id));
     onStage('composing');
-    return { doc: assemblePlan(plan, ex, { model }), mode: 'ai' };
+    let report = {};
+    const doc = assemblePlan(plan, ex, { model, onReport: (r) => (report = r) });
+    logPlain(doc, report);
+    return { doc, mode: 'ai' };
   }
   const best = bestMatch(matches);
   const template = best && MODELS.find((m) => m.id === best.id)?.template;
@@ -114,6 +118,12 @@ const errorBody = (error: unknown) => {
   const e = error instanceof ApiError ? error : new ApiError('INTERNAL', 'Unexpected error');
   return { ok: false, error: { code: e.code, message: e.message, hint: e.hint } };
 };
+
+/** Monitoring for the plain-words voice (DESIGN §9): the reading grade and what the post-process changed. Counts only. */
+function logPlain(doc: ExplorableDoc, report: object) {
+  const { grade, words, sentences } = readingLevel(doc);
+  console.log('explain: plain words', { grade, words, sentences, notes: doc.notes?.length ?? 0, ...report });
+}
 
 /** Log the code only: never article text or model output. */
 function logInternal(error: unknown) {

@@ -1,10 +1,13 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { parseDoc } from '../../skills/explorable/kit/src/doc/schema.ts';
 import { ERROR_TTL, cacheKeys } from '../cache';
+import citationProse from '../fixtures/ai/citation-prose.json';
+import formulasInBody from '../fixtures/ai/formulas-in-body.json';
 import invalidJson from '../fixtures/ai/invalid-json.json';
 import jsonModeError from '../fixtures/ai/json-mode-error.json';
 import maliciousExpr from '../fixtures/ai/malicious-expr.json';
 import schemaViolation from '../fixtures/ai/schema-violation.json';
+import unknownMarker from '../fixtures/ai/unknown-marker.json';
 import valid from '../fixtures/ai/valid.json';
 import worker from '../index';
 import { MAX_SOURCE_CHARS } from '../plan/prompt';
@@ -41,6 +44,28 @@ describe('/api/explain with a model', () => {
     expect(second.body.doc).toEqual(first.body.doc);
     expect(ai.run).toHaveBeenCalledOnce();
     expect([...kv.store.values()][0]?.ttl).toBe(30 * 24 * 60 * 60);
+  });
+
+  it.each([
+    ['a plain v2 plan', valid],
+    ['formulas left in the text', formulasInBody],
+    ['a citation in prose', citationProse],
+    ['unknown markers', unknownMarker],
+  ])('repairs %s into a valid v2 doc with one call, and logs the reading grade (counts only)', async (_, fixture) => {
+    const log = vi.spyOn(console, 'log').mockImplementation(() => {});
+    const ai = fakeAi(fixture);
+    const { call } = setup({ AI: ai });
+    const { body } = await call(URLS.attention);
+    expect(body).toMatchObject({ ok: true, mode: 'ai' });
+    expect(body.doc.schema).toBe(2);
+    expect(parseDoc(body.doc).ok).toBe(true);
+    expect(ai.run).toHaveBeenCalledOnce();
+    expect(log).toHaveBeenCalledOnce();
+    const [label, fields] = log.mock.calls[0]!;
+    expect(label).toBe('explain: plain words');
+    expect(fields).toMatchObject({ grade: expect.any(Number), words: expect.any(Number), notes: body.doc.notes.length, fallback: false });
+    expect(Object.values(fields as object).every((v) => typeof v === 'number' || typeof v === 'boolean')).toBe(true);
+    log.mockRestore();
   });
 
   it('accepts a response that arrives as a JSON string', async () => {

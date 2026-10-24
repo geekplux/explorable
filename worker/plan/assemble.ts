@@ -1,15 +1,18 @@
-// Plan → ExplorableDoc (docs/PLAN.md §5.3 step 6). Deterministic and strict:
+// Plan → ExplorableDoc v2 (docs/PLAN.md §5.3 step 6). Deterministic and strict:
 // params are clamped to their ranges, expressions are validated by the kit,
-// a figure that fails is dropped, and the result must pass `parseDoc`.
+// a figure that fails is dropped, the text goes through the plain-words
+// post-process (plain.ts), and the result must pass `parseDoc`.
 import attention from '../../src/samples/attention.json';
 import bloomFilter from '../../src/samples/bloom-filter.json';
 import diffusion from '../../src/samples/diffusion.json';
+import { NOTE_MARK } from '../../skills/explorable/kit/src/doc/notes.ts';
 import { type DocSource, type ExplorableDoc, type FigureSpec, parseDoc } from '../../skills/explorable/kit/src/doc/schema.ts';
 import { exprCurveModel } from '../../skills/explorable/kit/src/models/expr-curve.ts';
 import { getModel, type ModelDef, type ParamDef } from '../../skills/explorable/kit/src/registry.ts';
 import { snap } from '../../skills/explorable/kit/src/runtime/values.ts';
 import { ApiError } from '../errors';
 import type { Extracted } from '../extract';
+import { type PlainReport, SOURCE_ID, plainWords, sourceLabel } from './plain';
 import { EXPR_CURVE, type Plan, type PlanFigure } from './schema';
 
 /** Curated samples double as match-mode templates and as the source of kind options. */
@@ -38,6 +41,9 @@ export const prose = (s: string): string => {
   FOREIGN.lastIndex = 0;
   return clean(out.replace(FOREIGN, ' ')).replace(/\s+([.,;:!?)\]])/g, '$1').replace(/([([])\s+/g, '$1');
 };
+
+/** Model prose where a note marker cannot go (title, headings, figure text): `prose`, with markers removed. */
+const bare = (s: string): string => prose(s.replace(NOTE_MARK, ' ')).replace(/\s+([.,;:!?)\]])/g, '$1');
 
 export function slugify(s: string, fallback: string): string {
   const slug = s.toLowerCase().normalize('NFKD').replace(/[^a-z0-9]+/g, '-').slice(0, 48).replace(/^-+|-+$/g, '');
@@ -132,20 +138,22 @@ function curveFigure(f: PlanFigure, base: Omit<FigureSpec, 'kind' | 'model' | 'c
 export interface AssembleOptions {
   model: string;
   now?: Date;
+  /** Hears what the plain-words post-process changed, and whether its result had to be dropped (for the log line). */
+  onReport?: (report: PlainReport & { fallback: boolean }) => void;
 }
 
 /** Build the doc. Throws NO_FIGURE when every figure is dropped, PLAN_INVALID when the doc is invalid. */
-export function assemblePlan(plan: Plan, ex: Extracted, { model, now = new Date() }: AssembleOptions): ExplorableDoc {
+export function assemblePlan(plan: Plan, ex: Extracted, { model, now = new Date(), onReport }: AssembleOptions): ExplorableDoc {
   const used = new Set<string>();
   const sections: ExplorableDoc['sections'] = plan.sections.map((s, i) => ({
-    id: uniqueId(slugify(s.heading, `section-${i + 1}`), used),
-    heading: prose(s.heading),
+    id: uniqueId(slugify(bare(s.heading), `section-${i + 1}`), used),
+    heading: bare(s.heading),
     paragraphs: s.paragraphs.map(prose),
   }));
   let figures = 0;
   for (const f of plan.figures) {
     const m = f.model === EXPR_CURVE ? undefined : getModel(f.model);
-    const base = { id: '', title: prose(f.title), caption: prose(f.caption), alt: prose(f.alt) };
+    const base = { id: '', title: bare(f.title), caption: bare(f.caption), alt: bare(f.alt) };
     const spec = m ? registryFigure(f, m, base) : curveFigure(f, base);
     // One figure per section: the asked-for one, else the next free one, else any free one.
     const at = Math.min(f.section, sections.length - 1);
@@ -154,16 +162,29 @@ export function assemblePlan(plan: Plan, ex: Extracted, { model, now = new Date(
     home.figure = { ...spec, id: uniqueId(`figure-${++figures}`, used) };
   }
   if (figures === 0) throw new ApiError('NO_FIGURE', 'None of the planned figures could be built from the kit.');
-  const result = parseDoc({
-    schema: 1,
-    id: slugify(plan.title, 'explorable'),
-    title: prose(plan.title),
-    dek: prose(plan.dek),
-    source: sourceOf(ex),
-    provenance: { mode: 'ai', model, generatedAt: now.toISOString() },
-    sections,
-    takeaway: prose(plan.takeaway),
-  });
+  const source = sourceOf(ex);
+  const text = { dek: prose(plan.dek), paragraphs: sections.map((s) => s.paragraphs), takeaway: prose(plan.takeaway) };
+  const notes = (plan.notes ?? []).map((n) => ({ id: n.id, formula: prose(n.formula), plain: prose(n.plain) }));
+  const plain = plainWords(text, notes, source);
+  const doc = (t: typeof text, extra: Pick<ExplorableDoc, 'notes'>) =>
+    parseDoc({
+      schema: 2,
+      id: slugify(bare(plan.title), 'explorable'),
+      title: bare(plan.title),
+      dek: t.dek,
+      source,
+      provenance: { mode: 'ai', model, generatedAt: now.toISOString() },
+      sections: sections.map((s, i) => ({ ...s, paragraphs: t.paragraphs[i]! })),
+      takeaway: t.takeaway,
+      ...extra,
+    });
+  let result = doc(plain, plain.notes.length ? { notes: plain.notes } : {});
+  // A repair that does not validate (a paragraph pushed past its length, say) falls back to the text without notes,
+  // the source marker written out as its label.
+  const fallback = !result.ok;
+  const flat = (s: string) => bare(s.replaceAll(`[[${SOURCE_ID}]]`, sourceLabel(source)));
+  if (fallback) result = doc({ dek: flat(text.dek), paragraphs: text.paragraphs.map((ps) => ps.map(flat)), takeaway: flat(text.takeaway) }, {});
+  onReport?.({ ...plain.report, fallback });
   if (!result.ok) throw new ApiError('PLAN_INVALID', 'The assembled essay did not pass validation.');
   return result.doc;
 }

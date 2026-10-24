@@ -15,6 +15,7 @@ All notable changes to this project are documented here. The format follows [Kee
 - Loading, error and not-found pages restyled in the essay column, with no kickers or skeleton.
 - The serif is pinned at optical size 20 and draws its own √, ∑, ≈, ≤, ≥ and ∞. Figure labels, readouts, legends and table headers set variables the same way as the essay; contents links move focus to their heading, and a link to a section (`#divide-by-root-d`) opens there.
 - Plain words first: the three samples are rewritten for a curious reader with no background beyond school maths. Formulas sit behind a small Σ marker that opens a panel with the formula and a one-sentence gloss, and author citations ("Vaswani et al.") open a card with the paper's title and link on focus, hover or tap. Data tables set variables in their caption and cells too.
+- Essays from a pasted link come out in the same plain voice (prompt `p3`, so earlier cached essays are not served): the model is asked for one big idea in plain words, with formulas in math notes and the source cited as `[[source]]`. A deterministic post-process, with no second model call, moves any formula left in a paragraph, the takeaway or the dek into a math note, turns citations of the source into one source note built from the article's metadata, and removes markers that point nowhere. The Worker logs the essay's Flesch–Kincaid grade (counts only, not shown).
 
 ### Added
 
