@@ -16,15 +16,15 @@ export default async function search(ctx) {
 
   await input.pressSequentially('bloom');
   assert.deepEqual(await page.locator('.search-results a.essay-row .essay-title').allTextContents(), [bloom.title]);
-  assert.equal(await page.locator('.search-count').textContent(), '1 built-in match. Open one, or paste a link.');
+  assert.equal(await page.locator('.search-count').textContent(), '1 match. Open it, or paste a link.');
   // The polite live region was mounted before typing and gets the count once typing pauses.
   assert.equal(await page.locator('output.search-live').count(), 1, 'one live region for the count');
-  await page.locator('output.search-live', { hasText: '1 built-in match. Open one, or paste a link.' }).waitFor();
+  await page.locator('output.search-live', { hasText: '1 match. Open it, or paste a link.' }).waitFor();
   assert.deepEqual(blocking(await ctx.axe()).map((v) => v.id), [], 'axe on search results');
   await shot('search-bloom');
 
   await input.fill('zzqx wibble');
-  assert.equal(await page.locator('.search-count').textContent(), 'No built-in match: paste a link instead.');
+  assert.equal(await page.locator('.search-count').textContent(), 'No match: paste a link instead.');
   await page.keyboard.press('Enter');
   assert.equal(new URL(page.url()).pathname, '/', 'Enter on words does not leave /');
 

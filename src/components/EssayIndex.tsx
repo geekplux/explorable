@@ -26,7 +26,7 @@ export function EssayIndex({ docs = samples, thumbs = false, compact = false }: 
           <li key={doc.id}>
             <a className="essay-row" href={`/s/${doc.id}`} onPointerEnter={play} onFocus={play}>
               <span className="essay-no" aria-hidden="true">
-                {String(i + 1).padStart(2, '0')}
+                {String((samples.indexOf(doc) + 1 || i + 1)).padStart(2, '0')}
               </span>
               <span className="essay-body">
                 <span className="essay-title">

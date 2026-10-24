@@ -2,7 +2,9 @@
 import { act } from 'react';
 import { createRoot } from 'react-dom/client';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { SearchResults } from '../components/states/SearchResults.tsx';
 import { drawThumb, sweepAt } from '../lib/thumbPlay.ts';
+import { getSample } from '../samples/index.ts';
 import { GalleryPage } from './GalleryPage.tsx';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
@@ -50,6 +52,14 @@ describe('home', () => {
   });
 });
 
+describe('search matches', () => {
+  it('keep each essay its own index number', () => {
+    act(() => root.render(<SearchResults results={[getSample('diffusion')!]} />));
+    expect(texts('.essay-no')).toEqual(['03']);
+    expect(texts('.search-count')).toEqual(['1 match. Open it, or paste a link.']);
+  });
+});
+
 describe('thumbnail play', () => {
   it('sweeps to the far end and back to rest', () => {
     expect(sweepAt(0.65, 0)).toBe(0.65);
@@ -64,10 +74,10 @@ describe('thumbnail play', () => {
     const svg = host.querySelector<SVGSVGElement>('#essays .essay-thumb svg')!;
     drawThumb(svg, 0);
     expect(svg.querySelector('.th-handle')?.getAttribute('cx')).toBe('36.0');
-    expect(svg.querySelector('.th-fill')?.getAttribute('d')).toBe('M36 120H36.0');
+    expect(svg.querySelector('.th-fill')?.getAttribute('d')).toBe('M36 156H36.0');
     const bars = [...svg.querySelectorAll('rect.th-bar')];
-    // T = 0.05: "cat" takes all the weight (bar 74 px tall), the rest flatten to 0.5 px.
-    expect(bars.map((b) => b.getAttribute('height'))).toEqual(['0.5', '74.0', '0.5', '0.5', '0.5', '0.5']);
+    // T = 0.05: "cat" takes all the weight (bar 100 px tall), the rest flatten to 0.5 px.
+    expect(bars.map((b) => b.getAttribute('height'))).toEqual(['0.5', '100.0', '0.5', '0.5', '0.5', '0.5']);
     expect(bars[1]!.classList.contains('is-top')).toBe(true);
   });
 });

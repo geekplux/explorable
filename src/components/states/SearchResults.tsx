@@ -6,7 +6,7 @@ import { EssayIndex } from '../EssayIndex.tsx';
 export const COUNT_DELAY_MS = 500;
 
 export const countText = (n: number): string =>
-  n ? `${n} built-in ${n === 1 ? 'match' : 'matches'}. Open one, or paste a link.` : 'No built-in match: paste a link instead.';
+  n === 1 ? '1 match. Open it, or paste a link.' : n ? `${n} matches. Open one, or paste a link.` : 'No match: paste a link instead.';
 
 /**
  * Local matches for typed words. The visible count updates at once; screen

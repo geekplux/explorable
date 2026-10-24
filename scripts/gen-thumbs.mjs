@@ -25,20 +25,20 @@ const tag = (name, cls, attrs, text) => `<${name} class="${cls}" ${attrs} ${PAIN
 const rect = (cls, x, y, w, h, extra = '') => tag('rect', cls, `x="${f1(x)}" y="${f1(y)}" width="${f1(w)}" height="${f1(h)}"${extra}`);
 const text = (cls, x, y, s, anchor = 'middle') => tag('text', cls, `x="${f1(x)}" y="${f1(y)}" text-anchor="${anchor}"`, s);
 
-/** Track, fill and the round handle at `at` in [0, 1]; the data-* attributes let the page sweep it. */
-const slider = (x0, x1, at) =>
-  tag('path', 'th-track', `d="M${x0} ${SY}H${x1}"`) + tag('path', 'th-fill', `d="M${x0} ${SY}H${f1(x0 + (x1 - x0) * at)}"`) +
-  tag('circle', 'th-handle', `cx="${f1(x0 + (x1 - x0) * at)}" cy="${SY}" r="9"`);
-const svg = (data, body) => `<svg xmlns="http://www.w3.org/2000/svg" class="thumb" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" aria-hidden="true" focusable="false" ${data}>${body}</svg>\n`;
+/** Track, fill and the round handle at `at` in [0, 1] at height `y`; the data-* attributes let the page sweep it. */
+const slider = (x0, x1, at, y = SY) =>
+  tag('path', 'th-track', `d="M${x0} ${y}H${x1}"`) + tag('path', 'th-fill', `d="M${x0} ${y}H${f1(x0 + (x1 - x0) * at)}"`) +
+  tag('circle', 'th-handle', `cx="${f1(x0 + (x1 - x0) * at)}" cy="${y}" r="9"`);
+const svg = (data, body, h = H) => `<svg xmlns="http://www.w3.org/2000/svg" class="thumb" width="${W}" height="${h}" viewBox="0 0 ${W} ${h}" aria-hidden="true" focusable="false" ${data}>${body}</svg>\n`;
 const sample = (id) => JSON.parse(readFileSync(new URL(`../src/samples/${id}.json`, import.meta.url), 'utf8'));
 const firstFigure = (doc) => doc.sections.find((s) => s.figure).figure;
 const logPos = (v, a, b) => Math.log(v / a) / Math.log(b / a);
 
-/** Attention: the softmax over the six hand-set scores at T = 1, on the kit's T range (0.05 to 5, log). */
+/** Attention: the softmax over the six hand-set scores at T = 1, on the kit's T range (0.05 to 5, log); 100 px per unit of weight, 170 tall as on the board. */
 function attention() {
   const fig = firstFigure(sample('attention'));
   const p = fig.model.params, scores = Array.from({ length: p.n }, (_, i) => p[`s${i + 1}`]);
-  const [L, R, top, base, T0, T1] = [36, 232, 8, 82, 0.05, 5];
+  const [L, R, top, base, sy, T0, T1] = [36, 232, 16, 116, 156, 0.05, 5];
   const w = softmax(scores, p.T), slot = (R - L) / w.length, bw = slot * 0.56, top1 = w.indexOf(Math.max(...w));
   const body = w.map((v, i) => {
     const cx = L + slot * (i + 0.5);
@@ -46,7 +46,7 @@ function attention() {
       text('th-cat', cx, base + 18, fig.options.labels[i]);
   });
   const data = `data-x0="${L}" data-x1="${R}" data-at="${Math.round(logPos(p.T, T0, T1) * 1000) / 1000}" data-scores="${scores.join(' ')}" data-t="${T0} ${T1}" data-top="${top}" data-base="${base}"`;
-  return svg(data, tag('path', 'th-axis', `d="M${L} ${base}H${R}"`) + body.join('') + slider(L, R, logPos(p.T, T0, T1)));
+  return svg(data, tag('path', 'th-axis', `d="M${L} ${base}H${R}"`) + body.join('') + slider(L, R, logPos(p.T, T0, T1), sy), 170);
 }
 
 /** Bloom filter: the 32 bits after the figure's n words with k hashes; the query's k bits ringed, and its verdict. */

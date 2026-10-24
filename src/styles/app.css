@@ -23,11 +23,13 @@
 .made-by-sites a { display: grid; gap: 2px; }
 .made-by-name { font-weight: 500; }
 .made-by-dek { color: var(--text-2); }
-.made-by-url { margin-top: 4px; font: 400 var(--text-12) var(--font-mono); color: var(--text-2); }
+.made-by-url { margin-top: 4px; overflow-wrap: anywhere; font: 400 var(--text-12) var(--font-mono); color: var(--text-2); }
 .maker .made-by-url { justify-self: start; margin-top: 0; color: var(--text); text-decoration: underline var(--hairline) var(--field-line); text-underline-offset: 3px; }
 .maker:hover h2, .made-by-sites a:hover .made-by-name { text-decoration: underline var(--hairline); text-underline-offset: 3px; }
 .site-foot { display: flex; align-items: center; justify-content: space-between; gap: var(--space-4); margin-top: 72px; padding: 14px 0 30px; border-top: var(--hairline) solid var(--line); }
 .site-foot ul { display: flex; flex-wrap: wrap; align-items: center; gap: 0 24px; margin: 0; padding: 0; list-style: none; color: var(--text-2); }
+/* Below 1100px the maker's line sits above the sites, so the mono URLs keep their columns. */
+@media (max-width: 1099.98px) { .made-by { grid-template-columns: minmax(0, 1fr); gap: 28px; } }
 @media (max-width: 639.98px) {
   :root { --gutter: 16px; }
   .site-header { height: 56px; }
@@ -133,14 +135,19 @@
 /* One line where it fits; on a narrow screen the command wraps at its space inside the box (never a page scroll). */
 .skill-row .cmdbox { display: flex; align-items: center; min-height: 40px; margin: 0; padding: 10px 14px; line-height: 20px; color: var(--text); white-space: nowrap; border-radius: var(--radius); background: var(--field); box-shadow: inset 0 0 0 var(--hairline) var(--line-2); }
 
-@media (max-width: 959.98px) {
+@media (max-width: 1279.98px) {
+  .skill-row { display: block; }
+  .skill-row .cmdbox { margin-top: 12px; }
+}
+@media (max-width: 1023.98px) {
   .hero { grid-template-columns: minmax(0, 1fr); gap: 40px; }
   .hero-text { max-width: 36rem; }
+}
+@media (max-width: 959.98px) {
   .essay-row { grid-template-columns: 64px minmax(0, 1fr); }
   .essay-thumb { display: none; }
   .steps { grid-template-columns: minmax(0, 40rem); gap: 20px; }
-  .skill-row { display: block; }
-  .skill-row .cmdbox { margin-top: 12px; white-space: normal; overflow-wrap: anywhere; }
+  .skill-row .cmdbox { white-space: normal; overflow-wrap: anywhere; }
 }
 @media (max-width: 639.98px) {
   .hero { padding-block: 40px 56px; }
