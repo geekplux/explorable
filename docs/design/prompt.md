@@ -31,7 +31,7 @@ No `kind` in the Plan: the assembler takes the model's first kind (`curve` for `
 10. **AVOID.** The list under "Phrasing to avoid" below, given to the model in one paragraph.
 11. **CATALOGUE** (generated, below), then **EXAMPLES**: the two complete plans in `worker/plan/examples.json` (a `softmax-temperature` plan with one math note and a `[[source]]` citation, and the Newton's cooling `expr-curve` plan with two math notes), one JSON object per line.
 
-User message, one item per line: `SOURCE: <kind> | <title> | <url>`, `HINTS: <matching model ids, best first, or "none">`, `CITE: [[source]] reads "<label>" (one person | several people)` or `CITE: none; do not write [[source]]` (the label is `authorLine` from the kit, stripped of quotes and control characters), then the text between `<<<ARTICLE` and `ARTICLE>>>`.
+User message, one item per line: `SOURCE: <kind> | <title> | <url>`, `HINTS: <matching model ids, best first, or "none">`, `CITE: [[source]] reads "<label>" (one person | several people)` or `CITE: none; do not write [[source]]` (the label is `sourceLabel` in `worker/plan/plain.ts`: the author line, or the title when that is over 60 characters, stripped of quotes and control characters), then the text between `<<<ARTICLE` and `ARTICLE>>>`.
 
 ## After the call
 

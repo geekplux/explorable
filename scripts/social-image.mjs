@@ -1,6 +1,6 @@
 // pnpm build:images [--no-build]: the README hero and the social preview card,
 // both captured through the harness (one preview server, one system Chrome).
-// - docs/assets/hero.webp: the home page, first screen at 1440 × 900, light. Chrome
+// - docs/assets/hero.webp: the home page's header and hero at 1440 wide, light. Chrome
 //   encodes the WebP itself (a canvas on about:blank), so no image library is needed.
 // - public/social-preview.png: scripts/social/social.html at 1280 × 640, with a still
 //   of the home page's live figure, its temperature knob held at T = 0.5 so the bars
@@ -40,7 +40,14 @@ await run(
             await home.goto(`${baseURL}/`, { waitUntil: 'networkidle' });
             await home.evaluate(() => document.fonts.ready);
             await home.locator(`${FIG} .xfig-knob`).waitFor();
-            const shot = await home.screenshot();
+            // The header and hero, cut in the white space between the hero and "Essays" so no row is sliced.
+            const height = await home.evaluate(() => {
+              const hero = document.querySelector('.hero')?.getBoundingClientRect().bottom ?? 0;
+              const essays = document.querySelector('#essays-h')?.getBoundingClientRect().top ?? 0;
+              return Math.round((hero + essays) / 2);
+            });
+            if (height < 400 || height > 900) throw new Error(`unexpected hero height ${height}`);
+            const shot = await home.screenshot({ clip: { x: 0, y: 0, width: 1440, height } });
 
             const blank = await newPage({ width: 200, height: 200 });
             const webp = await blank.evaluate(async (b64) => {
@@ -55,7 +62,7 @@ await run(
             if (hero.subarray(8, 12).toString() !== 'WEBP') throw new Error('Chrome did not encode a WebP');
             mkdirSync('docs/assets', { recursive: true });
             writeFileSync('docs/assets/hero.webp', hero);
-            console.log(`hero: 1440×900, ${(hero.length / 1024).toFixed(0)} KB`);
+            console.log(`hero: 1440×${height}, ${(hero.length / 1024).toFixed(0)} KB`);
 
             const page = await newPage({ width: 1440, height: 900 }, { deviceScaleFactor: 2, colorScheme: 'light', reducedMotion: 'reduce' });
             await page.goto(`${baseURL}/`, { waitUntil: 'networkidle' });

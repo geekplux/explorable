@@ -52,13 +52,14 @@ function openLabel(url: string): string {
 /** An exponent: `^(…)` (one level of nested brackets) or `^x`. */
 const POWER = /\^(\((?:[^()]|\([^()]*\))*\)|[\p{L}\p{N}]+)/u;
 
-/** A formula as HTML: italic variables, upright operator names, and `^(…)` as a superscript without its brackets. */
+/** A formula as HTML: italic variables; upright digits, operator names and words; `^(…)` as a superscript without its brackets. */
 function formulaHtml(text: string): string {
   const m = POWER.exec(text);
   if (!m) {
-    // Abbreviations (FPR, SNR) are upright; mathRuns would read them as products of italic variables.
+    // Abbreviations (FPR, SNR), function names and words of three or more lowercase letters ("then", "with") are
+    // upright; mathRuns would read them as products of italic variables.
     return text
-      .split(/(?<![\p{L}\p{N}])(\p{Lu}{2,})(?![\p{L}\p{N}])/u)
+      .split(/(?<![\p{L}\p{N}])(\p{Lu}{2,}|\p{Ll}{3,})(?![\p{L}\p{N}])/u)
       .map((part, i) => (i % 2 ? `<span class="xnote-op">${escapeHtml(part)}</span>` : mathHtml(part, { code: true }).replace(OPERATORS, '<span class="xnote-op">$1</span>')))
       .join('');
   }

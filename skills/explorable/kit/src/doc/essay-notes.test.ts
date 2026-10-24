@@ -121,3 +121,24 @@ describe('formula abbreviations', () => {
     expect(m2.querySelector('.xnote-op')?.textContent).toBe('softmax');
   });
 });
+
+/** The rendered formula panel of a doc whose one math note holds `formula`. */
+const panel = (formula: string) => {
+  const notes = [{ id: 'm1', kind: 'math' as const, formula, plain: 'A.' }];
+  return render(doc({ notes, sections: [{ id: 's1', heading: 'One', paragraphs: ['A.[[m1]]'] }, { id: 's2', heading: 'Two', paragraphs: ['P.'] }], takeaway: 'T.' })).querySelector('#note-m1 .xnote-f')!;
+};
+
+describe('formula words and digits', () => {
+  it('set words of three or more lowercase letters upright, and leave digits outside the italic variables', () => {
+    const f = panel('k = (m/n)·ln 2; then FPR = (1/2)^k ≈ 0.6185^(m/n)');
+    expect([...f.querySelectorAll('.xnote-op')].map((e) => e.textContent)).toEqual(['ln', 'then', 'FPR']);
+    expect([...f.querySelectorAll('i')].map((e) => e.textContent)).toEqual(['k', 'm', 'n', 'k', 'm', 'n']);
+    expect(f.innerHTML).not.toMatch(/<i>[^<]*\d/);
+    expect(f.innerHTML).toContain('0.6185<sup>');
+  });
+  it('keeps a word inside a power upright and short products italic', () => {
+    const f = panel('x with y^(kn + exp(t))');
+    expect([...f.querySelectorAll('.xnote-op')].map((e) => e.textContent)).toEqual(['with', 'exp']);
+    expect([...f.querySelectorAll('i')].map((e) => e.textContent)).toEqual(['x', 'y', 'k', 'n', 't']);
+  });
+});

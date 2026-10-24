@@ -35,7 +35,7 @@ Write the idea as one sentence the reader can follow before anything else. It be
 Make a math note when the formula is the precise version of a sentence the reader has just read in words. If the sentence cannot be said in words, rewrite the sentence, not the note. A note is not a place for a second idea.
 
 - Write `[[id]]` straight after the full stop of the sentence it belongs to: "…turns them into weights with a softmax.[[m1]] The weights are positive…".
-- One math marker per paragraph, and each math note is used once. Two formulas in one paragraph means two paragraphs, or one note that holds both (`k = (m/n)·ln 2, where FPR = (1/2)^k`).
+- One math marker per paragraph, and each math note is used once. Two formulas in one paragraph means two paragraphs, or one note that holds both (`k = (m/n)·ln 2; then FPR = (1/2)^k`).
 - `formula` (≤ 160 characters) is Unicode, never LaTeX: `√d_k`, `e^(−kt)`, `x₀`, `wᵢ`, `Σⱼ`, `·`, `−`, `≈`.
 - `plain` (≤ 240 characters) is the gloss: one or two sentences that say what the formula says, naming each symbol in words. No new formula in the gloss.
 
@@ -48,7 +48,7 @@ Make a math note when the formula is the precise version of a sentence the reade
 
 Cite the source only through a source note. Its `label` is what the text shows ("Vaswani et al.", "Bill Mill", "Ho, Jain and Abbeel"); focus, hover or a tap opens a card with the title, the detail and the link. Never write the authors' names, the year or the title in the text as well.
 
-- Put the marker where the names would go and make the verb agree with the label: "[[vaswani]] suspect exactly this", "The steps follow the tutorial by [[mill]]."
+- Put the marker where the names would go and make the verb agree with the label: "[[vaswani]] suspect exactly this" (several people), "[[mill]] gives the same estimate" (one person).
 - `detail` (optional, ≤ 120) is the author list and year as the card shows them: "Vaswani, Shazeer, Parmar and 5 others, 2017".
 - `url` is https only. A source note may be cited more than once.
 

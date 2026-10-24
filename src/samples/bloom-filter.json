@@ -180,7 +180,7 @@
     {
       "id": "best-k",
       "kind": "math",
-      "formula": "k = (m/n)·ln 2, where FPR = (1/2)^k ≈ 0.6185^(m/n)",
+      "formula": "k = (m/n)·ln 2; then FPR = (1/2)^k ≈ 0.6185^(m/n)",
       "plain": "Setting the slope of the rate to zero gives this *k*. Half the bits are then set, so each of a word’s *k* bits is 1 half the time."
     }
   ]

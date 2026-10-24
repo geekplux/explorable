@@ -124,8 +124,8 @@ Outputs: `scores` (number[8]), `weights` (number[8]), `weightsOther` (number[8])
 **Seed choice (be honest about it).** The SD of 8 scores is a small-sample estimate. Seed 229 was chosen from seeds 1 to 5,000 as the first seed that meets all of these: at every power of two from 1 to 512 the scaled SD lies within 0.75 to 1.3; unscaled, the top weight is below 0.6 at d_k = 4, above 0.95 at d_k = 64, and above 0.99 at d_k = 256 and 512; scaled, the top weight at d_k = 64 is below 0.6. It is a representative draw, not a special one. The figure always prints the expected value beside the sample SD (see the score strip), so the reader can compare the two.
 
 **Controls.**
-- `dk` as a log track with the ring knob, ticks at 1, 8, 64 and 512, plus a native range. `aria-valuetext`: "key width d k 64 dimensions".
-- `scaled` as a labelled switch, "divide by √d_k", in the controls row. Its accessible name is "divide by square root of d k" (it starts with the visible words "divide by", WCAG 2.5.3). The `dk` track label and slider readout show "d_k"; the knob's name is "key width d k (d_k, drag on chart)" and the native range is named "key width d k".
+- `dk` as a log track with the ring knob, ticks at 1, 8, 64 and 512, plus a native range. `aria-valuetext`: "64 dimensions" (the knob's name carries the label).
+- `scaled` as a labelled switch, "divide by √d_k", in the controls row. Its accessible name is "divide by square root of d sub k" (it starts with the visible words "divide by", WCAG 2.5.3). The `dk` track label and slider readout show "d_k"; the knob's name is "key width d sub k (drag on chart)" and the native range is named "key width d sub k".
 - Keyboard: log rule for `dk`; Space or Enter toggles the switch.
 
 **Drawing.**
@@ -136,7 +136,7 @@ Outputs: `scores` (number[8]), `weights` (number[8]), `weightsOther` (number[8])
 
 **Readouts.** `["sd", "top", "entropy"]` → `score SD 2.02 · top weight 0.57 · entropy 1.85 bits`.
 
-**Live description.** `d_k = {dk}, {scaled ? "divided by √d_k" : "not scaled"}: scores spread with SD {sd fixed2} (expected {sdExpected fixed2}); key {topIndex+1} gets {round(top·100)}% of the weight.` Write the screen-reader variant in words: "square root of d k".
+**Live description.** `d_k = {dk}, {scaled ? "divided by √d_k" : "not scaled"}: scores spread with SD {sd fixed2} (expected {sdExpected fixed2}); key {topIndex+1} gets {round(top·100)}% of the weight.` Write the screen-reader variant in words: "square root of d sub k".
 
 **Show data table.** Columns: `key`, `score` (fixed3), `weight` (fixed3), `weight with other setting` (fixed3).
 

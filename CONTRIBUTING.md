@@ -24,7 +24,7 @@ No account and no API key are needed. The built-in samples work offline. Locally
 | `pnpm build` | production build of the app and the Worker into `dist/`. |
 | `pnpm build:kit` | rebuilds the skill's prebuilt kit bundle in `skills/explorable/kit/dist/`. Whenever you change `skills/explorable/kit/src/`, run it, rebuild the example pages (`node skills/explorable/scripts/build.mjs <spec>` for each `skills/explorable/examples/*/explorable.json`) and commit both: CI checks they are fresh. |
 | `pnpm build:examples` | rebuilds the root gallery, `examples/<slug>.html`, from `src/samples/*.json` through the skill's builder. Run it after changing a sample or the kit, and commit the pages: CI checks they are fresh. |
-| `pnpm build:images` | recaptures the README hero (`docs/assets/hero.webp`, the home page at 1440 × 900) and the social preview (`public/social-preview.png`, served for the `og:image` tags) through the harness. |
+| `pnpm build:images` | recaptures the README hero (`docs/assets/hero.webp`, the home page's hero at 1440 wide) and the social preview (`public/social-preview.png`, served for the `og:image` tags) through the harness. |
 | `pnpm build:pdf` | renders each built-in sample to `public/pdf/<slug>.pdf` (A4, every math note open) through the harness; commit the PDFs when a sample, the kit or the print stylesheet changes. |
 | `pnpm smoke` | the harness: builds, then screenshots `/` and every sample at 1280, 800 and 390 px, checking fonts, overflow and console errors. Shots land in `test-results/smoke/`. |
 | `pnpm e2e <flow…>` | runs the browser flows in `scripts/flows/` (for example `pnpm e2e gallery keyboard`), with axe and colour-vision helpers. |

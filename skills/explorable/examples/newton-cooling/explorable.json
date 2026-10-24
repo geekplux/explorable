@@ -111,7 +111,7 @@
       "heading": "A half-life for the gap",
       "paragraphs": [
         "Because the gap always shrinks by the same fraction, it takes the same time to halve, whatever the starting temperature.[[half]] A cup at 90 °C and one at 50 °C halve their gaps in the same time: 70 degrees become 35, and 30 become 15.",
-        "Drag k along the curve below. A slow cooler, k = 0.01 per minute, needs about 69 minutes per halving; a fast one, k = 0.3, about 2. Double k and the half-life halves, so the curve falls steeply and then flattens."
+        "Drag k along the curve below. A slow cooler, k = 0.01 per minute, needs about 69 minutes per halving; a fast one, k = 0.3 per minute, about 2 minutes. Double k and the half-life halves, so the curve falls steeply and then flattens."
       ],
       "figure": {
         "id": "fig-half-life",

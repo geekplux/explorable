@@ -20,7 +20,7 @@
       "id": "a-set-made-of-bits",
       "heading": "A set made of bits",
       "paragraphs": [
-        "Suppose you want to remember which words you have seen without storing the words. A Bloom filter starts with a row of m bits, all 0. To add a word, you run it through k hashes. A hash is a fixed recipe that turns a word into a position in the row, the same position every time for the same word. Each of the k hashes picks one of the m bits, and you set those bits to 1. That is all adding does: the words are not kept, only bits. The steps follow the tutorial by [[mill]].",
+        "Suppose you want to remember which words you have seen without storing the words. A Bloom filter starts with a row of m bits, all 0. To add a word, you run it through k hashes. A hash is a fixed recipe that turns a word into a position in the row, the same position every time for the same word. Each of the k hashes picks one of the m bits, and you set those bits to 1. That is all adding does: the words are not kept, only bits.",
         "To ask whether a word is in the set, you hash it the same k ways and look at its bits. If any of them is 0, the word was never added: *definitely not*. If all of them are 1, the word was probably added, but you cannot be sure, because other words may have set those bits. The filter's honest answer is *maybe*."
       ]
     },
@@ -74,7 +74,7 @@
       "heading": "Predicting the false positives",
       "paragraphs": [
         "You can predict how often “maybe” is wrong. A bit stays 0 only if every one of the k·n hashes so far has missed it. Each hash misses a given bit easily, but there are many of them, so the chance that a bit is still 0 shrinks steadily as words go in.[[zero]]",
-        "A word you never added is a false positive when all k of its bits happen to be 1. So the chance of a false positive is the chance that one bit is 1, multiplied by itself k times.[[fpr]] For m = 32, n = 8 and k = 3 that comes to about 14.7%.",
+        "A word you never added is a false positive when all k of its bits happen to be 1. So the chance of a false positive is the chance that one bit is 1, multiplied by itself k times.[[fpr]] For m = 32, n = 8 and k = 3 that comes to about 14.7%. [[mill]] gives the same estimate.",
         "The figure also measures. It asks about 50 fruits and vegetables it never added and counts how many come back maybe. At the defaults that is 10 of 50, or 20%, a little above the prediction. The prediction describes an average filter. This one happens to have 20 of its 32 bits set rather than the expected 17, and with 20 of 32 bits set, all three of a word’s bits are 1 about 24% of the time.[[luck]] A filter this small is noisy; with more bits, the measured rate settles onto the prediction."
       ]
     },
@@ -180,7 +180,7 @@
     {
       "id": "best-k",
       "kind": "math",
-      "formula": "k = (m/n)·ln 2, where FPR = (1/2)^k ≈ 0.6185^(m/n)",
+      "formula": "k = (m/n)·ln 2; then FPR = (1/2)^k ≈ 0.6185^(m/n)",
       "plain": "Setting the slope of the rate to zero gives this *k*. Half the bits are then set, so each of a word’s *k* bits is 1 half the time."
     },
     {

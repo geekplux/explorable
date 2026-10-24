@@ -4,7 +4,6 @@
 import { readFileSync } from 'node:fs';
 import { defineConfig, type Plugin } from 'vite';
 
-
 /** Ship the files the standalone builder needs beside the bundle. */
 const skillAssets: Plugin = {
   name: 'explorable-skill-assets',

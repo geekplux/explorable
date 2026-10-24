@@ -11,7 +11,7 @@ This skill turns one idea into a short read for a curious reader who knows schoo
 
 Two complete examples ship with the skill. Open the closer one before you start and copy its `explorable.json`:
 
-- `examples/bloom-filter/` uses a **registry model**: a row of 32 bits where you insert words and ask about one, then a curve of the false-positive rate. Four math notes and a source note for the tutorial it follows. Closest for algorithms and data structures.
+- `examples/bloom-filter/` uses a **registry model**: a row of 32 bits where you insert words and ask about one, then a curve of the false-positive rate. Four math notes, and a source note for the tutorial whose estimate it matches. Closest for algorithms and data structures.
 - `examples/newton-cooling/` uses **`expr-curve`**: a cooling curve with knobs for k and the starting temperature, and a marker at the half-life. Three math notes hold the law, its solution and the half-life. Closest for anything with a formula.
 
 Build and audit one in under a second (commands run from this skill's folder):
@@ -36,7 +36,7 @@ An explorable is not an illustrated article. It picks the single thing the reade
 | Coffee cools fast, then slowly | `expr-curve` | `curve` | time `x`, cooling constant `k` |
 | Anything else with a formula | `expr-curve` | `curve` | `x` or any declared param (1–3 controls) |
 
-Two ways this fails:
+Three ways this fails:
 
 - **Three ideas at once.** A figure per idea and none of them land. Pick one; name the others as follow-ups in your reply.
 - **A figure that only decorates.** If dragging the control changes nothing the reader cares about, it is the wrong control or the wrong model.
