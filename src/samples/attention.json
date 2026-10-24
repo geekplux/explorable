@@ -2,7 +2,7 @@
   "schema": 1,
   "id": "attention",
   "title": "Why attention divides by √d",
-  "dek": "Dot products of random d-dimensional vectors spread out like √d, which pushes a softmax into a one-hot spike. Dividing the scores by √d_k keeps them at unit scale, so attention stays soft and trainable.",
+  "dek": "Attention decides how much each word listens to the others. One small division keeps it from fixing on a single word.",
   "source": {
     "kind": "arxiv",
     "url": "https://arxiv.org/abs/1706.03762",

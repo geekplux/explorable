@@ -2,7 +2,7 @@
   "schema": 1,
   "id": "diffusion",
   "title": "Noise, one step at a time",
-  "dek": "A diffusion model's forward process blurs data into pure Gaussian noise over 1,000 small steps, and a closed form jumps straight to any step: x_t = √ᾱ_t·x₀ + √(1−ᾱ_t)·ε.",
+  "dek": "An image model learns by watching pictures dissolve into static, one small step at a time, and a shortcut jumps to any step at once.",
   "source": {
     "kind": "arxiv",
     "url": "https://arxiv.org/abs/2006.11239",

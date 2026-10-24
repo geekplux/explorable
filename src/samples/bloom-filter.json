@@ -2,7 +2,7 @@
   "schema": 1,
   "id": "bloom-filter",
   "title": "How a Bloom filter says “maybe”",
-  "dek": "A Bloom filter stores a set as a handful of bits. It can say “maybe” to a word it never saw, but never “no” to one it did, and the number of hashes sets how often that “maybe” is wrong.",
+  "dek": "A Bloom filter stores a set as a handful of bits. It can say “maybe” to a word it never saw, but never “no” to one it did.",
   "source": {
     "kind": "blog",
     "url": "https://llimllib.github.io/bloomfilter-tutorial/",

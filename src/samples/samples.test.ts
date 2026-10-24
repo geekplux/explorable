@@ -2,7 +2,7 @@
 import { describe, expect, it } from 'vitest';
 import { essayHtml } from '@kit/doc/essay.ts';
 import { parseDoc } from '@kit/doc/schema.ts';
-import { getSample, samples, sourceChip } from './index.ts';
+import { essayMeta, getSample, samples, sourceChip } from './index.ts';
 
 describe('built-in samples', () => {
   it('ships three samples in gallery order', () => {
@@ -32,5 +32,11 @@ describe('built-in samples', () => {
     expect(sourceChip({ kind: 'arxiv', url: 'https://arxiv.org/pdf/2006.11239v2', title: 't' })).toBe('arXiv 2006.11239');
     expect(sourceChip({ kind: 'blog', url: 'https://llimllib.github.io/bloomfilter-tutorial/', title: 't' })).toBe('llimllib.github.io');
     expect(sourceChip({ kind: 'concept', title: 'Newton cooling' })).toBe('Newton cooling');
+  });
+
+  it('counts sections and figures for the index meta line', () => {
+    expect(samples.map(essayMeta)).toEqual(['4 sections, 2 figures', '5 sections, 2 figures', '5 sections, 2 figures']);
+    const one = { ...samples[0]!, sections: samples[0]!.sections.slice(0, 1) };
+    expect(essayMeta(one)).toBe('1 section, 1 figure');
   });
 });
