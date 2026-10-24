@@ -36,10 +36,11 @@ const free = (re: string) => `(?<![\\p{L}\\p{N}])${re}(?![\\p{L}\\p{N}])`;
 /** Collapse the gaps a removal leaves, including before punctuation. */
 const tidy = (s: string) => s.replace(/\s+([.,;:!?)\]])/g, '$1').replace(/([([])\s+/g, '$1').replace(/\s{2,}/g, ' ').trim();
 /** A sentence ends at its closing punctuation, quotes and brackets, and the note markers that follow it. */
-const END = String.raw`[.!?…]+["”’)\]]*(?:\[\[[^[\]\n]{1,40}\]\])*`;
-const AFTER_END = new RegExp(`${END}\\s+$`);
-const END_AHEAD = new RegExp(`${END}(?=\\s|$)`);
-const ENDS = new RegExp(`${END}\\s+`, 'g');
+// A source marker whose label ends in "et al." has no full stop of its own: a capital after it starts a sentence.
+const END = String.raw`(?:[.!?…]+["”’)\]]*|\[\[source\]\](?=\s+\p{Lu}))(?:\[\[[^[\]\n]{1,40}\]\])*`;
+const AFTER_END = new RegExp(`${END}\\s+$`, 'u');
+const END_AHEAD = new RegExp(`${END}(?=\\s|$)`, 'u');
+const ENDS = new RegExp(`${END}\\s+`, 'gu');
 const startsSentence = (s: string, at: number) => at === 0 || AFTER_END.test(s.slice(0, at));
 const sentenceEnd = (s: string, from: number) => {
   const m = END_AHEAD.exec(s.slice(from));
@@ -99,10 +100,12 @@ export function markCitations(text: string, src: DocSource, marks = true): { tex
       ...(authors.length >= 3 && authors.length <= 4 ? [`${rest.slice(0, -1).map((r) => `,\\s*${r}`).join('')},?${and}${rest.at(-1)}`] : []),
     ];
     const tail = `(?:${tails.join('|')})`;
-    const year = `(?:${src.year ?? '\\d{4}'}[a-z]?(?!\\d))`;
+    // Without a known year, only a bracketed 19xx/20xx counts, never ", 1024".
+    const year = `(?:${src.year ?? '(?:19|20)\\d{2}'}[a-z]?(?!\\d))`;
+    const comma = src.year ? `|,\\s*${year}` : '';
     rules.push([new RegExp(`\\(\\s*${first}${tail}?,?\\s*${year}?\\s*\\)`, 'gu'), marks ? `(${MARK})` : '']);
     if (marks) {
-      rules.push([new RegExp(`${first}(?:${tail}(?:\\s*\\(${year}\\)|,\\s*${year})?|\\s*\\(${year}\\)|,\\s*${year})`, 'gu'), MARK]);
+      rules.push([new RegExp(`${first}(?:${tail}(?:\\s*\\(${year}\\)${comma})?|\\s*\\(${year}\\)${comma})`, 'gu'), MARK]);
       if (/\s/.test(authors[0]!.trim())) rules.push([new RegExp(free(esc(authors[0]!.trim())), 'gu'), MARK]);
     }
   }

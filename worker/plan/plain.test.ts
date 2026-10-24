@@ -136,3 +136,17 @@ describe('citations of the source', () => {
     expect(markCitations('It holds (Vaswani et al., 2017).', paper, false).text).toBe('It holds.');
   });
 });
+
+describe('review round 2', () => {
+  it('reads a year after a comma only when the metadata has one', () => {
+    const noYear: DocSource = { kind: 'blog', title: 'Sizing filters', authors: ['Ann Bloom'] };
+    expect(markCitations('Size the Bloom, 1024 bits is enough.', noYear)).toEqual({ text: 'Size the Bloom, 1024 bits is enough.', cited: 0 });
+    expect(markCitations('Bloom (2019) sized it.', noYear).text).toBe('[[source]] sized it.');
+  });
+
+  it('starts a sentence after an "et al." label with no full stop of its own', () => {
+    const r = run(['The idea is from Vaswani et al. In symbols: `q·k = Σᵢ qᵢkᵢ`.'], [{ id: 'q', formula: 'q·k = Σᵢ qᵢkᵢ', plain: 'Multiply and add.' }]);
+    expect(r.paragraphs[0]).toEqual(['The idea is from [[source]][[m1]]']);
+    expect(r.report).toMatchObject({ moved: 1, kept: 0 });
+  });
+});

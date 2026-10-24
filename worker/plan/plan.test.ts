@@ -115,6 +115,8 @@ describe('prompt', () => {
     expect(citeLine({ title: 'Bloom filters by example', authors: ['Bill Mill'] })).toBe('CITE: [[source]] reads "Bill Mill" (one person)');
     expect(citeLine({ title: 'Attention Is All You Need', authors: ['Ashish Vaswani', 'Noam Shazeer', 'Niki Parmar'] })).toBe('CITE: [[source]] reads "Vaswani et al." (several people)');
     expect(citeLine({ title: 'Ropes', authors: [] })).toBe('CITE: none; do not write [[source]]');
+    // Metadata cannot break out of the quotes or reorder the line.
+    expect(citeLine({ title: 't', authors: ['Ann "The Hand" Lee\u202e\u0007'] })).toBe('CITE: [[source]] reads "Ann The Hand Lee" (one person)');
     expect(SYSTEM_PROMPT).toMatch(/the CITE line says what it reads, so match the verb/);
   });
 });

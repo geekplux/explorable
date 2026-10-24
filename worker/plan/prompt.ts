@@ -76,7 +76,10 @@ export interface PromptSource {
 /** How `[[source]]` will read, from the metadata, so the model can match the verb. */
 export function citeLine(src: Pick<PromptSource, 'title' | 'authors'>): string {
   if (!src.authors.length) return 'CITE: none; do not write [[source]]';
-  return `CITE: [[source]] reads "${oneLine(sourceLabel(src))}" (${src.authors.length === 1 ? 'one person' : 'several people'})`;
+  // The label sits in quotes on its own line: no quote marks, bidi overrides or control characters from the metadata.
+  // oxlint-disable-next-line no-control-regex -- stripping control characters is the point
+  const label = oneLine(sourceLabel(src).replace(/["\u0000-\u001f\u007f\u202a-\u202e\u2066-\u2069]/g, ' '));
+  return `CITE: [[source]] reads "${label}" (${src.authors.length === 1 ? 'one person' : 'several people'})`;
 }
 
 /** Source line, match hints, the cite line and the article text, fenced and capped at MAX_SOURCE_CHARS. */
