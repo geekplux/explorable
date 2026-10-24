@@ -29,6 +29,7 @@ const FORMULAS = [
   'Written as x^{2} it is plain.',
   'The energy is E = mc².',
   'A line is y = 2x + 1.',
+  'It cools as T(t) = Tₐ + (T₀ − Tₐ)·e^(−kt) from any start.',
 ];
 
 // Plain rewrites and settings that read as words: a variable, a value, one root or one operation.
@@ -56,6 +57,7 @@ const PLAIN = [
   'T cells, Mr. T, the A-team, and/or the e.g. clause; it costs 5 m/s, in 2017–2020, at 10:30.',
   'The k-means method, the 3-4 split and a well-known fact.',
   'A field of 5 km² and a box of 20 cm³.',
+  'Pick one (and/or both) of them; the ratio is 3/4 or so.',
 ];
 
 describe('bodyHasFormula', () => {
@@ -70,6 +72,7 @@ describe('bodyHasFormula', () => {
   it('names the stretch that reads like a formula', () => {
     expect(findFormula('It is `q·k = Σᵢ qᵢkᵢ`, a sum.')).toBe('`q·k = Σᵢ qᵢkᵢ`');
     expect(findFormula('So x_t = √ᾱ_t·x₀ + √(1 − ᾱ_t)·ε holds.')).toBe('x_t = √ᾱ_t·x₀ + √(1 − ᾱ_t)·ε');
+    expect(findFormula('So T(t) = Tₐ + (T₀ − Tₐ)·e^(−kt) for all t.')).toBe('T(t) = Tₐ + (T₀ − Tₐ)·e^(−kt)');
   });
 
   it('ignores note markers and emphasis', () => {

@@ -1,8 +1,10 @@
 #!/usr/bin/env node
 // node audit.mjs <explorable.json | page.html>
-// Proves a spec or a built page is correct: schema, models, params, expressions,
-// palette (CVD + contrast via the kit), no network, reduced motion, landmarks.
-// Prints numbered problems and exits 1, or ends with the line `audit passed`.
+// Proves a spec or a built page is correct: schema (v1 or v2, with note references),
+// models, params, expressions, palette (CVD + contrast via the kit), no network,
+// reduced motion, landmarks. Prints numbered problems and exits 1, or ends with the
+// line `audit passed`. Body text that reads like a formula is a warning, printed
+// before that line: it belongs in a math note (schema 2).
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -139,6 +141,22 @@ export function auditDoc(input) {
   return figures.flatMap((fig) => auditFigure(fig).map((p) => `figure "${fig.id}": ${p}`));
 }
 
+/** Body text (the dek, paragraphs, the takeaway) that reads like a formula, as `kit.findFormula` sees it. */
+export function docWarnings(input) {
+  const parsed = kit.parseDoc(input);
+  if (!parsed.ok) return [];
+  const { doc } = parsed;
+  const bodies = [
+    ['dek', doc.dek],
+    ...doc.sections.flatMap((s, i) => s.paragraphs.map((p, j) => [`sections[${i}].paragraphs[${j}]`, p])),
+    ['takeaway', doc.takeaway],
+  ];
+  return bodies.flatMap(([path, text]) => {
+    const formula = kit.findFormula(text);
+    return formula ? [`${path} reads like a formula (${formula}); say it in words and move the formula into a math note (schema 2, references/spec-format.md)`] : [];
+  });
+}
+
 const DARK = /@media\s*\(\s*prefers-color-scheme\s*:\s*dark\s*\)\s*\{((?:[^{}]*\{[^{}]*\})*[^{}]*)\}/gi;
 const decls = (css) => [...css.matchAll(/--([\w-]+)\s*:\s*([^;}]+)/g)].map((m) => [m[1], m[2].trim()]);
 
@@ -189,11 +207,11 @@ export function auditPage(html, doc) {
   if (!/<title>\s*\S[\s\S]*?<\/title>/i.test(html)) out.push('the page has no <title>');
   if ((outside.match(/<main\b/gi) ?? []).length !== 1) out.push('the page needs exactly one <main> landmark');
   if (!/<h1\b/i.test(outside)) out.push('the page has no <h1>');
-  const source = doc?.source?.url && kit.safeHttpUrl(doc.source.url);
+  const links = new Set([doc?.source?.url, ...(doc?.notes ?? []).map((n) => n.url)].map((u) => u && kit.safeHttpUrl(u)).filter(Boolean).map(kit.escapeHtml));
   for (const m of outside.matchAll(/\s(src|href|srcset|action|poster|data)\s*=\s*["']?([^"'\s>]*)/gi)) {
     const [, attr, value] = m;
-    if (attr.toLowerCase() === 'href' && (value.startsWith('#') || (source && value === kit.escapeHtml(source)))) continue;
-    if (!value.startsWith('data:') || attr.toLowerCase() === 'src') out.push(`external reference ${attr}="${value}": only source.url may link out, and nothing may load from the network`);
+    if (attr.toLowerCase() === 'href' && (value.startsWith('#') || links.has(value))) continue;
+    if (!value.startsWith('data:') || attr.toLowerCase() === 'src') out.push(`external reference ${attr}="${value}": only source.url and source notes may link out, and nothing may load from the network`);
   }
   for (const m of css.matchAll(/@import\b|url\(\s*["']?(?!data:)[^)]*\)/gi)) out.push(`CSS loads ${m[0]}: inline it as a data: URL`);
   if (/\sstyle\s*=/i.test(outside)) out.push('inline style= attribute in the markup; put styles in the stylesheet');
@@ -201,6 +219,9 @@ export function auditPage(html, doc) {
   const shells = (outside.match(/<figure class="xfig"/g) ?? []).length;
   const figures = doc?.sections?.filter((s) => s.figure).length ?? 0;
   if (doc && shells !== figures) out.push(`${shells} figure shells in the markup but ${figures} figures in the doc`);
+  const math = doc?.notes?.filter((n) => n.kind === 'math').length ?? 0;
+  const markers = (outside.match(/<button class="xnote-mk"/g) ?? []).length;
+  if (doc && markers !== math) out.push(`${markers} math markers in the markup but ${math} math notes in the doc`);
   return [...out, ...auditPalette(css)];
 }
 
@@ -224,6 +245,17 @@ export function auditSpec(input) {
   return parsed.ok ? [...problems, ...auditPage(buildPage(parsed.doc, { fonts: false }), parsed.doc)] : problems;
 }
 
+/** The doc in a file: a spec, or the doc a built page embeds (undefined if there is none). */
+function readDoc(file, text) {
+  try {
+    if (!/\.html?$/i.test(file)) return JSON.parse(text);
+    const m = /<script type="application\/json" id="explorable-doc">([\s\S]*?)<\/script>/.exec(text);
+    return m ? JSON.parse(m[1]) : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
 /** Audit a file by extension. */
 export function auditFile(file) {
   const text = readFileSync(file, 'utf8');
@@ -235,6 +267,12 @@ export function auditFile(file) {
   }
 }
 
+/** Warnings for a file (they never fail the audit). */
+export function warnFile(file) {
+  const doc = readDoc(file, readFileSync(file, 'utf8'));
+  return doc === undefined ? [] : docWarnings(doc);
+}
+
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   const file = process.argv[2];
   if (!file) {
@@ -243,8 +281,9 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
   }
   const problems = auditFile(file);
   console.log(`audit ${file}`);
+  if (problems.length) console.log(problems.map((p, i) => `${i + 1}. ${p}`).join('\n'));
+  for (const w of warnFile(file)) console.log(`warning: ${w}`);
   if (problems.length) {
-    console.log(problems.map((p, i) => `${i + 1}. ${p}`).join('\n'));
     console.log(`audit failed: ${problems.length} problem${problems.length === 1 ? '' : 's'}`);
     process.exitCode = 1;
   } else {

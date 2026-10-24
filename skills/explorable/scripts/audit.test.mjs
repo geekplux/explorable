@@ -7,7 +7,7 @@ import { dirname, join } from 'node:path';
 import { describe, it } from 'node:test';
 import { fileURLToPath } from 'node:url';
 import * as kit from '../kit/dist/explorable-kit.js';
-import { auditFile, auditHtml, auditSpec } from './audit.mjs';
+import { auditFile, auditHtml, auditSpec, docWarnings, warnFile } from './audit.mjs';
 import { buildPage } from './build.mjs';
 
 const here = (p) => fileURLToPath(new URL(p, import.meta.url));
@@ -333,4 +333,81 @@ describe('audit: the app samples pass', () => {
       assert.equal(out.trim().split('\n').at(-1), 'audit passed');
     });
   }
+});
+
+// ExplorableDoc v2: notes behind markers, checked by the schema; formulas left in the body are warnings.
+const v2 = () => {
+  const doc = newton();
+  doc.schema = 2;
+  for (const section of doc.sections) section.paragraphs = ['Drag the time and watch the gap close.'];
+  doc.sections[0].paragraphs = ['Hot coffee loses heat fast at first, then slowly.[[law]] [[newton]] wrote it down.'];
+  doc.takeaway = 'The gap to the room shrinks by the same share every minute.';
+  doc.notes = [
+    { id: 'law', kind: 'math', formula: 'dT/dt = −k·(T − Tₐ)', plain: 'The cooling rate is proportional to the gap to the room.' },
+    { id: 'newton', kind: 'source', label: 'Newton', title: 'Scala graduum caloris', detail: 'Isaac Newton, 1701', url: 'https://example.org/newton-1701' },
+  ];
+  return doc;
+};
+
+describe('audit: ExplorableDoc v2 notes', () => {
+  it('a v2 spec and its page pass, and the source note may link out', () => {
+    assert.deepEqual(auditSpec(v2()), []);
+    const html = page(v2());
+    assert.match(html, /<button class="xnote-mk"[^>]*aria-controls="note-law"/);
+    assert.match(html, /href="https:\/\/example\.org\/newton-1701"/);
+    assert.deepEqual(auditHtml(html), []);
+  });
+  it('an unknown note id fails with its path', () => {
+    const doc = v2();
+    doc.sections[0].paragraphs[0] += ' Again.[[nope]]';
+    fails(auditSpec(doc), /schema: sections\[0\]\.paragraphs\[0\]: unknown note "nope"/);
+  });
+  it('a note never referenced fails', () => {
+    const doc = v2();
+    doc.sections[0].paragraphs[0] = 'Plain words only.';
+    fails(auditSpec(doc), /schema: notes\[0\]: note "law" is never referenced/);
+  });
+  it('two math markers in one paragraph fail', () => {
+    const doc = v2();
+    doc.notes.push({ id: 'law2', kind: 'math', formula: 'T(t) = Tₐ + (T₀ − Tₐ)·e^(−kt)', plain: 'The solution.' });
+    doc.sections[0].paragraphs[0] += ' Solved.[[law2]]';
+    fails(auditSpec(doc), /at most one math note per paragraph/);
+  });
+  it('markers in a v1 spec fail', () => {
+    const doc = v2();
+    doc.schema = 1;
+    delete doc.notes;
+    fails(auditSpec(doc), /needs "schema": 2/);
+  });
+  it('a link that is neither the source nor a source note still fails', () => {
+    const doc = v2();
+    const html = page(doc).replace('href="https://example.org/newton-1701"', 'href="https://evil.example/"');
+    fails(auditHtml(html), /external reference href="https:\/\/evil\.example\/"/);
+  });
+  it('a page whose math markers do not match the doc fails', () => {
+    const html = page(v2()).replace(/<button class="xnote-mk"[\s\S]*?<\/button>/, '');
+    fails(auditHtml(html), /0 math markers in the markup but 1 math notes in the doc/);
+  });
+  it('a formula in body text is a warning, not a problem', () => {
+    const doc = v2();
+    doc.takeaway = 'So T(t) = Tₐ + (T₀ − Tₐ)·e^(−kt) for all t.';
+    assert.deepEqual(auditSpec(doc), []);
+    const warnings = docWarnings(doc);
+    assert.equal(warnings.length, 1);
+    assert.match(warnings[0], /^takeaway reads like a formula \(T\(t\) = Tₐ \+ \(T₀ − Tₐ\)·e\^\(−kt\)\); say it in words/);
+    assert.deepEqual(docWarnings(v2()), []);
+  });
+  it('the CLI prints warnings before "audit passed" (the v1 examples keep their formulas)', () => {
+    const file = here('../examples/newton-cooling/explorable.json');
+    assert.ok(warnFile(file).length > 0, 'newton-cooling has formulas in its paragraphs');
+    const lines = execFileSync(process.execPath, [AUDIT, file], { encoding: 'utf8' }).trim().split('\n');
+    assert.ok(lines.slice(1, -1).every((l) => l.startsWith('warning: ')), lines.join('\n'));
+    assert.equal(lines.at(-1), 'audit passed');
+  });
+  it('the app samples have no formula in their body text', () => {
+    for (const name of ['attention', 'bloom-filter', 'diffusion']) {
+      const file = join(APP_SAMPLES, `${name}.json`);
+      if (existsSync(file)) assert.deepEqual(warnFile(file), [], name);
+    }
+  });
 });

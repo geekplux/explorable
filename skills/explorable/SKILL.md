@@ -48,7 +48,7 @@ Two ways this fails:
    ```sh
    node -e "import('./kit/dist/explorable-kit.js').then(k => console.log(k.searchModels('bloom filter false positives').map(m => m.id)))"
    ```
-3. **Write `explorable.json`.** Copy the closest example to where the page should live (here `/tmp/explorable-draft`) and edit it: 2–6 sections, a figure where the reader should *do* something, 1–3 controls and 1–3 readouts per figure, alt text of at least 40 characters. Field limits are in `references/spec-format.md`, figure options in `references/figure-kinds.md`, voice in `references/writing.md`.
+3. **Write `explorable.json`.** Copy the closest example to where the page should live (here `/tmp/explorable-draft`) and edit it: 2–6 sections, a figure where the reader should *do* something, 1–3 controls and 1–3 readouts per figure, alt text of at least 40 characters. Use `"schema": 2` to put formulas and citations behind note markers (`[[id]]`). Field limits are in `references/spec-format.md`, figure options in `references/figure-kinds.md`, voice in `references/writing.md`.
    ```sh
    mkdir -p /tmp/explorable-draft
    cp examples/newton-cooling/explorable.json /tmp/explorable-draft/explorable.json
@@ -76,7 +76,7 @@ Every item is enforced by the kit or the audit; none rests on good intentions.
 - **Never colour alone, CVD-safe.** Series differ by line style, markers and direct labels as well as hue. The audit rejects colour values in figure options, more than 3 hue-coded series, any series pair too close under protan, deutan or tritan simulation, and text or graphics below WCAG contrast.
 - **Reduced motion.** Under `prefers-reduced-motion: reduce` there is no easing and no entrance animation; the audit fails a page without that media rule.
 - **No decorative 3D.** The figure kinds are `bars`, `bits`, `histogram` and `curve`, all flat SVG; the schema rejects any other kind. A request for 3D gets the 2D figure that carries the idea, with the reason stated.
-- **Offline and self-contained.** One file with inline CSS, JS and font. A Content-Security-Policy blocks the network, and the audit rejects any external `src` or `href` except a link to `source.url`.
+- **Offline and self-contained.** One file with inline CSS, JS and font. A Content-Security-Policy blocks the network, and the audit rejects any external `src` or `href` except links to `source.url` and to source notes.
 - **True words.** State only facts and numbers the source or the model gives. Nothing about money, prices, trading or payments.
 
 ## What ships in the folder

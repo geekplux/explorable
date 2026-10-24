@@ -11,15 +11,16 @@ Write the idea as one sentence a curious non-expert can follow before anything e
 - Start from something the reader already knows ("A cup at 90 °C in a 20 °C room loses heat quickly").
 - Add one step per section: 2–6 sections, 1–4 short paragraphs each.
 - Put a figure where the reader should *do* something. The section that holds it says what to drag and what to watch: "Drag T below 1 and watch the top word take almost everything."
-- End with a `takeaway` that restates the idea with its key formula.
+- End with a `takeaway` that restates the idea in words. Its formula, if it has one, goes in a math note (schema 2, `spec-format.md`).
 
 ## Voice
 
 - Calm, precise and curious. Short paragraphs of 2–4 sentences, present tense.
 - Use "you" sparingly, mostly to point at a figure: "Drag k up."
 - Every number has its unit: "13.9 minutes", "32 bits", "0.05 per minute".
-- Formulas in Unicode, never LaTeX: `√d_k`, `e^(−kt)`, `x₀`, `·`, `−`, `≈`. Put a formula in `` `code` ``.
-- The only markup is `*em*`, `**strong**` and `` `code` ``. No headings in paragraphs, no lists, no links (the page links to `source.url` once, for you).
+- Plain words first. In schema 2 a formula goes in a math note after its sentence (`[[id]]`), not in the paragraph; a single variable or setting (`T = 1`, `√d_k`) can stay. The audit warns about body text that reads like a formula.
+- Formulas in Unicode, never LaTeX: `√d_k`, `e^(−kt)`, `x₀`, `·`, `−`, `≈`. In schema 1, put a formula in `` `code` ``.
+- The only markup is `*em*`, `**strong**`, `` `code` `` and note markers `[[id]]`. No headings in paragraphs, no lists, no links (the page links to `source.url` once, for you).
 
 ## Alt text and captions
 

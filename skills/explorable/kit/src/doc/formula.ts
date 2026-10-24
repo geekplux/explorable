@@ -29,18 +29,22 @@ const FUNCS = new Set(['exp', 'log', 'ln', 'lg', 'sin', 'cos', 'tan', 'tanh', 'm
 /** Units written with a power ("5 km²") are not products. */
 const UNITS = new Set(['km', 'cm', 'mm', 'nm', 'dm', 'ms', 'kg', 'Hz']);
 
-type Tok = { t: 'num' | 'var' | 'fn' | 'bin' | 'rel' | 'big' | 'root' | 'open' | 'close' | 'sup' | 'sep'; s: string; space: boolean };
+type Tok = { t: 'num' | 'var' | 'fn' | 'bin' | 'rel' | 'big' | 'root' | 'open' | 'close' | 'sup' | 'sep'; s: string; space: boolean; at: number; end: number };
+/** Operators that make a short word right after them a product ("−kt"); not "/", as in "and/or". */
+const TIGHT = new Set('+−×·^=≈≤≥<>√'.split(''));
 
 /** Tokens of one segment; `sep` ends a run (a word, a comma, a full stop, a quote). */
 function tokenize(text: string, code: boolean): Tok[] {
   const toks: Tok[] = [];
   let space = false;
-  const push = (t: Tok['t'], s: string) => {
-    toks.push({ t, s, space });
+  let start = 0;
+  const push = (t: Tok['t'], s: string, end = start + s.length) => {
+    toks.push({ t, s, space, at: start, end });
     space = false;
   };
   for (let i = 0; i < text.length; ) {
     const c = text[i]!;
+    start = i;
     if (/\s/.test(c)) {
       space = true;
       i++;
@@ -65,10 +69,11 @@ function tokenize(text: string, code: boolean): Tok[] {
       }
       const letters = word.replace(/\p{M}/gu, '');
       // A short run of letters with an index or a power is a product of variables ("mc²"), as is any run in code.
-      const product = code || (letters.length <= 3 && !UNITS.has(word) && (SUP.test(text[j] ?? '') || SUB.test(text[i + word.length] ?? '')));
-      if (letters.length === 1) push('var', text.slice(i, j));
+      const short = letters.length <= 3 && !UNITS.has(word);
+      const product = code || (short && (SUP.test(text[j] ?? '') || SUB.test(text[i + word.length] ?? '') || TIGHT.has(text[i - 1] ?? '')));
+      if (letters.length === 1) push('var', text.slice(i, j), j);
       else if (FUNCS.has(word)) push('fn', word);
-      else if (product) for (const ch of letters) push('var', ch);
+      else if (product) [...letters].forEach((ch, n) => push('var', ch, n === letters.length - 1 ? j : start + 1));
       else push('sep', word);
       i = j;
     } else if (SUP.test(c)) {
@@ -148,7 +153,7 @@ export function findFormula(text: string): string | null {
     const code = i % 2 === 1;
     const body = code ? part.slice(1, -1) : part.replace(/\*/g, '');
     for (const run of runs(tokenize(body, code))) {
-      if (runIsFormula(run, code)) return code ? part : run.map((t, j) => (j && t.space ? ' ' : '') + t.s).join('');
+      if (runIsFormula(run, code)) return code ? part : body.slice(run[0]!.at, run[run.length - 1]!.end);
     }
   }
   return null;
