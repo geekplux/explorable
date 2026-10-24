@@ -165,7 +165,7 @@
       "id": "curve",
       "kind": "math",
       "formula": "T(t) = Tₐ + (T₀ − Tₐ)·e^(−kt)",
-      "plain": "After t minutes the cup is at the room temperature plus what is left of the starting gap, which shrinks by the same fraction every minute; k sets how fast."
+      "plain": "After *t* minutes the cup is at the room temperature plus what is left of the starting gap, which shrinks by the same fraction every minute; k sets how fast."
     },
     {
       "id": "half",
