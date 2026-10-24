@@ -2,24 +2,27 @@
 
 Spec: [DESIGN.md](DESIGN.md). Targets: [target/](target/). Requested by Sean on 2026-10-24.
 
-Seven stacked PRs. Each branch starts from the previous one; each PR's base is the previous branch, so they review in order. Nothing merges until Sean reviews; merging to `main` deploys (Workers Builds).
+Eight stacked PRs. Each branch starts from the previous one; each PR's base is the previous branch, so they review in order. Nothing merges until Sean reviews; merging to `main` deploys (Workers Builds).
 
 | # | Branch | What |
 |---|---|---|
-| 1 | `redesign-1-foundation` | Radix tokens light + dark, fonts, spiral logo, header, footer, Made by GeekPlux |
-| 2 | `redesign-2-home` | Home: hero with live figure, essay index, how it works, plain copy |
-| 3 | `redesign-3-essay` | Essay layout, gutter contents, italic variables, figure chrome, motion |
-| 4 | `redesign-4-notes` | ExplorableDoc v2 notes, math and source markers, samples rewritten in plain words |
-| 5 | `redesign-5-ai-plain` | Prompt p3, Worker schema + post-process, reading-level flag |
-| 6 | `redesign-6-pdf` | PDF button, print stylesheet, pre-rendered sample PDFs |
-| 7 | `redesign-7-skill-docs` | Skill, references, evals, examples, README, social image, CHANGELOG |
+| 1 | `redesign-1-tokens` | Radix tokens light + dark, fonts |
+| 2 | `redesign-2-logo-chrome` | Spiral logo, header, footer, Made by GeekPlux |
+| 3 | `redesign-3-home` | Home: hero with live figure, essay index, how it works, plain copy |
+| 4 | `redesign-4-essay` | Essay layout, gutter contents, italic variables, figure chrome, motion |
+| 5 | `redesign-5-notes` | ExplorableDoc v2 notes, math and source markers, samples rewritten in plain words |
+| 6 | `redesign-6-ai-plain` | Prompt p3, Worker schema + post-process, reading-level flag |
+| 7 | `redesign-7-pdf` | PDF button, print stylesheet, pre-rendered sample PDFs |
+| 8 | `redesign-8-skill-docs` | Skill, references, evals, examples, README, social image, CHANGELOG |
+
+Phase 1 of the acceptance list below was split into PRs 1 and 2 to keep each near the line budget; from "Phase 2" on, phase n is PR n + 1.
 
 ## Conventions for every phase
 
 - Line budget about 400 changed lines, excluding lockfiles, fonts and other binaries, sample JSON, generated `kit/dist`, built examples, screenshots and docs under `docs/redesign/`.
 - Every phase: `pnpm lint`, `pnpm typecheck`, `pnpm test`, `pnpm build`, and `pnpm build:kit` when the kit changed (the committed `kit/dist` must match). The headless browser suite runs once, at the end, for the flows the phase touched.
 - Two review rounds (verify, fix, verify, fix), then stop.
-- One or two before/after screenshots at 1440 light as WebP in `docs/screenshots/redesign-<n>/` for the PR.
+- One or two before/after screenshots at 1440 light as WebP in `docs/screenshots/redesign-<PR number>/` for the PR.
 - Never deploy, never merge, never push to `main`, never edit `.claude/settings.json`, never commit secrets, never mention Sean's employer, nothing finance-related.
 
 ## Phase 1: foundation
