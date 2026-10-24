@@ -10,6 +10,17 @@ export const NOTE_ID = /^[a-z][a-z0-9-]{0,23}$/;
 /** A note marker, `[[id]]`. Anything between the brackets counts, so a mistyped id is reported, not shown. */
 export const NOTE_MARK = /\[\[([^[\]\n]{1,40})\]\]/g;
 
+/** "Bill Mill", "A and B", or "Vaswani et al.": the byline's authors, and the label of a source note the Worker builds. */
+export function authorLine(authors: readonly string[] | undefined): string {
+  if (!authors || authors.length === 0) return '';
+  if (authors.length === 1) return authors[0] ?? '';
+  if (authors.length === 2) return `${authors[0]} and ${authors[1]}`;
+  return `${surname(authors[0] ?? '')} et al.`;
+}
+
+/** The family name a citation uses: the last word of a name. */
+export const surname = (name: string): string => name.trim().split(/\s+/).pop() ?? '';
+
 /** The note ids a text references, in order. */
 export function noteRefs(text: string): string[] {
   return [...text.matchAll(NOTE_MARK)].map((m) => m[1]!.trim());

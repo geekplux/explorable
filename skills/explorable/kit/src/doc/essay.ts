@@ -1,17 +1,10 @@
 import { docVars, escapeHtml, formatInline, mathHtml, safeHttpUrl } from './inline.ts';
-import { NOTE_MARK } from './notes.ts';
+import { authorLine, NOTE_MARK } from './notes.ts';
 import { mountFigure, type MountOptions } from '../runtime/mount.ts';
 import { hydrateNotes } from '../runtime/notes.ts';
 import type { ExplorableDoc, FigureSpec, MathNote, Note, SourceNote } from './schema.ts';
 
-/** "Bill Mill", "A and B", or "Vaswani et al." */
-export function authorLine(authors: string[] | undefined): string {
-  if (!authors || authors.length === 0) return '';
-  if (authors.length === 1) return authors[0] ?? '';
-  if (authors.length === 2) return `${authors[0]} and ${authors[1]}`;
-  const surname = (authors[0] ?? '').trim().split(/\s+/).pop() ?? '';
-  return `${surname} et al.`;
-}
+export { authorLine } from './notes.ts';
 
 /** "Based on <title>, Vaswani et al., 2017", plus one sentence for an AI-written essay (DESIGN §6). */
 function byline(doc: ExplorableDoc): string {
