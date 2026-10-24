@@ -46,12 +46,17 @@ export function playThumb(svg: SVGSVGElement): void {
   if (playing.has(svg)) return;
   playing.add(svg);
   const rest = Number(svg.dataset.at);
+  const still = svg.innerHTML; // the generated drawing, put back exactly at the end
   const start = performance.now();
   const frame = (now: number) => {
-    const t = Math.min(1, (now - start) / SWEEP_MS);
-    drawThumb(svg, t < 1 ? sweepAt(rest, t) : rest);
-    if (t < 1) requestAnimationFrame(frame);
-    else playing.delete(svg);
+    const t = (now - start) / SWEEP_MS;
+    if (t < 1) {
+      drawThumb(svg, sweepAt(rest, Math.max(0, t)));
+      requestAnimationFrame(frame);
+    } else {
+      svg.innerHTML = still;
+      playing.delete(svg);
+    }
   };
   requestAnimationFrame(frame);
 }

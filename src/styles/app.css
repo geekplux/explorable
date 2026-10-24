@@ -71,11 +71,12 @@
 .offline-banner svg { flex: none; width: 16px; height: 16px; color: var(--text-2); }
 .search-results { margin-top: 24px; font-family: var(--font-ui); }
 .search-results h2 { margin: 0; font: 500 var(--text-14)/1.5 var(--font-ui); }
+.search-results .essay-index { margin-top: 8px; border-top: var(--hairline) solid var(--line); }
 .search-count { margin: 0; font-size: var(--text-14); line-height: 1.5; color: var(--text-2); }
 
 /* The live figure: hairlines above and below, no card; the kit's essay chrome stays for the essay page. */
 .hero-fig { margin: 0; padding: 16px 0 14px; border-block: var(--hairline) solid var(--line-2); font-family: var(--font-ui); }
-.hero-fig-title { margin: 0 0 16px; font: 500 var(--text-14)/1.4 var(--font-ui); }
+.hero-fig-title { margin: 0; font: 500 var(--text-14)/1.4 var(--font-ui); }
 .hero-fig .xfig-drawing { aspect-ratio: auto; height: 300px; }
 .hero-fig :is(.xfig-chip, .xfig-controls, .xfig-data-toggle, .xfig-top, .xfig-axis-name, .xfig-grid.is-minor, .xfig-knob-grip, .xfig-knob-hint) { display: none; }
 .hero-fig .xfig-svg text { font: 400 var(--text-12) var(--font-ui); fill: var(--text-2); }
@@ -145,6 +146,7 @@
   .hero { padding-block: 40px 56px; }
   .url-field { margin-top: 28px; }
   .url-row { flex-direction: column; }
+  .url-row input { flex: none; }
   .hero-fig .xfig-drawing { height: 260px; }
   .essay-row, .essay-index.is-compact .essay-row { grid-template-columns: 32px minmax(0, 1fr); gap: 8px; padding: 24px 0; }
   .home-section + .home-section { margin-top: 64px; }

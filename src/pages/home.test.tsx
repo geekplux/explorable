@@ -37,8 +37,7 @@ describe('home', () => {
     expect(texts('#essays .essay-src')).toEqual(['arXiv 1706.03762', 'llimllib.github.io', 'arXiv 2006.11239']);
     expect(texts('#essays .essay-meta > span:last-child')).toEqual(['4 sections, 2 figures', '5 sections, 2 figures', '5 sections, 2 figures']);
     expect(host.querySelectorAll('#essays .essay-thumb svg.thumb')).toHaveLength(3);
-    const title = host.querySelector(`[id="${rows[0]!.getAttribute('aria-labelledby')}"]`);
-    expect(title?.textContent).toBe('Why attention divides by √d');
+    expect(rows[0]!.querySelector('.essay-title')?.textContent).toBe('Why attention divides by √d');
     // No chips, eyebrows or "·" left on the page.
     expect(host.querySelector('.try, .chip, .kicker, .card')).toBeNull();
     expect(host.textContent).not.toContain('·');
