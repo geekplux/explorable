@@ -38,8 +38,10 @@ export function createHandle(parent: SVGElement, { def, onChange, fill }: Handle
   const root = svgEl(parent, 'g', { class: 'xfig-handle' });
   const band = svgEl(root, 'rect', { class: 'xfig-track-hit' });
   const filled = fill ? svgEl(root, 'path', { class: 'xfig-track-fill', 'aria-hidden': 'true' }) : undefined;
+  // The symbol in words ("d_k" reads "d sub k"), added unless the spoken label already ends with it.
+  const said = def.symbol?.replace(/_/g, ' sub ');
   const knob = svgEl(root, 'g', {
-    class: 'xfig-knob', role: 'slider', tabindex: 0, 'aria-label': `${spoken(def)} (${def.symbol && !spoken(def).endsWith(` ${def.symbol}`) ? `${def.symbol}, ` : ''}drag on chart)`,
+    class: 'xfig-knob', role: 'slider', tabindex: 0, 'aria-label': `${spoken(def)} (${said && !spoken(def).endsWith(` ${said}`) ? `${said}, ` : ''}drag on chart)`,
     'aria-valuemin': def.min, 'aria-valuemax': def.max, 'aria-orientation': 'horizontal',
   });
   const move = svgEl(knob, 'g');

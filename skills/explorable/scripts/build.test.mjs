@@ -26,8 +26,9 @@ describe('buildPage', () => {
     assert.match(html, /<main id="explorable"><article class="essay" data-doc="newton-cooling">/);
     assert.match(html, /http-equiv="Content-Security-Policy" content="default-src 'none'; .*script-src 'sha256-/);
   });
-  it('inlines the serif font unless fonts are off', () => {
+  it('inlines the serif font and its math signs unless fonts are off', () => {
     assert.match(html, /@font-face\{font-family:"Explorable Serif";src:url\(data:font\/woff2;base64,/);
+    assert.match(html, /font-display:swap;unicode-range:[^}]*U\+221A[^}]*\}/, 'the math face covers √');
     const lean = buildPage(newton(), { fonts: false });
     assert.doesNotMatch(lean, /@font-face/);
     assert.ok(html.length - lean.length > 40_000, 'the font is the bulk of the difference');

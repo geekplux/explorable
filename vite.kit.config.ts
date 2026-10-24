@@ -4,7 +4,6 @@
 import { readFileSync } from 'node:fs';
 import { defineConfig, type Plugin } from 'vite';
 
-const FONT = 'public/fonts/serif-latin.woff2';
 
 /** Ship the files the standalone builder needs beside the bundle. */
 const skillAssets: Plugin = {
@@ -13,7 +12,8 @@ const skillAssets: Plugin = {
     const emit = (fileName: string, source: string | Uint8Array) => this.emitFile({ type: 'asset', fileName, source });
     // Node 20 reads a bare .js file as CommonJS unless a package.json says otherwise.
     emit('package.json', `${JSON.stringify({ type: 'module', private: true }, null, 2)}\n`);
-    emit('serif-latin.woff2', readFileSync(FONT));
+    // The roman serif and its own math signs (√ ∑ ≈ …), inlined by scripts/build.mjs.
+    for (const font of ['serif-latin.woff2', 'serif-math.woff2']) emit(font, readFileSync(`public/fonts/${font}`));
     emit('OFL.txt', readFileSync('public/fonts/OFL.txt'));
   },
 };

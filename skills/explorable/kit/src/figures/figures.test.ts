@@ -152,7 +152,7 @@ describe('bars + switch: attention Fig 2', () => {
     expect(root.querySelectorAll('.xfig-bar-g rect.xfig-bar-other')).toHaveLength(8);
     expect(texts('.xfig-legend text')).toEqual(['this setting', 'with ÷√dk']);
     expect(sw().getAttribute('aria-checked')).toBe('false');
-    expect(sw().getAttribute('aria-label')).toBe('Divide by square root of d k');
+    expect(sw().getAttribute('aria-label')).toBe('Divide by square root of d sub k');
     expect(sw().querySelector('.xfig-switch-face > span:last-child')?.innerHTML).toBe('Divide by √<i>d</i><span class="xsub">k</span>');
     sw().click();
     expect(sw().getAttribute('aria-checked')).toBe('true');
@@ -162,7 +162,7 @@ describe('bars + switch: attention Fig 2', () => {
 
   it('dragging d_k to 512 unscaled saturates the softmax; scaled keeps SD near 1', () => {
     const knob = $('.xfig-knob');
-    expect(knob.getAttribute('aria-label')).toBe('key width d k (d_k, drag on chart)');
+    expect(knob.getAttribute('aria-label')).toBe('key width d sub k (drag on chart)');
     expect($('#fig-scaling-dk').getAttribute('aria-valuetext')).toBe('4 dimensions');
     key(knob, 'End');
     expect(knob.getAttribute('aria-valuetext')).toBe('512 dimensions');

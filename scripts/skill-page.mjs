@@ -39,7 +39,18 @@ await run(async () => {
           .catch(() => {});
         const after = await readout.textContent();
         if (!before || after === before) problems.push(`${name}${label}: ArrowRight on the first control did not change the readout (${before})`);
-        console.log(`${name}${label}: ${shells} live figure(s); readout "${before}" -> "${after}"`);
+        // Notes: Enter on the first math marker opens its panel under the paragraph.
+        const marker = page.locator('button.xnote-mk').first();
+        let notes = 'no notes';
+        if (await marker.count()) {
+          await marker.focus();
+          await page.keyboard.press('Enter');
+          const panel = page.locator(`#${await marker.getAttribute('aria-controls')}`);
+          const open = (await marker.getAttribute('aria-expanded')) === 'true' && (await panel.isVisible());
+          if (!open) problems.push(`${name}${label}: Enter on the first math marker did not open its note`);
+          notes = `${await page.locator('button.xnote-mk').count()} math note(s), first ${open ? 'opens' : 'stays shut'}`;
+        }
+        console.log(`${name}${label}: ${shells} live figure(s); readout "${before}" -> "${after}"; ${notes}`);
         if (out) console.log(`  shot ${await shot(page, out, `skill-${name}${label}`)}`);
         await context.close();
       }

@@ -88,7 +88,7 @@ describe('control value rules', () => {
     const def = attentionScaling.params.dk;
     const r = createRange('fig-dk', def, () => {});
     r.set(64);
-    expect(r.el.querySelector('input')?.getAttribute('aria-label')).toBe('key width d k');
+    expect(r.el.querySelector('input')?.getAttribute('aria-label')).toBe('key width d sub k');
     expect(r.el.querySelector('output')?.textContent).toBe('dk = 64');
   });
 });

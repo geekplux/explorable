@@ -11,7 +11,10 @@ import * as kit from '../kit/dist/explorable-kit.js';
 const DIST = fileURLToPath(new URL('../kit/dist/', import.meta.url));
 const dist = (file, encoding) => readFileSync(join(DIST, file), encoding);
 
-/** Page-level CSS on top of the kit's tokens and styles. Only the roman serif is inlined (Source Serif 4, as "Explorable Serif"). */
+/** The code points of serif-math.woff2 (src/styles/fonts.css). */
+const SERIF_MATH = 'U+2190,U+2192,U+2202,U+2206,U+2211,U+221A,U+221E,U+222B,U+2248,U+2260,U+2264-2265';
+
+/** Page-level CSS on top of the kit's tokens and styles. Only the roman serif (Source Serif 4, as "Explorable Serif") and its math signs are inlined. */
 const PAGE_CSS = `*,*::before,*::after{box-sizing:border-box}
 html{color:var(--text);background:var(--bg)}
 body{margin:0;font:400 1.1875rem/1.6 var(--font-text);overflow-wrap:break-word}
@@ -42,9 +45,10 @@ const plain = (text) => kit.escapeHtml(text.replace(/[*`]/g, ''));
 
 /** One standalone page for a validated doc. Deterministic: same doc, same bytes. */
 export function buildPage(doc, { fonts = true } = {}) {
-  const font = fonts
-    ? `@font-face{font-family:"Explorable Serif";src:url(data:font/woff2;base64,${dist('serif-latin.woff2').toString('base64')}) format("woff2");font-weight:400 600;font-display:swap}\n`
-    : '';
+  const face = (file, range = '') =>
+    `@font-face{font-family:"Explorable Serif";src:url(data:font/woff2;base64,${dist(file).toString('base64')}) format("woff2");font-weight:400 600;font-display:swap${range}}\n`;
+  // The serif's own math signs, as in the app (src/styles/fonts.css), so √ in the text matches the letters around it.
+  const font = fonts ? face('serif-latin.woff2') + face('serif-math.woff2', `;unicode-range:${SERIF_MATH}`) : '';
   const css = `${font}${dist('explorable-kit.css', 'utf8').trim()}\n${PAGE_CSS}`;
   const js =
     `${inlineKit(dist('explorable-kit.js', 'utf8').trim())}\n` +

@@ -397,14 +397,26 @@ describe('audit: ExplorableDoc v2 notes', () => {
     assert.match(warnings[0], /^takeaway reads like a formula \(T\(t\) = Tₐ \+ \(T₀ − Tₐ\)·e\^\(−kt\)\); say it in words/);
     assert.deepEqual(docWarnings(v2()), []);
   });
-  it('the CLI prints warnings before "audit passed" (the v1 examples keep their formulas)', () => {
-    const file = here('../examples/newton-cooling/explorable.json');
-    assert.ok(warnFile(file).length > 0, 'newton-cooling has formulas in its paragraphs');
-    const lines = execFileSync(process.execPath, [AUDIT, file], { encoding: 'utf8' }).trim().split('\n');
-    assert.ok(lines.slice(1, -1).every((l) => l.startsWith('warning: ')), lines.join('\n'));
-    assert.equal(lines.at(-1), 'audit passed');
+  it('the CLI prints warnings before "audit passed" (a v1 spec may keep its formulas)', () => {
+    const doc = newton();
+    doc.schema = 1;
+    delete doc.notes;
+    for (const s of doc.sections) s.paragraphs = s.paragraphs.map((p) => p.replace(/\[\[[a-z-]+\]\]/g, ''));
+    doc.takeaway = 'The gap decays exponentially, `T(t) = Tₐ + (T₀ − Tₐ)·e^(−kt)`.';
+    const dir = mkdtempSync(join(tmpdir(), 'explorable-v1-'));
+    const file = join(dir, 'explorable.json');
+    try {
+      writeFileSync(file, JSON.stringify(doc));
+      assert.ok(warnFile(file).length > 0, 'the takeaway has a formula');
+      const lines = execFileSync(process.execPath, [AUDIT, file], { encoding: 'utf8' }).trim().split('\n');
+      assert.ok(lines.slice(1, -1).every((l) => l.startsWith('warning: ')), lines.join('\n'));
+      assert.equal(lines.at(-1), 'audit passed');
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
   });
-  it('the app samples have no formula in their body text', () => {
+  it('the worked examples and the app samples have no formula in their body text', () => {
+    for (const name of ['bloom-filter', 'newton-cooling']) assert.deepEqual(warnFile(here(`../examples/${name}/explorable.json`)), [], name);
     for (const name of ['attention', 'bloom-filter', 'diffusion']) {
       const file = join(APP_SAMPLES, `${name}.json`);
       if (existsSync(file)) assert.deepEqual(warnFile(file), [], name);

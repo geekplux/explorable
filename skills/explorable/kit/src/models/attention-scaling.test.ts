@@ -73,7 +73,7 @@ describe('attention-scaling (seed 229)', () => {
   it('describes the state in words', () => {
     const p = { dk: 64, scaled: 0, seed: 229 };
     expect(attentionScaling.describe(p, attentionScaling.compute(p))).toBe(
-      'd k = 64, not scaled: scores spread with SD 7.93 (expected 8.00); key 7 gets 100% of the weight.',
+      'd sub k = 64, not scaled: scores spread with SD 7.93 (expected 8.00); key 7 gets 100% of the weight.',
     );
   });
 });

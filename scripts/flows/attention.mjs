@@ -301,7 +301,7 @@ async function fig2(page, { shot, assert, axe }) {
   const sw = fig.locator('[role="switch"]');
   assert.equal(await fig.locator('.xfig-readout').textContent(), 'score SD 2.02 top weight 0.57 entropy 1.85 bits');
   assert.equal(await sw.getAttribute('aria-checked'), 'false');
-  assert.equal(await sw.getAttribute('aria-label'), 'Divide by square root of d k');
+  assert.equal(await sw.getAttribute('aria-label'), 'Divide by square root of d sub k');
 
   // Unscaled: d_k 1 → 512 drives the top weight to 1 and the SD toward √d_k.
   const unscaled = await dragDk(page, [1, 64, 512]);

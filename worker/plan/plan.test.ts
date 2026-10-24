@@ -84,7 +84,7 @@ describe('prompt', () => {
     expect(softmax).toContain('softmax-temperature | bars | teaches: dividing scores');
     expect(softmax).toContain('T "temperature" 0.05–5 log =1');
     expect(softmax).toContain('s1…s8 "score i" −10–10 =0');
-    expect(catalogueLine(MODELS[1]!)).toContain('scaled "Divide by square root of d k" toggle 0/1 =0');
+    expect(catalogueLine(MODELS[1]!)).toContain('scaled "Divide by square root of d sub k" toggle 0/1 =0');
     expect(catalogueLine(MODELS[1]!)).not.toContain('seed');
     expect(catalogueLine(MODELS[2]!)).toContain('q "Ask about" choice 0=cat,1=owl');
     expect(catalogueLine(MODELS[2]!)).not.toMatch(/ m "bits"/);
