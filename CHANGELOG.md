@@ -8,6 +8,7 @@ All notable changes to this project are documented here. The format follows [Kee
 
 - Redesign foundation: Radix Colors sand, indigo and orange tokens with a dark theme that follows the system setting; Source Serif 4, Geist and Geist Mono, self-hosted (`docs/redesign/DESIGN.md`).
 - A new spiral logo and favicon; a header with navigation on every page, a "Made by GeekPlux" block linking geekplux.com and sibling projects, and a simpler footer. The "All explorables" back links are gone; the logo goes home.
+- Home page redesign: a hero with a live, draggable figure, a numbered essay index with thumbnails that play once on hover, a "How it works" section, and plain-words copy. The "Try" chips are gone; the essay index lists the same samples. Figure readouts drop the "·" joiner, and the leading bar is drawn in indigo-11.
 
 ### Added
 
