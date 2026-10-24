@@ -27,7 +27,8 @@ describe('page titles', () => {
     expect(document.title).toBe('Not found – Explorable');
     expect(host.querySelector('h1')?.textContent).toBe('No explorable lives here');
     expect([...host.querySelectorAll('a.essay-row')].map((a) => a.getAttribute('href'))).toEqual(['/s/attention', '/s/bloom-filter', '/s/diffusion']);
-    expect(host.querySelector('.essay-thumb svg')?.getAttribute('aria-hidden')).toBe('true');
+    // In the essay column: rows without thumbnails.
+    expect(host.querySelector('.essay-col .essay-thumb')).toBeNull();
   });
 
   it('gives the gallery one h1 and leaves the way home to the header (no back link)', () => {

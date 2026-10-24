@@ -17,6 +17,17 @@ describe('EssayView', () => {
     expect(host.querySelector('#fig-temperature .xfig-readout')?.textContent).toBe('top weight 0.51 entropy 2.05 bits');
     expect(host.querySelectorAll('#fig-scaling [role="switch"]')).toHaveLength(1);
     expect(host.querySelector('#fig-scaling .xfig-readout')?.textContent).toBe('score SD 2.02 top weight 0.57 entropy 1.85 bits');
+    // Contents: the section headings plus "Takeaway", linked to their headings, with no visible "Contents" label.
+    const toc = host.querySelector('nav.essay-toc[aria-label="Contents"]');
+    expect([...(toc?.querySelectorAll('a') ?? [])].map((a) => [a.getAttribute('href'), a.textContent])).toEqual([
+      ['#scores-to-weights', 'From scores to weights'],
+      ['#sharp-or-soft', 'Sharp or soft is a matter of scale'],
+      ['#where-scale-comes-from', 'Where the scale comes from'],
+      ['#divide-by-root-d', 'The fix: divide by √dk'],
+      ['#essay-takeaway', 'Takeaway'],
+    ]);
+    expect(toc?.querySelector('a[href="#divide-by-root-d"]')?.innerHTML).toBe('The fix: divide by √<i>d</i><span class="sub">k</span>');
+    expect(toc?.textContent).not.toContain('Contents');
     act(() => root.unmount());
     expect(host.innerHTML).toBe('');
     const bloom = createRoot(host);

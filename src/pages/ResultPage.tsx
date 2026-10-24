@@ -3,7 +3,6 @@ import { EssayView } from '../components/EssayView.tsx';
 import { setDraft } from '../components/UrlField.tsx';
 import { ErrorState } from '../components/states/ErrorState.tsx';
 import { LoadingEssay } from '../components/states/LoadingEssay.tsx';
-import { ProvenanceBadge } from '../components/states/ProvenanceBadge.tsx';
 import { useExplain } from '../hooks/useExplain.ts';
 import { navigate } from '../router.ts';
 
@@ -26,21 +25,24 @@ export function ResultPage({ url }: { url: string }) {
       navigate('/');
     };
     return (
-      <main className="page result-page shell">
-        <LoadingEssay url={url} stage={state.stage} onCancel={cancel} />
+      <main className="page essay-page">
+        <div className="essay-col">
+          <LoadingEssay url={url} stage={state.stage} onCancel={cancel} />
+        </div>
       </main>
     );
   }
   if (!state.ok) {
     return (
-      <main className="page result-page shell">
-        <ErrorState error={state.error} url={url} onRetry={() => setAttempt((n) => n + 1)} />
+      <main className="page essay-page">
+        <div className="essay-col">
+          <ErrorState error={state.error} url={url} onRetry={() => setAttempt((n) => n + 1)} />
+        </div>
       </main>
     );
   }
   return (
     <main className="page essay-page">
-      <ProvenanceBadge doc={state.doc} cache={state.cache} />
       <EssayView doc={state.doc} />
     </main>
   );

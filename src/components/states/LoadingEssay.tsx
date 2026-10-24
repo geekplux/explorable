@@ -21,8 +21,8 @@ function useElapsed(): number {
 }
 
 /**
- * Skeleton essay column, the steps of a new link with the current one marked,
- * what to expect, and Cancel (PLAN §4.6). Only the current step (and, once, a
+ * The steps of a new link with the current one marked, what to expect, and
+ * Cancel (PLAN §4.6), in the essay column; no skeleton (DESIGN, Motion). Only the current step (and, once, a
  * "longer than usual" note) is announced, politely; the seconds counter is silent.
  */
 export function LoadingEssay({ url, stage, onCancel }: { url: string; stage: number; onCancel: () => void }) {
@@ -36,8 +36,7 @@ export function LoadingEssay({ url, stage, onCancel }: { url: string; stage: num
 
   return (
     <div className="loading">
-      <p className="kicker">Building an explorable</p>
-      <h1 ref={heading} tabIndex={-1} className="loading-title">
+      <h1 ref={heading} tabIndex={-1}>
         Reading {hostOf(url)}
       </h1>
       <p className="loading-link">
@@ -66,12 +65,6 @@ export function LoadingEssay({ url, stage, onCancel }: { url: string; stage: num
         <button type="button" className="button" onClick={onCancel}>
           Cancel
         </button>
-      </div>
-      <div className="skeleton" aria-busy="true">
-        <span className="visually-hidden">The essay appears here when it is ready.</span>
-        {['w90', 'w70', 'fig', 'w100', 'w95', 'w60'].map((k) => (
-          <span key={k} className={`bar ${k}`} aria-hidden="true" />
-        ))}
       </div>
     </div>
   );

@@ -28,10 +28,6 @@ export function ErrorState({ error, url, onRetry }: { error: ExplainError; url: 
   return (
     <div className="error-state">
       <section className="error-panel" aria-labelledby="error-heading" data-code={error.code}>
-        <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" aria-hidden="true" focusable="false">
-          <path d="M12 3 22 20H2Z" />
-          <path d="M12 10v4M12 17v.5" strokeLinecap="round" />
-        </svg>
         <h1 id="error-heading" tabIndex={-1} ref={heading}>
           {title}
         </h1>
@@ -56,7 +52,7 @@ export function ErrorState({ error, url, onRetry }: { error: ExplainError; url: 
           )}
         </p>
       </section>
-      <h2 className="kicker">Open a sample instead</h2>
+      <h2>Open a sample instead</h2>
       <EssayIndex compact />
     </div>
   );

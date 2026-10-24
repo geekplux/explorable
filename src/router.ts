@@ -1,4 +1,5 @@
 import { useSyncExternalStore } from 'react';
+import { flushSync } from 'react-dom';
 
 export type Route =
   | { name: 'gallery' }
@@ -28,14 +29,23 @@ function subscribe(listener: () => void): () => void {
   };
 }
 
-/** Push a same-origin path and notify subscribers. */
-export function navigate(to: string): void {
-  window.history.pushState(null, '', to);
-  window.scrollTo(0, 0);
-  for (const listener of listeners) listener();
-  // "/#essays" from another page: scroll to the section once the new page has rendered.
-  const hash = new URL(to, window.location.href).hash.slice(1);
-  if (hash) requestAnimationFrame(() => document.getElementById(decodeURIComponent(hash))?.scrollIntoView());
+/**
+ * Push a same-origin path and notify subscribers. Where view transitions run and motion is allowed, the page
+ * cross-fades in 300 ms and `shared` (an index row's title) grows into the essay's h1 (app.css names both).
+ */
+export function navigate(to: string, shared?: HTMLElement | null): void {
+  const go = () => {
+    window.history.pushState(null, '', to);
+    window.scrollTo(0, 0);
+    flushSync(() => listeners.forEach((listener) => listener()));
+    // "/#essays" from another page: scroll to the section once the new page has rendered.
+    const hash = new URL(to, window.location.href).hash.slice(1);
+    if (hash) requestAnimationFrame(() => document.getElementById(decodeURIComponent(hash))?.scrollIntoView());
+  };
+  const doc = document as Document & { startViewTransition?: (update: () => void) => unknown };
+  if (!doc.startViewTransition || matchMedia('(prefers-reduced-motion: reduce)').matches) return go();
+  if (shared) shared.style.viewTransitionName = 'essay-title';
+  doc.startViewTransition(go);
 }
 
 /**
@@ -58,7 +68,7 @@ export function interceptLinks(event: MouseEvent): void {
   const path = internalPath(event, window.location.origin);
   if (path === null) return;
   event.preventDefault();
-  navigate(path);
+  navigate(path, (event.target as Element).closest('a')?.querySelector<HTMLElement>('.essay-title'));
 }
 
 const getLocation = () => window.location.pathname + window.location.search;
