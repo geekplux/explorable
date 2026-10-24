@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import type { ErrorCode, ExplainError } from '../../lib/explain.ts';
-import { MiniCards } from '../SampleCard.tsx';
+import { EssayIndex } from '../EssayIndex.tsx';
 
 const SELF_HOST = 'https://github.com/geekplux/explorable/blob/main/docs/DEPLOY.md#self-host-without-ai';
 
@@ -57,7 +57,7 @@ export function ErrorState({ error, url, onRetry }: { error: ExplainError; url: 
         </p>
       </section>
       <h2 className="kicker">Open a sample instead</h2>
-      <MiniCards />
+      <EssayIndex compact />
     </div>
   );
 }

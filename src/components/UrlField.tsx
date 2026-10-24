@@ -10,12 +10,6 @@ export const setDraft = (value: string): void => {
 };
 export const getDraft = (): string => draft;
 
-const TRY = [
-  ['Attention Is All You Need', 'https://arxiv.org/abs/1706.03762'],
-  ['Bloom Filters by Example', 'https://llimllib.github.io/bloomfilter-tutorial/'],
-  ['Denoising diffusion', 'https://arxiv.org/abs/2006.11239'],
-] as const;
-
 /**
  * The single input: a link goes to /x?url=, words search the built-in samples
  * (reported through `onQuery`, no network), anything broken gets an inline message.
@@ -66,7 +60,7 @@ export function UrlField({ onQuery }: { onQuery: (query: string) => void }) {
 
   return (
     <form className="url-field" onSubmit={submit} noValidate>
-      <label htmlFor={id}>Paste an arXiv or blog link, or type a topic</label>
+      <label htmlFor={id}>Paste a link or type a topic</label>
       <div className="url-row">
         <input
           ref={input}
@@ -95,19 +89,6 @@ export function UrlField({ onQuery }: { onQuery: (query: string) => void }) {
           </>
         )}
       </p>
-      {!value.trim() && (
-        <p className="try">
-          <span className="kicker">Try</span>
-          {TRY.map(([label, url]) => (
-            <button key={url} type="button" className="chip" aria-describedby={`${id}-try`} onClick={() => (change(url), input.current?.focus())}>
-              {label}
-            </button>
-          ))}
-          <span id={`${id}-try`} hidden>
-            Puts its link in the field
-          </span>
-        </p>
-      )}
     </form>
   );
 }

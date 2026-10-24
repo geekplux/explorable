@@ -42,7 +42,7 @@ describe('ResultPage', () => {
     await show(reply({ ok: false, error: { code: 'NO_FIGURE', message: 'm', hint: 'h' } }));
     expect(document.activeElement?.id).toBe('error-heading');
     expect(host.querySelector('.error-panel')?.getAttribute('data-code')).toBe('NO_FIGURE');
-    expect(host.querySelectorAll('.mini-card')).toHaveLength(3);
+    expect(host.querySelectorAll('.error-state a.essay-row')).toHaveLength(3);
   });
 
   it('does not fetch while offline', async () => {

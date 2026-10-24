@@ -21,20 +21,20 @@ describe('page titles', () => {
     expect(document.title).toBe('Not found – Explorable');
   });
 
-  it('shows the not-found message with the three sample cards', () => {
+  it('shows the not-found message with the three essay rows', () => {
     document.title = 'Some earlier page';
     act(() => root.render(<NotFoundPage />));
     expect(document.title).toBe('Not found – Explorable');
     expect(host.querySelector('h1')?.textContent).toBe('No explorable lives here');
-    expect([...host.querySelectorAll('.card h3 a')].map((a) => a.getAttribute('href'))).toEqual(['/s/attention', '/s/bloom-filter', '/s/diffusion']);
-    expect(host.querySelector('.card img')?.getAttribute('alt')).toBe('');
+    expect([...host.querySelectorAll('a.essay-row')].map((a) => a.getAttribute('href'))).toEqual(['/s/attention', '/s/bloom-filter', '/s/diffusion']);
+    expect(host.querySelector('.essay-thumb svg')?.getAttribute('aria-hidden')).toBe('true');
   });
 
   it('gives the gallery one h1 and leaves the way home to the header (no back link)', () => {
     act(() => root.render(<GalleryPage />));
-    expect(document.title).toBe('Explorable: live, draggable explainers');
+    expect(document.title).toBe('Explorable: hard ideas, made clear with figures you can drag');
     expect(host.querySelectorAll('h1')).toHaveLength(1);
-    expect(host.querySelector('h1')?.textContent).toMatch(/^The core idea of a paper or post/);
+    expect(host.querySelector('h1')?.textContent).toBe('Hard ideas, made clear with figures you can drag.');
     act(() => root.render(<SamplePage slug="attention" />));
     expect(host.querySelector('a.back, nav[aria-label="Back"]')).toBeNull();
     expect(host.textContent).not.toContain('All explorables');
