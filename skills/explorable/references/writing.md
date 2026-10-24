@@ -48,7 +48,7 @@ Make a math note when the formula is the precise version of a sentence the reade
 
 Cite the source only through a source note. Its `label` is what the text shows ("Vaswani et al.", "Bill Mill", "Ho, Jain and Abbeel"); focus, hover or a tap opens a card with the title, the detail and the link. Never write the authors' names, the year or the title in the text as well.
 
-- Put the marker where the names would go and make the verb agree with the label: "[[vaswani]] suspect exactly this" (several people), "[[mill]] gives the same estimate" (one person).
+- Put the marker where the names would go and make the verb agree with the label: "[[vaswani]] suspect exactly this" (several people), "[[mill]] gives the same formula" (one person).
 - `detail` (optional, ≤ 120) is the author list and year as the card shows them: "Vaswani, Shazeer, Parmar and 5 others, 2017".
 - `url` is https only. A source note may be cited more than once.
 

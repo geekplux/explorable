@@ -98,7 +98,7 @@ Search results, the offline banner, loading and error states restyle to these to
 
 ## 7. Notes: formulas and sources behind a click (phase 4)
 
-- A math note is a small square button after the sentence it belongs to (14px Σ glyph drawn as an SVG path, `indigo-3` background, `indigo-11` glyph; `indigo-9` background and `sand-1` glyph when open), `aria-expanded`, `aria-controls`, label "Show the math". Click or Enter/Space toggles a note panel right under the paragraph: `sand-2` background, radius 10, the formula centred in Source Serif 4 italic 20, then a 14px plain-words gloss. Several can be open at once. Not hover-only.
+- A math note is a small square button after the sentence it belongs to (14px Σ glyph drawn as an SVG path, `indigo-3` background, `indigo-11` glyph; `indigo-9` background and `sand-1` glyph when open), `aria-expanded`, `aria-controls`, label "Show the math". Click or Enter/Space toggles a note panel right under the paragraph: `sand-2` background, radius 10, the formula centred in Source Serif 4 at 20, variables italic, then a 14px plain-words gloss. Several can be open at once. Not hover-only.
 - A source note is the author name in the text ("Vaswani et al.") with a dotted 0.5px underline; hover or focus shows a small card (paper title, authors and year, "Open the paper on arXiv"). Esc closes it. Touch: tap toggles.
 - Content model in §9.
 

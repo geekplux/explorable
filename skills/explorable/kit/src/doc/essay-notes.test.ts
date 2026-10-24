@@ -142,3 +142,15 @@ describe('formula words and digits', () => {
     expect([...f.querySelectorAll('i')].map((e) => e.textContent)).toEqual(['x', 'y', 'k', 'n', 't']);
   });
 });
+
+describe('formula Greek letters', () => {
+  it('set lowercase Greek in italics, with its marks, and leave subscripts, Σ and ∂ upright', () => {
+    const f = panel('x_t = √ᾱ_t·x₀ + √(1 − ᾱ_t)·ε');
+    expect([...f.querySelectorAll('i')].map((e) => e.textContent)).toEqual(['x', 'ᾱ', 'x', 'ᾱ', 'ε']);
+    const g = panel('∂wᵢ/∂sⱼ = wᵢ(δᵢⱼ − wⱼ)');
+    expect([...g.querySelectorAll('i')].map((e) => e.textContent)).toEqual(['w', 's', 'w', 'δ', 'w']);
+    const h = panel('Σ ε_θ + β^(t)');
+    expect(h.innerHTML).toBe('Σ <i>ε</i><span class="xsub">θ</span> + <i>β</i><sup><i>t</i></sup>');
+  });
+});
+

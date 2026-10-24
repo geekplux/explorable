@@ -11,7 +11,7 @@ This skill turns one idea into a short read for a curious reader who knows schoo
 
 Two complete examples ship with the skill. Open the closer one before you start and copy its `explorable.json`:
 
-- `examples/bloom-filter/` uses a **registry model**: a row of 32 bits where you insert words and ask about one, then a curve of the false-positive rate. Four math notes, and a source note for the tutorial whose estimate it matches. Closest for algorithms and data structures.
+- `examples/bloom-filter/` uses a **registry model**: a row of 32 bits where you insert words and ask about one, then a curve of the false-positive rate. Four math notes, and a source note for the tutorial that gives the same formula. Closest for algorithms and data structures.
 - `examples/newton-cooling/` uses **`expr-curve`**: a cooling curve with knobs for k and the starting temperature, and a marker at the half-life. Three math notes hold the law, its solution and the half-life. Closest for anything with a formula.
 
 Build and audit one in under a second (commands run from this skill's folder):

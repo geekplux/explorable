@@ -52,6 +52,11 @@ function openLabel(url: string): string {
 /** An exponent: `^(…)` (one level of nested brackets) or `^x`. */
 const POWER = /\^(\((?:[^()]|\([^()]*\))*\)|[\p{L}\p{N}]+)/u;
 
+/** Tags, entities and subscripts (kept as they are), or a lowercase Greek letter with its combining marks. */
+const GREEK = /(<span class="xsub">[^<]*<\/span>|<[^>]*>|&[^;\s]+;)|(?=\p{Ll})\p{Script=Greek}\p{M}*/gu;
+/** Lowercase Greek letters are variables too (ᾱ, ε, δ); Σ, ∂ and subscripts stay upright. */
+const italicGreek = (html: string) => html.replace(GREEK, (m, keep?: string) => keep ?? `<i>${m}</i>`);
+
 /** A formula as HTML: italic variables; upright digits, operator names and words; `^(…)` as a superscript without its brackets. */
 function formulaHtml(text: string): string {
   const m = POWER.exec(text);
@@ -60,7 +65,7 @@ function formulaHtml(text: string): string {
     // upright; mathRuns would read them as products of italic variables.
     return text
       .split(/(?<![\p{L}\p{N}])(\p{Lu}{2,}|\p{Ll}{3,})(?![\p{L}\p{N}])/u)
-      .map((part, i) => (i % 2 ? `<span class="xnote-op">${escapeHtml(part)}</span>` : mathHtml(part, { code: true }).replace(OPERATORS, '<span class="xnote-op">$1</span>')))
+      .map((part, i) => (i % 2 ? `<span class="xnote-op">${escapeHtml(part)}</span>` : italicGreek(mathHtml(part, { code: true })).replace(OPERATORS, '<span class="xnote-op">$1</span>')))
       .join('');
   }
   const power = m[1]!.startsWith('(') ? m[1]!.slice(1, -1) : m[1]!;
