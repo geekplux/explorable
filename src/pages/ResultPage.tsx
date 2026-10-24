@@ -15,7 +15,7 @@ export function ResultPage({ url }: { url: string }) {
 
   useEffect(() => setDraft(url), [url]);
   useEffect(() => {
-    document.title = `${!done ? 'Explaining…' : state.ok ? state.doc.title : 'Could not explain this link'} · explorable`;
+    document.title = `${!done ? 'Explaining…' : state.ok ? state.doc.title : 'Could not explain this link'} – Explorable`;
     // The essay's h1 (tabindex -1) takes focus once it replaces the skeleton.
     if (done && state.ok) document.querySelector<HTMLElement>('main h1')?.focus();
   }, [done, state]);
@@ -40,11 +40,6 @@ export function ResultPage({ url }: { url: string }) {
   }
   return (
     <main className="page essay-page">
-      <nav aria-label="Back">
-        <a href="/" className="back hit">
-          <span aria-hidden="true">← </span>All explorables
-        </a>
-      </nav>
       <ProvenanceBadge doc={state.doc} cache={state.cache} />
       <EssayView doc={state.doc} />
     </main>

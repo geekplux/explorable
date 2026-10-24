@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { SampleCards } from '../components/SampleCard.tsx';
 import { UrlField, getDraft } from '../components/UrlField.tsx';
-import { Wordmark } from '../components/Wordmark.tsx';
 import { OfflineBanner } from '../components/states/OfflineBanner.tsx';
 import { SearchResults } from '../components/states/SearchResults.tsx';
 import { classifyInput } from '../lib/input.ts';
@@ -17,19 +16,20 @@ export function GalleryPage() {
   const results = useMemo(() => (query ? searchSamples(query) : null), [query]);
 
   useEffect(() => {
-    document.title = 'explorable: live, draggable explainers';
+    document.title = 'Explorable: live, draggable explainers';
   }, []);
 
   return (
     <main className="page gallery shell">
-      <h1 tabIndex={-1}>
-        <Wordmark size="home" />
+      <h1 tabIndex={-1} className="page-title">
+        The core idea of a paper or post, rebuilt as a short essay with figures you can drag.
       </h1>
-      <p className="pitch">The core idea of a paper or post, rebuilt as a short essay with figures you can drag.</p>
       <OfflineBanner />
       <UrlField onQuery={setQuery} />
       <SearchResults results={results} />
-      <h2 className="kicker">Or start with one of these</h2>
+      <h2 id="essays" className="kicker">
+        Or start with one of these
+      </h2>
       <SampleCards />
     </main>
   );

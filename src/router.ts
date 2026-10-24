@@ -33,6 +33,9 @@ export function navigate(to: string): void {
   window.history.pushState(null, '', to);
   window.scrollTo(0, 0);
   for (const listener of listeners) listener();
+  // "/#essays" from another page: scroll to the section once the new page has rendered.
+  const hash = new URL(to, window.location.href).hash.slice(1);
+  if (hash) requestAnimationFrame(() => document.getElementById(decodeURIComponent(hash))?.scrollIntoView());
 }
 
 /**

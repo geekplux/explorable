@@ -3,7 +3,7 @@ import { SampleCards } from '../components/SampleCard.tsx';
 
 export function NotFoundPage() {
   useEffect(() => {
-    document.title = 'Not found · explorable';
+    document.title = 'Not found – Explorable';
   }, []);
 
   return (

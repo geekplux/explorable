@@ -25,7 +25,7 @@ export function App() {
 
   return (
     <>
-      {route.name !== 'gallery' && <Header />}
+      <Header />
       {route.name === 'gallery' ? (
         <GalleryPage />
       ) : route.name === 'sample' ? (
