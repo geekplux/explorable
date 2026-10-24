@@ -1,5 +1,5 @@
 {
-  "schema": 1,
+  "schema": 2,
   "id": "diffusion",
   "title": "Noise, one step at a time",
   "dek": "An image model learns by watching pictures dissolve into static, one small step at a time, and a shortcut jumps to any step at once.",
@@ -23,7 +23,7 @@
       "id": "start-with-data",
       "heading": "Start with data",
       "paragraphs": [
-        "A diffusion model learns to make data by first learning how it gets destroyed. The destroying half, the *forward process*, has no learned parts at all: it is a fixed recipe that adds noise. Ho, Jain and Abbeel's denoising diffusion probabilistic models (DDPM) apply it to images, but every pixel follows the same rule, so one number is enough to watch it work.",
+        "A diffusion model learns to make data, such as pictures, by first learning how it gets destroyed. The destroying half, the *forward process*, has nothing to learn: it is a fixed recipe that adds noise, a little at a time. [[ho]] used it for images in denoising diffusion probabilistic models, DDPM for short. Every pixel follows the same rule, so one number is enough to watch it work.",
         "Our data is 2,000 numbers drawn from two clumps, one around −2 and one around +1.5, each with a spread of 0.25. Think of them as two kinds of picture. The question is what the noise does to the clumps, step by step."
       ]
     },
@@ -31,16 +31,16 @@
       "id": "one-small-step",
       "heading": "One small step",
       "paragraphs": [
-        "Each step shrinks the current value a little and adds a little fresh Gaussian noise: `x_t = √(1 − β_t)·x_(t−1) + √β_t·ε`, with ε drawn from N(0, 1). The shrink matters. If x_(t−1) already has variance 1, the new value has variance `(1 − β_t) + β_t = 1`. Without the shrink, noise would pile up and the values would drift ever wider.",
-        "The step sizes β_t follow a schedule. DDPM uses T = 1,000 steps with β rising linearly from 0.0001 at the first step to 0.02 at the last. Early steps barely touch the data; the last steps are 200 times larger."
+        "Each step shrinks the current value a little, then adds a little fresh random noise, ε, drawn from a bell curve centred on 0 with a spread of 1. One small number for each step, β_t, sets how much of each.[[step]] The shrink matters. It makes exactly enough room for the new noise, so values whose spread is already 1 keep a spread of 1. Without the shrink, noise would pile up and the values would drift ever wider.",
+        "The step sizes β_t follow a schedule. DDPM uses T = 1,000 steps, with β rising in equal increments from 0.0001 at the first step to 0.02 at the last. Early steps barely touch the data; the last steps are 200 times larger."
       ]
     },
     {
       "id": "jump-to-any-step",
       "heading": "Jump to any step",
       "paragraphs": [
-        "Steps compose. Multiply the shrink factors together, `ᾱ_t = (1 − β₁)(1 − β₂)…(1 − β_t)`, and the whole chain from x₀ collapses into one line: `x_t = √ᾱ_t·x₀ + √(1 − ᾱ_t)·ε`. The first coefficient, √ᾱ_t, is how much of the original signal is left; the second, √(1 − ᾱ_t), is how much noise has replaced it.",
-        "The figure uses that line directly. Scrub t from 0 to 1,000. At t = 100 the clumps are softer but still apart. Around t = 370 they merge into one hump. By t = 600 only 16% of the signal is left and the samples sit on the dotted N(0, 1) curve; at t = 1,000 their spread is 1.01 and the data is gone."
+        "Steps add up, and there is a shortcut. Multiply the numbers 1 − β_t of every step so far, call the product ᾱ_t, and the whole chain from the starting value x₀ collapses into one line: keep part of the original value, then add one draw of noise.[[jump]] The first part, √ᾱ_t, is how much of the original signal is left; the second is how much noise has replaced it.",
+        "The figure uses that line directly. Drag t from 0 to 1,000. At t = 100 the clumps are softer but still apart. Around t = 370 they merge into one hump. By t = 600 only 16% of the signal is left and the samples sit on the dotted bell curve of pure noise; at t = 1,000 their spread is 1.01 and the data is gone."
       ],
       "figure": {
         "id": "fig-histogram",
@@ -81,7 +81,7 @@
       "id": "signal-and-noise",
       "heading": "Signal fades, noise rises",
       "paragraphs": [
-        "Plot the two coefficients against t and the schedule shows its shape. The signal √ᾱ_t falls slowly at first, then quickly, then hardly at all; the noise √(1 − ᾱ_t) mirrors it. They cross at t ≈ 260, where ᾱ_t = 0.5 and the signal-to-noise ratio `ᾱ_t / (1 − ᾱ_t)` is exactly 1, or 0 dB.",
+        "Plot the two parts against t and the schedule shows its shape. The signal falls slowly at first, then quickly, then hardly at all; the noise mirrors it. They cross at t ≈ 260, where ᾱ_t = 0.5: signal and noise are equally strong, a signal-to-noise ratio of exactly 1, or 0 decibels (dB).[[snr]]",
         "Most of the change happens in the first half. Past t ≈ 750 the signal is under 6%, and each further step changes little. Later papers proposed other schedules for exactly this reason: the schedule is a design choice, not a law."
       ],
       "figure": {
@@ -149,9 +149,43 @@
       "id": "why-it-matters",
       "heading": "Why the shortcut matters",
       "paragraphs": [
-        "Generation runs the process backwards: a network learns to predict the noise ε that was mixed into x_t, so it can take a little of it away at each step. Training needs examples at random steps, and the closed form makes each one cheap: pick an x₀, pick a t, draw ε and form `√ᾱ_t·x₀ + √(1 − ᾱ_t)·ε` in one line, with no loop over the earlier steps. DDPM's simplified training objective is just the squared error between the true ε and the predicted one."
+        "Making new data runs the process backwards: a neural network learns to guess the noise ε that was mixed into the value at step t, so it can take a little of it away at each step. Training needs examples at random steps, and the shortcut makes each one cheap: pick a starting value, pick a step t, draw the noise and mix them in one line, with no loop over the earlier steps. DDPM scores the network’s guess with one simple number: the squared difference between the true noise and the guessed one.[[loss]]"
       ]
     }
   ],
-  "takeaway": "The forward process is a fixed schedule of tiny shrink-and-add-noise steps. Their product ᾱ_t gives a one-line jump to any step, x_t = √ᾱ_t·x₀ + √(1 − ᾱ_t)·ε, and by t = 1,000 any data has become N(0, 1)."
+  "takeaway": "The forward process is a fixed schedule of tiny steps that each shrink the value and add noise. Together they collapse into a one-line jump to any step, and by step 1,000 any data has become pure noise.",
+  "notes": [
+    {
+      "id": "ho",
+      "kind": "source",
+      "label": "Ho, Jain and Abbeel",
+      "title": "Denoising Diffusion Probabilistic Models",
+      "detail": "Jonathan Ho, Ajay Jain and Pieter Abbeel, 2020",
+      "url": "https://arxiv.org/abs/2006.11239"
+    },
+    {
+      "id": "step",
+      "kind": "math",
+      "formula": "x_t = √(1 − β_t)·x_(t−1) + √β_t·ε",
+      "plain": "If x_(t−1) has variance 1, the new value has variance (1 − β_t) + β_t = 1: the shrink makes room for exactly the noise that is added."
+    },
+    {
+      "id": "jump",
+      "kind": "math",
+      "formula": "x_t = √ᾱ_t·x₀ + √(1 − ᾱ_t)·ε, with ᾱ_t = (1 − β₁)(1 − β₂)…(1 − β_t)",
+      "plain": "One draw of noise ε stands in for all the small ones, because the sum of independent bell-curve noises is again a bell curve."
+    },
+    {
+      "id": "snr",
+      "kind": "math",
+      "formula": "SNR = ᾱ_t / (1 − ᾱ_t)",
+      "plain": "The signal’s share of the variance divided by the noise’s share; in decibels it is 10 times its logarithm, so a ratio of 1 is 0 dB."
+    },
+    {
+      "id": "loss",
+      "kind": "math",
+      "formula": "L = ‖ε − ε_θ(√ᾱ_t·x₀ + √(1 − ᾱ_t)·ε, t)‖²",
+      "plain": "The network ε_θ sees the noisy value and the step t, and is scored by the squared distance between its guess and the noise ε that was really added."
+    }
+  ]
 }
