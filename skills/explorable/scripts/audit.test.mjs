@@ -411,3 +411,13 @@ describe('audit: ExplorableDoc v2 notes', () => {
     }
   });
 });
+
+const withCss = (extra) => page().replace('</style>', `${extra}</style>`);
+describe('audit: hex values only on the kit tokens', () => {
+  it('a custom property of its own holding a colour fails', () => {
+    fails(auditHtml(withCss('.zz{--zz:#f00}.xfig{color:var(--zz)}')), /colours used outside the palette tokens: #f00/);
+  });
+  it('a blackA name holding a non-black colour fails', () => {
+    fails(auditHtml(withCss('.zz{--black-a3:#f006}')), /colours used outside the palette tokens: #f006/);
+  });
+});
