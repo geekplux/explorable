@@ -4,6 +4,10 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+### Changed
+
+- Redesign foundation: Radix Colors sand, indigo and orange tokens with a dark theme that follows the system setting; Source Serif 4, Geist and Geist Mono, self-hosted (`docs/redesign/DESIGN.md`).
+
 ### Added
 
 - A gallery of three built-in sample explorables that open instantly and work offline with no key: why attention divides by √d (`attention`), how a Bloom filter says "maybe" (`bloom-filter`) and noise one step at a time in diffusion models (`diffusion`).
