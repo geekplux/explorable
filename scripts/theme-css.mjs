@@ -10,13 +10,19 @@ const SYSTEM_DARK = /@media screen and \(prefers-color-scheme: dark\) \{\s*:root
 /** `css` with an explicit-dark copy after every system-dark block. @param {string} css */
 export const withExplicitDark = (css) => css.replace(SYSTEM_DARK, (block, body) => `${block}\n@media screen { :root[data-theme="dark"] {${body}} }`);
 
-/** Vite plugin: applies `withExplicitDark` to the app's CSS files that have a system-dark block. @returns {import('vite').Plugin} */
+/**
+ * Vite plugin: applies `withExplicitDark` to the app's CSS files. A file that asks for the dark scheme in any other
+ * shape fails the build, since a reader's dark choice would silently miss it. @returns {import('vite').Plugin}
+ */
 export const themeCss = () => ({
   name: 'explorable-theme-css',
   enforce: 'pre',
   transform(code, id) {
-    if (!/\.css(?:$|\?)/.test(id) || !code.includes('prefers-color-scheme: dark')) return undefined;
+    if (!/\.css(?:$|\?)/.test(id) || !/prefers-color-scheme\s*:\s*dark/.test(code)) return undefined;
     const out = withExplicitDark(code);
-    return out === code ? undefined : { code: out, map: null };
+    if (out === code) {
+      this.error(`${id}: a prefers-color-scheme: dark rule that is not \`@media screen and (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { … } }\`, so a chosen dark theme would miss it (scripts/theme-css.mjs)`);
+    }
+    return { code: out, map: null };
   },
 });

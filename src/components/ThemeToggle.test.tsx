@@ -4,7 +4,8 @@ import { readFileSync } from 'node:fs';
 import { act } from 'react';
 import { createRoot } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { THEME_KEY } from '../lib/theme.ts';
+import { RADIX } from '@kit/color/palette.ts';
+import { PAGE_COLOR, THEME_KEY } from '../lib/theme.ts';
 import { Header } from './Header.tsx';
 import { ThemeToggle } from './ThemeToggle.tsx';
 
@@ -31,9 +32,12 @@ function systemScheme(dark: boolean) {
   };
 }
 
+const metas = () => [...document.querySelectorAll<HTMLMetaElement>('meta[name="theme-color"]')].map((m) => m.content);
+
 beforeEach(() => {
   delete html.dataset.theme;
   localStorage.clear();
+  document.head.innerHTML = `<meta name="theme-color" content="${PAGE_COLOR.light}" media="(prefers-color-scheme: light)"><meta name="theme-color" content="${PAGE_COLOR.dark}" media="(prefers-color-scheme: dark)">`;
 });
 afterEach(() => {
   act(() => root.render(null));
@@ -83,6 +87,21 @@ describe('ThemeToggle', () => {
     expect([html.dataset.theme, localStorage.getItem(THEME_KEY), name()]).toEqual([undefined, null, 'Switch to light theme']);
   });
 
+  it('points the browser bar (theme-color) at a chosen theme, and back at each meta’s own value when following the system', () => {
+    systemScheme(false);
+    act(() => root.render(<ThemeToggle />));
+    act(() => button()?.click());
+    expect(metas()).toEqual([PAGE_COLOR.dark, PAGE_COLOR.dark]);
+    act(() => button()?.click());
+    expect(metas()).toEqual([PAGE_COLOR.light, PAGE_COLOR.dark]);
+
+    act(() => root.render(null));
+    systemScheme(true);
+    act(() => root.render(<ThemeToggle />));
+    act(() => button()?.click());
+    expect(metas()).toEqual([PAGE_COLOR.light, PAGE_COLOR.light]);
+  });
+
   it('still switches when storage throws (private mode, blocked site data)', () => {
     systemScheme(false);
     vi.spyOn(Storage.prototype, 'setItem').mockImplementation(fail);
@@ -118,8 +137,10 @@ describe('public/theme-init.js', () => {
   const src = readFileSync('public/theme-init.js', 'utf8');
   const run = (storage: { getItem: (k: string) => string | null }) => {
     const el = { dataset: {} as Record<string, string> };
-    new Function('localStorage', 'document', src)(storage, { documentElement: el });
-    return el.dataset.theme;
+    const bars = [{ content: PAGE_COLOR.light }, { content: PAGE_COLOR.dark }];
+    const doc = { documentElement: el, querySelectorAll: (q: string) => (q === 'meta[name=theme-color]' ? bars : []) };
+    new Function('localStorage', 'document', src)(storage, doc);
+    return [el.dataset.theme, ...bars.map((m) => m.content)];
   };
 
   it('stays under 300 bytes and reads the key the toggle writes', () => {
@@ -127,22 +148,30 @@ describe('public/theme-init.js', () => {
     expect(src).toContain(`"${THEME_KEY}"`);
   });
 
-  it('applies a stored light or dark choice and ignores anything else', () => {
-    expect(run({ getItem: () => 'dark' })).toBe('dark');
-    expect(run({ getItem: () => 'light' })).toBe('light');
-    expect(run({ getItem: () => 'system' })).toBeUndefined();
-    expect(run({ getItem: () => null })).toBeUndefined();
+  it('applies a stored light or dark choice to <html> and both theme-color metas, and ignores anything else', () => {
+    expect(run({ getItem: () => 'dark' })).toEqual(['dark', PAGE_COLOR.dark, PAGE_COLOR.dark]);
+    expect(run({ getItem: () => 'light' })).toEqual(['light', PAGE_COLOR.light, PAGE_COLOR.light]);
+    for (const stored of ['system', 'constructor', null]) expect(run({ getItem: () => stored })).toEqual([undefined, PAGE_COLOR.light, PAGE_COLOR.dark]);
   });
 
   it('does nothing when storage throws', () => {
     expect(() => run({ getItem: () => { throw new Error('SecurityError'); } })).not.toThrow();
   });
 
-  it('loads as a blocking script before any stylesheet in index.html', () => {
+  it('loads as a blocking script after the theme-color metas and before any stylesheet in index.html', () => {
     const index = readFileSync('index.html', 'utf8');
     const at = index.indexOf('<script src="/theme-init.js"></script>');
-    expect(at).toBeGreaterThan(0);
+    expect(at).toBeGreaterThan(index.lastIndexOf('<meta name="theme-color"'));
     expect(at).toBeLessThan(index.indexOf('</head>'));
     expect(index.slice(0, at)).not.toMatch(/stylesheet|<style/);
+  });
+
+  it('writes sand-1 of each theme, as index.html and the kit do', () => {
+    expect(PAGE_COLOR).toEqual({ light: RADIX.light.sand[0]?.toLowerCase(), dark: RADIX.dark.sand[0]?.toLowerCase() });
+    const index = readFileSync('index.html', 'utf8');
+    expect(index).toContain(`<meta name="theme-color" content="${PAGE_COLOR.light}" media="(prefers-color-scheme: light)" />`);
+    expect(index).toContain(`<meta name="theme-color" content="${PAGE_COLOR.dark}" media="(prefers-color-scheme: dark)" />`);
+    expect(src).toContain(`"${PAGE_COLOR.dark}"`);
+    expect(src).toContain(`"${PAGE_COLOR.light}"`);
   });
 });

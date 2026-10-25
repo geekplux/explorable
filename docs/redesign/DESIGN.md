@@ -14,7 +14,7 @@ The goal is a refined, interactive and easy short read for a curious reader with
 6. Lines and borders are 0.5px.
 7. Minimal motion. When used: ease-out, 250ms base.
 8. At most 4 type sizes (12/14/20/32 here), smallest 12px. Hierarchy comes from weight, colour and spacing.
-9. Minimise decisions the user must make. The theme follows `prefers-color-scheme` until the reader picks one with the header toggle (§4, Sean 2026-10-25); there is no third "system" option.
+9. Minimise decisions the user must make. The theme follows `prefers-color-scheme` until the reader picks one with the header toggle (§4, Sean 2026-10-25).
 10. No casual radius or shadow, no coloured left-stripe cards, no card inside a card.
 11. No habitual eyebrows or overlines above headings ("Fig. 1", "arXiv paper", "Or start with one of these" all go). Keep a label only when it adds information the heading lacks.
 
@@ -32,7 +32,7 @@ Radix Colors 3.0, three scales, light and dark (values in `target/Home.html`, `.
 
 Indigo and orange stay apart under all three CVD simulations; shapes (bar vs round handle) carry the difference too. Update `kit/src/color/palette.ts` and its `cvd.test.ts` to the new values; keep the tests' intent (pairwise ΔE under each simulation, contrast floors).
 
-The old token names (`--paper`, `--ink`, `--live`, `--series-1` …) may stay as aliases while pages migrate, but every value must come from the Radix scales. Dark theme: `@media (prefers-color-scheme: dark)` swaps the scales; nothing else changes.
+The old token names (`--paper`, `--ink`, `--live`, `--series-1` …) may stay as aliases while pages migrate, but every value must come from the Radix scales. Dark theme: `@media (prefers-color-scheme: dark)`, or a reader's choice of dark with the header toggle (§4), swaps the scales; nothing else changes.
 
 Type:
 

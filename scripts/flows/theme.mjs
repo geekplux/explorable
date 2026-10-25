@@ -53,9 +53,14 @@ export default async function theme({ page, baseURL, assert, axe, shot }) {
     await route.fallback();
   });
   await page.reload({ waitUntil: 'commit' });
-  await page.waitForFunction(() => getComputedStyle(document.body).backgroundColor !== 'rgba(0, 0, 0, 0)');
-  const first = await page.evaluate(() => ({ attr: document.documentElement.dataset.theme, bg: getComputedStyle(document.body).backgroundColor, app: document.getElementById('root')?.childElementCount }));
-  assert.deepEqual(first, { attr: 'dark', bg: BG.dark, app: 0 }, 'first paint is dark before the app runs (no light flash)');
+  await page.waitForFunction(() => document.body && getComputedStyle(document.body).backgroundColor !== 'rgba(0, 0, 0, 0)');
+  const first = await page.evaluate(() => ({
+    attr: document.documentElement.dataset.theme,
+    bg: getComputedStyle(document.body).backgroundColor,
+    app: document.getElementById('root')?.childElementCount,
+    bar: [...document.querySelectorAll('meta[name="theme-color"]')].map((m) => m.getAttribute('content')),
+  }));
+  assert.deepEqual(first, { attr: 'dark', bg: BG.dark, app: 0, bar: ['#111110', '#111110'] }, 'first paint is dark before the app runs (no light flash), browser bar too');
   release();
   await page.locator(TOGGLE).waitFor();
   await page.waitForLoadState('networkidle');
@@ -70,6 +75,7 @@ export default async function theme({ page, baseURL, assert, axe, shot }) {
   // Choosing the system's own theme drops the stored choice: the page follows the system again.
   await page.locator(TOGGLE).click();
   assert.deepEqual(await state(page), { attr: null, stored: null, scheme: 'light dark' }, 'light on a light system: nothing stored');
+  assert.deepEqual(await page.locator('meta[name="theme-color"]').evaluateAll((ms) => ms.map((m) => m.getAttribute('content'))), ['#fdfdfc', '#111110'], 'the theme-color metas follow their media queries again');
   assert.equal(await bg(page), BG.light);
 
   // On a dark system the page follows it; choosing light is stored, survives a reload, and clearing site data ends it.

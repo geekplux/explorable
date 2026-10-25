@@ -23,12 +23,21 @@ describe('theme-css', () => {
     expect(bodies(withExplicitDark(css), EXPLICIT)).toEqual(system);
   });
 
+  type Transform = (this: { error: (message: string) => never }, code: string, id: string) => { code: string } | undefined;
+  const transform = themeCss().transform as Transform;
+  const ctx = { error: (message: string): never => { throw new Error(message); } };
+
   it('transforms CSS modules only', () => {
-    const plugin = themeCss() as { transform: (code: string, id: string) => { code: string } | undefined };
     const css = read('src/styles/app.css');
-    expect(plugin.transform(css, '/x/app.css')?.code).toBe(withExplicitDark(css));
-    expect(plugin.transform(css, '/x/app.css?direct')?.code).toBe(withExplicitDark(css));
-    expect(plugin.transform(css, '/x/app.ts')).toBeUndefined();
-    expect(plugin.transform('.x {}', '/x/base.css')).toBeUndefined();
+    expect(transform.call(ctx, css, '/x/app.css')?.code).toBe(withExplicitDark(css));
+    expect(transform.call(ctx, css, '/x/app.css?direct')?.code).toBe(withExplicitDark(css));
+    expect(transform.call(ctx, css, '/x/app.ts')).toBeUndefined();
+    expect(transform.call(ctx, '.x {}', '/x/base.css')).toBeUndefined();
+  });
+
+  it('fails the build on a dark rule a chosen dark theme would miss, naming the file', () => {
+    const css = '@media (prefers-color-scheme: dark) { .x { color: white; } }';
+    expect(() => transform.call(ctx, css, '/x/odd.css')).toThrow(/^\/x\/odd\.css: a prefers-color-scheme: dark rule/);
+    expect(() => transform.call(ctx, '@media screen and (prefers-color-scheme:dark) { :root { --a: #000; } }', '/x/odd.css')).toThrow(/odd\.css/);
   });
 });
