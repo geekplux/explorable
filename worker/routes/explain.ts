@@ -7,6 +7,7 @@
 // fetching → reading → planning → composing, a `{"type":"tick"}` every few
 // seconds while the model writes, then one `{"type":"result", …}` line with the
 // same body the JSON answer has. Cache hits and request errors stay plain JSON.
+import { dailyCap, takeBudget } from '../budget';
 import { type KvLike, cacheKeys, readCache, writeDoc, writeError } from '../cache';
 import { API_HEADERS, ApiError, errorResponse, json } from '../errors';
 import { type Extracted, extract } from '../extract';
@@ -24,6 +25,8 @@ export interface ExplainEnv {
   EXPLORABLE_CACHE?: KvLike;
   AI?: AiBinding;
   AI_MODEL?: string;
+  /** Model calls per UTC day for the whole site (worker/budget.ts); unset means the default. */
+  DAILY_AI_CAP?: string;
   EXPLAIN_LIMITER?: { limit(options: { key: string }): Promise<{ success: boolean }> };
 }
 
@@ -50,12 +53,24 @@ export function unavailable(ex: Pick<Extracted, 'title' | 'abstract'>): ApiError
   );
 }
 
-type Built = { doc: ExplorableDoc; mode: 'ai' | 'match' };
+export function budgetSpent(): ApiError {
+  return new ApiError(
+    'AI_BUDGET',
+    'Today’s live AI budget is used up, and this page matches no built-in explorable.',
+    'Live explains reset at midnight UTC. The built-in samples still work.',
+  );
+}
+
+/** `cache: false` marks a match-mode stand-in served only because the AI budget ran out. */
+type Built = { doc: ExplorableDoc; mode: 'ai' | 'match'; cache: boolean };
 type OnStage = (stage: Stage) => void;
 
 async function build(ex: Extracted, env: ExplainEnv, onStage: OnStage): Promise<Built> {
   const matches = matchModels(ex);
-  if (env.AI) {
+  // Past the daily cap, fall back to match mode; that answer is not cached, so the
+  // link can still get a real model plan once the budget resets.
+  const capped = Boolean(env.AI) && !(await takeBudget(env.EXPLORABLE_CACHE, dailyCap(env.DAILY_AI_CAP)));
+  if (env.AI && !capped) {
     const model = env.AI_MODEL || DEFAULT_AI_MODEL;
     onStage('planning');
     const plan = await requestPlan(env.AI, model, ex, matches.map((m) => m.id));
@@ -63,13 +78,13 @@ async function build(ex: Extracted, env: ExplainEnv, onStage: OnStage): Promise<
     let report = {};
     const doc = assemblePlan(plan, ex, { model, onReport: (r) => (report = r) });
     logPlain(doc, report);
-    return { doc, mode: 'ai' };
+    return { doc, mode: 'ai', cache: true };
   }
   const best = bestMatch(matches);
   const template = best && MODELS.find((m) => m.id === best.id)?.template;
-  if (!template) throw unavailable(ex);
+  if (!template) throw capped ? budgetSpent() : unavailable(ex);
   onStage('composing');
-  return { doc: matchDoc(template, ex), mode: 'match' };
+  return { doc: matchDoc(template, ex), mode: 'match', cache: !capped };
 }
 
 /**
@@ -158,7 +173,7 @@ export async function explain(request: Request, env: ExplainEnv, fetchFn?: Fetch
             return res;
           };
           const built = await build(await extract(source, reading), env, onStage);
-          await writeDoc(env.EXPLORABLE_CACHE, keys, built.doc);
+          if (built.cache) await writeDoc(env.EXPLORABLE_CACHE, keys, built.doc);
           return built;
         } catch (error) {
           await writeError(env.EXPLORABLE_CACHE, keys, error);

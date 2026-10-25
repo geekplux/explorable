@@ -38,7 +38,7 @@ describe('header and footer', () => {
     ]);
     expect(host.querySelector('.made-by h2')?.textContent).toBe('Made by GeekPlux');
     const items = [...host.querySelectorAll('.site-foot li')];
-    expect(items.map((li) => li.textContent)).toEqual(['Source on GitHub', 'Accessibility', 'MIT licence']);
+    expect(items.map((li) => li.textContent)).toEqual(['Source on GitHub', 'Accessibility', 'MIT licence', 'Live AI explains are capped daily; samples always work']);
     expect(items[2]?.querySelector('a')).toBeNull();
   });
 });

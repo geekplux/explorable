@@ -23,7 +23,7 @@ Phase 1 of the acceptance list below was split into PRs 1 and 2 to keep each nea
 - Every phase: `pnpm lint`, `pnpm typecheck`, `pnpm test`, `pnpm build`, and `pnpm build:kit` when the kit changed (the committed `kit/dist` must match). The headless browser suite runs once, at the end, for the flows the phase touched.
 - Two review rounds (verify, fix, verify, fix), then stop.
 - One or two before/after screenshots at 1440 light as WebP in `docs/screenshots/redesign-<PR number>/` for the PR.
-- Never deploy, never merge, never push to `main`, never edit `.claude/settings.json`, never commit secrets, never mention Sean's employer, nothing finance-related.
+- Never deploy, never merge, never push to `main`, never edit `.claude/settings.json`, never commit secrets, no company names beyond tools, services and cited sources, nothing finance-related.
 
 ## Phase 1: foundation
 

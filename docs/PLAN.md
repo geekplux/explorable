@@ -68,7 +68,7 @@ All criteria are testable. "Harness" means the repo's Playwright scripts (`pnpm 
 24. **S1.** No secrets are in git. Only `.dev.vars.example` is committed.
 25. **S2.** The Worker fetches only `http(s)` on default ports. It refuses `localhost`, private and link-local IP literals and `*.local` hosts, follows at most 3 redirects (re-checking each), caps the body at 3 MB, and times out after 10 s.
 26. **S3.** All document text is HTML-escaped when rendered, and inline markup comes only from our own formatter. The deployed CSP has no `unsafe-eval` and no third-party origins.
-27. **S4.** There are no finance topics, data or features, and Sean's employer is never mentioned. The verifier greps for both on every phase.
+27. **S4.** There are no finance topics, data or features, and no company is named beyond tools, services and cited sources. The verifier greps for both on every phase.
 
 ### Open-source packaging
 28. **OS1.** The repo has: a README that sells in 10 seconds (pitch, hero image, demo-link placeholder, quick start, how it works, roadmap), LICENSE (MIT), CONTRIBUTING.md, CODE_OF_CONDUCT.md, SECURITY.md, issue and PR templates under `.github/` (not `workflows/`), CHANGELOG.md, `docs/EXTENDING.md`, `docs/GOOD_FIRST_ISSUES.md`, a social preview image, an `examples/` gallery, `docs/LAUNCH.md`, and CI at `ci/github-workflow.yml`.
@@ -384,7 +384,7 @@ The main agent should record these in `docs/DECISIONS.md`.
   git grep -nIiE "price|trading|crypto|payment|invoice|stock market" -- . ':!docs/PLAN.md' ':!pnpm-lock.yaml'   # finance guard (review any hit)
   git grep -nIE "(sk-|api[_-]?key\s*[:=]\s*['\"][A-Za-z0-9])" -- . ':!pnpm-lock.yaml'                           # secrets guard
   ```
-  The verifier also checks every acceptance criterion of the phase, looks at every screenshot, and confirms there is no Next.js or Remix, no decorative 3D, no `.github/workflows/`, no `wrangler deploy` (except the P15 dry run), and no mention of Sean's employer.
+  The verifier also checks every acceptance criterion of the phase, looks at every screenshot, and confirms there is no Next.js or Remix, no decorative 3D, no `.github/workflows/`, no `wrangler deploy` (except the P15 dry run), and no company names beyond tools, services and cited sources.
 - **Specialists.** `explorable-designer` runs before any figure or layout work and writes specs to `docs/figures/<name>.md` or `docs/design/*.md`. `a11y-reviewer` runs on every UI phase before the verifier signs off. `skill-author` handles everything under `skills/` that is SKILL.md, references, evals or the audit.
 - **Shared machine.** One headless browser at a time. Builds run sequentially. Kill every server you start. No watch modes.
 
@@ -760,7 +760,7 @@ The main agent should record these in `docs/DECISIONS.md`.
 **Scope** (about 400 lines of markdown and YAML):
 - `LICENSE` (MIT, "Copyright (c) 2026 geekplux and explorable contributors").
 - `CONTRIBUTING.md`: setup (pnpm; Node 22 is fetched by pnpm automatically), scripts, the harness, the line-budget PR norm, how to add a figure (link), and the a11y and CVD rules.
-- `CODE_OF_CONDUCT.md`: Contributor Covenant 2.1, with reports going through GitHub private reporting or the maintainer's GitHub contact (no employer, no personal email invented).
+- `CODE_OF_CONDUCT.md`: Contributor Covenant 2.1, with reports going through GitHub private reporting or the maintainer's GitHub contact (no personal email invented).
 - `SECURITY.md`: private advisories, plus the scope (Worker fetch guard, expr evaluator).
 - `.github/ISSUE_TEMPLATE/{bug_report.yml, figure_request.yml, sample_request.yml, config.yml}` and `.github/pull_request_template.md` (checklist: `pnpm check`, smoke, screenshots, CVD, keyboard, CHANGELOG line).
 - `CHANGELOG.md` (Keep a Changelog; an `Unreleased` entry summarising P1–P12).
@@ -771,7 +771,7 @@ The main agent should record these in `docs/DECISIONS.md`.
 1. All files exist. The YAML issue forms parse (a test or script validates them with a tiny YAML check, or the verifier uses `python3 -c "import yaml"` if available, otherwise a manual review).
 2. Nothing under `.github/workflows/`.
 3. Following EXTENDING.md's "add a model" steps literally on a scratch branch (verifier dry run, then reverted) yields passing tests.
-4. There is no mention of Sean's employer and no finance examples.
+4. There is no company names beyond tools, services and cited sources and no finance examples.
 
 **Verifier.** The standard gate (no UI change; smoke still runs), the YAML parse, the link check (every relative link in the new docs resolves), and the EXTENDING dry run (then `git checkout -- . && git clean -fd` of the scratch work only).
 
@@ -803,7 +803,7 @@ The main agent should record these in `docs/DECISIONS.md`.
 1. The README's first screen (rendered as GitHub markdown) contains the pitch, the hero image and the quick start. The hero image exists and is under 400 KB. Every link and image path in README and `examples/README.md` resolves (link-check script).
 2. `pnpm build:examples` writes 3 standalone pages, and `audit.mjs` passes on each.
 3. `docs/assets/social-preview.png` is 1280×640 and under 1 MB. STATUS follow-ups note that it must be uploaded in the repo settings by hand.
-4. LAUNCH.md has all 4 parts, states clearly that nothing is posted, and has no finance or employer mentions.
+4. LAUNCH.md has all 4 parts, states clearly that nothing is posted, and has no finance content or company names.
 5. The "one command to try the skill" in README is verified by the verifier into a temp HOME (`HOME=$(mktemp -d)`), using a local path instead of degit if there is no network.
 
 **Verifier.** The standard gate, `pnpm build:examples`, the audit on each, the link check, and `file` dimensions of the images. Screenshots: `readme-hero.png` (copy of the hero), `social-preview.png`, `examples-attention.png` (standalone file).

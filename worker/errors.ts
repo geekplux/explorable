@@ -6,6 +6,7 @@ const CODES = {
   UNSUPPORTED_CONTENT: [415, 'Use an arXiv paper or an HTML article (PDFs work only on arXiv).'],
   TOO_LITTLE_TEXT: [422, 'The page has too little readable text. Try the article page itself.'],
   AI_UNAVAILABLE: [503, 'No model is available here; built-in samples still work.'],
+  AI_BUDGET: [503, 'Today’s live AI budget is used up; built-in samples still work.'],
   PLAN_INVALID: [502, 'The model returned an unusable plan. Try again later.'],
   NO_FIGURE: [422, 'No interactive figure fits this idea yet.'],
   RATE_LIMITED: [429, 'Too many new links at once. Wait a minute and try again.'],
