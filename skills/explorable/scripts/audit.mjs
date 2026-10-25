@@ -157,12 +157,17 @@ export function docWarnings(input) {
   });
 }
 
+/** The system dark scheme (the kit writes `:root:not([data-theme=light])` inside it, so a chosen light theme opts out). */
 const DARK = /@media\s*(?:screen\s+and\s*)?\(\s*prefers-color-scheme\s*:\s*dark\s*\)\s*\{((?:[^{}]*\{[^{}]*\})*[^{}]*)\}/gi;
+/** A chosen dark theme (`<html data-theme="dark">`, as the app's header toggle sets): also the dark scheme, never light. */
+const CHOSEN_DARK = /@media\s*screen\s*\{\s*:root\[data-theme=["']?dark["']?\]\s*\{([^{}]*)\}\s*\}/gi;
 const decls = (css) => [...css.matchAll(/--([\w-]+)\s*:\s*([^;}]+)/g)].map((m) => [m[1], m[2].trim()]);
+const hasDark = (css) => /prefers-color-scheme\s*:\s*dark/i.test(css) || new RegExp(CHOSEN_DARK.source, 'i').test(css);
 
 /** Each colour token as the cascade resolves it in one scheme (last value wins; `var(--x)` chains followed to a #hex). */
 function tokens(css, dark = false) {
-  const vars = Object.fromEntries([...decls(css.replace(DARK, '')), ...(dark ? [...css.matchAll(DARK)].flatMap((m) => decls(m[1])) : [])]);
+  const darkBlocks = dark ? [...css.matchAll(DARK), ...css.matchAll(CHOSEN_DARK)].flatMap((m) => decls(m[1])) : [];
+  const vars = Object.fromEntries([...decls(css.replace(DARK, '').replace(CHOSEN_DARK, '')), ...darkBlocks]);
   const hex = (name, depth = 0) => {
     const v = vars[name];
     const ref = v && depth < 8 && /^var\(\s*--([\w-]+)\s*\)$/.exec(v);
@@ -175,7 +180,7 @@ function tokens(css, dark = false) {
 /** Palette problems, measured with the kit's colour-vision and contrast functions, in the light and (if present) dark scheme. */
 function auditPalette(css) {
   const out = [];
-  for (const dark of /prefers-color-scheme\s*:\s*dark/i.test(css) ? [false, true] : [false]) {
+  for (const dark of hasDark(css) ? [false, true] : [false]) {
     const t = tokens(css, dark);
     const tag = dark ? ' in the dark scheme' : '';
     const surfaces = ['paper', 'well'].filter((s) => t[s]);

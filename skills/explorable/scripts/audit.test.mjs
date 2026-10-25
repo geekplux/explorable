@@ -189,6 +189,11 @@ describe('audit: failing fixtures', () => {
     fails(problems, /--ink-2 on --paper has contrast [\d.]+:1 in the dark scheme/);
     assert.ok(!problems.some((p) => /--ink-2 on --paper has contrast [\d.]+:1;/.test(p)), 'light is unaffected');
   });
+  it('low-contrast token in a chosen dark theme only (data-theme="dark")', () => {
+    const problems = auditHtml(withCss('@media screen{:root[data-theme=dark]{--sand-11:#3b3a37}}'));
+    fails(problems, /--ink-2 on --paper has contrast [\d.]+:1 in the dark scheme/);
+    assert.ok(!problems.some((p) => /--ink-2 on --paper has contrast [\d.]+:1;/.test(p)), 'light is unaffected');
+  });
   it('raw colour outside the tokens', () => {
     fails(auditHtml(page().replace('</style>', '.x{fill:#ff00aa}</style>')), /colours used outside the palette tokens: #ff00aa/);
   });

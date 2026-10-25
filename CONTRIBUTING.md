@@ -59,4 +59,4 @@ These are part of "done", not polish:
 - **Reduced motion.** Under `prefers-reduced-motion: reduce` there is no easing and no animated hint.
 - **No decorative 3D**, and nothing finance-related in samples, examples or tests.
 
-`pnpm e2e gallery keyboard reduced-motion` covers axe, keyboard paths, reduced motion and colour-vision screenshots for the app.
+`pnpm e2e gallery keyboard reduced-motion theme` covers axe, keyboard paths, reduced motion, the light/dark toggle and colour-vision screenshots for the app.

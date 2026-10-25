@@ -1,6 +1,9 @@
-/* The logo's construction grey sits outside the Radix roles (DESIGN §3: the logo keeps its own colours). */
+/* The logo's construction grey sits outside the Radix roles (DESIGN §3: the logo keeps its own colours).
+   Dark blocks follow the system unless the reader chose light; scripts/theme-css.mjs adds the explicit-dark copy. */
 :root { --logo-faint: #b9bbc6; }
-@media screen and (prefers-color-scheme: dark) { :root { --logo-faint: #5a6169; } }
+/* color-scheme follows the chosen theme too (form controls, scrollbars); print stays light (kit.css). */
+@media screen and (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --logo-faint: #5a6169; color-scheme: dark; } }
+:root[data-theme="light"] { color-scheme: light; }
 
 .shell { max-width: calc(75rem + 2 * var(--gutter)); margin-inline: auto; padding-inline: var(--gutter); }
 
@@ -10,7 +13,12 @@
 .wordmark { display: inline-flex; align-items: center; gap: 10px; font: 600 var(--text-20)/1 var(--font-display); letter-spacing: -.01em; color: var(--text); }
 .wordmark .logo { flex: none; margin-left: -1px; }
 .wordmark-footer { gap: 8px; font-size: var(--text-14); }
+.site-end { display: flex; align-items: center; gap: 12px; }
 .site-nav { display: flex; gap: var(--space-5); }
+/* 44px hit area around an 18px icon; the negative margin puts the icon's edge on the gutter (rule 5). */
+.theme-toggle { display: inline-grid; place-items: center; width: 44px; height: 44px; margin-right: -13px; padding: 0; color: var(--text-2); background: none; border: 0; cursor: pointer; transition: color var(--dur) var(--ease); }
+.theme-toggle:hover { color: var(--text); }
+.theme-toggle:focus-visible { outline-offset: 0; }
 .site-nav, .site-footer { font: 400 var(--text-14)/1.5 var(--font-ui); }
 .site-nav a, .site-foot a { display: inline-flex; align-items: center; min-height: 44px; color: var(--text-2); text-decoration: none; }
 .site-nav a:hover, .site-foot a:hover { color: var(--text); }

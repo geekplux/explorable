@@ -6,7 +6,8 @@ import { PALETTES, RADIX, type Scheme } from '../color/palette.ts';
 const css = readFileSync(new URL('./tokens.css', import.meta.url), 'utf8');
 const kitCss = readFileSync(new URL('./kit.css', import.meta.url), 'utf8');
 
-const DARK = /@media screen and \(prefers-color-scheme: dark\) \{([\s\S]*)\}\s*$/;
+/** The system-dark block, which a reader's explicit light choice (`<html data-theme="light">`) opts out of. */
+const DARK = /@media screen and \(prefers-color-scheme: dark\) \{\s*:root:not\(\[data-theme="light"\]\) \{([^{}]*)\}\s*\}\s*$/;
 const decls = (block: string) => Object.fromEntries([...block.matchAll(/--([\w-]+):\s*([^;]+);/g)].map((m) => [m[1], m[2]?.trim() ?? '']));
 
 /** Custom properties as the cascade sees them in one scheme: the dark block overrides :root. */
@@ -43,6 +44,11 @@ describe('tokens.css', () => {
     expect(scheme('light')['float-shadow']).toContain('var(--black-a2)');
     expect(scheme('dark')['float-shadow']).toContain('var(--black-a6)');
     expect([scheme('light')['on-solid'], scheme('dark')['on-solid']]).toEqual(['var(--sand-1)', 'var(--sand-12)']);
+  });
+
+  it('keeps dark screen-only and lets an explicit light choice opt out of it', () => {
+    expect(DARK.test(css)).toBe(true);
+    expect(css.match(/prefers-color-scheme/g)).toHaveLength(1);
   });
 
   it('swaps the handle to orange-9 in the dark scheme', () => {

@@ -18,7 +18,8 @@ const tags = (re) => [...html.matchAll(re)].map((m) => m[0]);
 
 const files = {
   js: [
-    ...tags(/<script[^>]*type="module"[^>]*>/g).map((t) => attr(t, 'src')),
+    // Module entries and classic scripts in <head> (theme-init.js), all loaded before first use.
+    ...tags(/<script[^>]*\ssrc="[^"]+"[^>]*>/g).map((t) => attr(t, 'src')),
     ...tags(/<link[^>]*rel="modulepreload"[^>]*>/g).map((t) => attr(t, 'href')),
   ],
   css: readdirSync(join(DIST, 'assets'))

@@ -14,7 +14,7 @@ The goal is a refined, interactive and easy short read for a curious reader with
 6. Lines and borders are 0.5px.
 7. Minimal motion. When used: ease-out, 250ms base.
 8. At most 4 type sizes (12/14/20/32 here), smallest 12px. Hierarchy comes from weight, colour and spacing.
-9. Minimise decisions the user must make. No theme toggle: the theme follows `prefers-color-scheme`.
+9. Minimise decisions the user must make. The theme follows `prefers-color-scheme` until the reader picks one with the header toggle (§4, Sean 2026-10-25); there is no third "system" option.
 10. No casual radius or shadow, no coloured left-stripe cards, no card inside a card.
 11. No habitual eyebrows or overlines above headings ("Fig. 1", "arXiv paper", "Or start with one of these" all go). Keep a label only when it adds information the heading lacks.
 
@@ -66,7 +66,8 @@ Wordmark: the mark + "Explorable" in Source Serif 4 600, 20px (header), 14px (fo
 
 ## 4. Chrome
 
-- Header (all pages, including home): 64px tall, 0.5px `sand-6` bottom line, 120px side padding at 1440 (fluid: `clamp(16px, 8.3vw, 120px)`). Wordmark left; nav right in Geist 14 `sand-11`: Essays (home `#essays`), How it works (home `#how`), GitHub. Phone: wordmark only.
+- Header (all pages, including home): 64px tall, 0.5px `sand-6` bottom line, 120px side padding at 1440 (fluid: `clamp(16px, 8.3vw, 120px)`). Wordmark left; nav right in Geist 14 `sand-11`: Essays (home `#essays`), How it works (home `#how`), GitHub. Phone: wordmark and the theme toggle.
+- Theme toggle: one 44px icon button after the nav, an 18px `sand-11` icon (`sand-12` on hover) for the theme it switches to (moon in light, sun in dark), named "Switch to dark theme" / "Switch to light theme". It sets `<html data-theme>` and localStorage; picking the system's own theme clears both, so the page follows the system again. `public/theme-init.js` applies the stored choice before first paint; print stays light.
 - "Made by GeekPlux" block above the footer, on every page: a link to https://geekplux.com first ("Writing, projects and data visualization"), then a 2×2 list: Vert (vert.geekplux.org, "Turn a GPX track into a terrain poster"), Reasontrail (reasontrail.geekplux.com, "See how your coding agent got there"), Pagelapse (pagelapse.geekplux.com, "Watch a web page change over the years"), markvis (github.com/geekplux/markvis, "Charts written in Markdown").
 - Footer: small wordmark left; right: Source on GitHub, Accessibility, MIT licence (plain text). No "·", no "Made with explorable".
 - No "← All explorables" back links: the wordmark goes home.

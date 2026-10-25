@@ -66,8 +66,10 @@
   --shell: 60rem;
   --gutter: clamp(16px, 8.3vw, 120px);
 }
+/* Dark follows the system unless the page sets data-theme="light" on <html>. The app adds the same block under
+   :root[data-theme="dark"] at build time (scripts/theme-css.mjs); standalone pages follow the system only. */
 @media screen and (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme="light"]) {
     --sand-1: #111110; --sand-2: #191918; --sand-3: #222221; --sand-4: #2a2a28; --sand-5: #31312e; --sand-6: #3b3a37;
     --sand-7: #494844; --sand-8: #62605b; --sand-9: #6f6d66; --sand-10: #7c7b74; --sand-11: #b5b3ad; --sand-12: #eeeeec;
     --indigo-1: #11131f; --indigo-2: #141726; --indigo-3: #182449; --indigo-4: #1d2e62; --indigo-5: #253974; --indigo-6: #304384;
