@@ -3,7 +3,7 @@ import type { ExplorableDoc } from '@kit/doc/schema.ts';
 /** Server codes (docs/PLAN.md §5.6) plus the ones only the browser can see. */
 export type ErrorCode =
   | 'INVALID_URL' | 'BLOCKED_URL' | 'FETCH_FAILED' | 'UNSUPPORTED_CONTENT' | 'TOO_LITTLE_TEXT'
-  | 'AI_UNAVAILABLE' | 'PLAN_INVALID' | 'NO_FIGURE' | 'RATE_LIMITED' | 'INTERNAL'
+  | 'AI_UNAVAILABLE' | 'AI_BUDGET' | 'PLAN_INVALID' | 'NO_FIGURE' | 'RATE_LIMITED' | 'INTERNAL'
   | 'TIMEOUT' | 'NETWORK' | 'OFFLINE';
 
 export type ExplainError = { code: ErrorCode; message: string; hint: string };
@@ -11,7 +11,7 @@ export type ExplainResult =
   | { ok: true; doc: ExplorableDoc; mode: 'ai' | 'match'; cache: 'hit' | 'miss' }
   | { ok: false; error: ExplainError };
 
-const CODES = new Set<string>(['INVALID_URL', 'BLOCKED_URL', 'FETCH_FAILED', 'UNSUPPORTED_CONTENT', 'TOO_LITTLE_TEXT', 'AI_UNAVAILABLE', 'PLAN_INVALID', 'NO_FIGURE', 'RATE_LIMITED', 'INTERNAL']);
+const CODES = new Set<string>(['INVALID_URL', 'BLOCKED_URL', 'FETCH_FAILED', 'UNSUPPORTED_CONTENT', 'TOO_LITTLE_TEXT', 'AI_UNAVAILABLE', 'AI_BUDGET', 'PLAN_INVALID', 'NO_FIGURE', 'RATE_LIMITED', 'INTERNAL']);
 
 export const fail = (code: ErrorCode, message = '', hint = ''): ExplainResult => ({ ok: false, error: { code, message, hint } });
 

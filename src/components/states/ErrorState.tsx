@@ -12,6 +12,7 @@ const COPY: Record<ErrorCode, [string, string, boolean?]> = {
   UNSUPPORTED_CONTENT: ['That isn’t an article page', 'Explorable reads arXiv papers and HTML articles. For a PDF outside arXiv, paste the page that links to it.'],
   TOO_LITTLE_TEXT: ['Too little text to explain', 'The page has under 600 characters of readable text. Paste the article itself, not an index or landing page.'],
   AI_UNAVAILABLE: ['Live generation is off here', 'Turning a new link into an essay needs Workers AI, which this copy of Explorable runs without, and the page matches none of the built-in explainers.'],
+  AI_BUDGET: ['Today’s live budget is used up', 'Explorable caps live AI explains each day so the public demo stays free, and this page matches none of the built-in explainers. Try again after midnight UTC.'],
   PLAN_INVALID: ['The model’s plan didn’t hold up', 'Its answer failed our checks, so nothing half-made is shown. Try again in 10 minutes.'],
   NO_FIGURE: ['No live figure fits this idea yet', 'The figure kit has no tested model for this core idea. The samples show what works today.'],
   RATE_LIMITED: ['Too many new links at once', 'Wait a minute, then try again. Links explained before open instantly.', true],
@@ -32,7 +33,7 @@ export function ErrorState({ error, url, onRetry }: { error: ExplainError; url: 
           {title}
         </h1>
         <p>{body}</p>
-        {error.code === 'AI_UNAVAILABLE' && error.hint && <p className="error-hint">{error.hint}</p>}
+        {(error.code === 'AI_UNAVAILABLE' || error.code === 'AI_BUDGET') && error.hint && <p className="error-hint">{error.hint}</p>}
         <p className="error-source">
           Link: <span className="loading-url">{url}</span>
         </p>
@@ -45,7 +46,7 @@ export function ErrorState({ error, url, onRetry }: { error: ExplainError; url: 
           <a href="/" className="hit">
             Edit the link
           </a>
-          {error.code === 'AI_UNAVAILABLE' && (
+          {(error.code === 'AI_UNAVAILABLE' || error.code === 'AI_BUDGET') && (
             <a href={SELF_HOST} className="hit">
               Self-host with Workers AI
             </a>

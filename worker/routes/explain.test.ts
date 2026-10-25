@@ -11,8 +11,12 @@ import unknownMarker from '../fixtures/ai/unknown-marker.json';
 import valid from '../fixtures/ai/valid.json';
 import worker from '../index';
 import { MAX_SOURCE_CHARS } from '../plan/prompt';
+import { budgetKey } from '../budget';
 import { URLS, fakeAi, fakeKv, serveFixtures } from '../testing';
 import { type ExplainEnv, STAGES, TICK_MS, explain, inflightCount, unavailable } from './explain';
+
+/** The one cache entry that is not the daily AI budget counter. */
+const cacheEntry = (kv: ReturnType<typeof fakeKv>) => [...kv.store.entries()].find(([k]) => !k.startsWith('budget:'))?.[1];
 
 type Body = { ok: boolean; cache?: string; mode?: string; doc?: any; error?: { code: string; message: string; hint: string } };
 
@@ -43,7 +47,7 @@ describe('/api/explain with a model', () => {
     expect(second.cache).toBe('hit');
     expect(second.body.doc).toEqual(first.body.doc);
     expect(ai.run).toHaveBeenCalledOnce();
-    expect([...kv.store.values()][0]?.ttl).toBe(30 * 24 * 60 * 60);
+    expect(cacheEntry(kv)?.ttl).toBe(30 * 24 * 60 * 60);
   });
 
   it.each([
@@ -148,6 +152,38 @@ describe('/api/explain without a model', () => {
     expect(status).toBe(503);
     expect(body.error?.code).toBe('AI_UNAVAILABLE');
     expect(body.error?.hint).toContain('Why ropes beat strings for big edits');
+  });
+});
+
+describe('daily AI budget (DAILY_AI_CAP)', () => {
+  it('counts each model call, then falls back to uncached match mode once the cap is reached', async () => {
+    const ai = fakeAi(valid);
+    const { call, kv } = setup({ AI: ai, DAILY_AI_CAP: '1' });
+    expect((await call(URLS.bloom)).body).toMatchObject({ ok: true, mode: 'ai' });
+    expect(kv.store.get(budgetKey(new Date()))?.value).toBe('1');
+    const capped = await call(URLS.attention);
+    expect(capped.body).toMatchObject({ ok: true, mode: 'match', cache: 'miss' });
+    expect(ai.run).toHaveBeenCalledTimes(1);
+    // The stand-in is not cached: after the reset the link can still get a real plan.
+    expect((await call(URLS.attention)).cache).toBe('miss');
+  });
+
+  it('returns AI_BUDGET (503, not cached) for a link with no built-in match once the cap is reached', async () => {
+    const ai = fakeAi(valid);
+    const { call } = setup({ AI: ai, DAILY_AI_CAP: '0' });
+    const first = await call(URLS.rope);
+    expect(first.status).toBe(503);
+    expect(first.body.error?.code).toBe('AI_BUDGET');
+    expect(first.body.error?.hint).toContain('built-in samples still work');
+    expect((await call(URLS.rope)).cache).toBe('miss');
+    expect(ai.run).not.toHaveBeenCalled();
+  });
+
+  it('counts a failed model call too: it is billed all the same', async () => {
+    const ai = fakeAi({ response: 'not a plan' });
+    const { call, kv } = setup({ AI: ai });
+    expect((await call(URLS.bloom)).body.ok).toBe(false);
+    expect(kv.store.get(budgetKey(new Date()))?.value).toBe('1');
   });
 });
 
@@ -268,7 +304,7 @@ describe('streamed progress (Accept: application/x-ndjson)', () => {
     const { env, fetchFn, kv } = setup({ AI: fakeAi(invalidJson) });
     const out = await lines(await explain(streamed(URLS.attention), env, fetchFn));
     expect(out.at(-1)).toMatchObject({ type: 'result', ok: false, error: { code: 'PLAN_INVALID' } });
-    expect(kv.store.size).toBe(1);
+    expect([...kv.store.keys()].filter((k) => !k.startsWith('budget:'))).toHaveLength(1);
   });
 
   it('match mode (no model) skips planning', async () => {

@@ -19,6 +19,8 @@ export function Footer() {
             <a href={`${REPO}#accessibility`}>Accessibility</a>
           </li>
           <li>MIT licence</li>
+          {/* Matches DAILY_AI_CAP (wrangler.jsonc, worker/budget.ts): the cap keeps the public demo's Workers AI bill bounded. */}
+          <li>Live AI explains are capped daily; samples always work</li>
         </ul>
       </div>
     </footer>

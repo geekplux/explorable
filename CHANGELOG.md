@@ -4,6 +4,10 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+### Added: a daily cap on live AI
+
+- Live explains are capped site-wide each day (`DAILY_AI_CAP`, 100 model calls per UTC day). Past the cap, a link that matches a built-in explainer opens in match mode (not cached), any other link gets a new `AI_BUDGET` error page, and the samples keep working. PR Previews never call the model. The footer says so.
+
 ### Changed: the October 2026 redesign
 
 Explorable now reads as a short essay in plain words for a curious reader with school maths, with formulas and sources one click away, in a new identity (spec: `docs/redesign/DESIGN.md`).

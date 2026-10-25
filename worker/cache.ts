@@ -12,7 +12,7 @@ export const TRANSIENT_ERROR_TTL = 60;
 /** Failures cached only briefly: the next minute may well succeed. */
 const TRANSIENT: ReadonlySet<ErrorCode> = new Set(['AI_UNAVAILABLE']);
 /** Failures that are not cached: transient or per-client. */
-const UNCACHED: ReadonlySet<ErrorCode> = new Set(['INTERNAL', 'RATE_LIMITED']);
+const UNCACHED: ReadonlySet<ErrorCode> = new Set(['INTERNAL', 'RATE_LIMITED', 'AI_BUDGET']);
 
 /** The slice of a KV namespace the cache uses (a Map-backed fake in tests). */
 export interface KvLike {
