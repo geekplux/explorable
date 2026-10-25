@@ -1,8 +1,8 @@
 {
-  "schema": 1,
+  "schema": 2,
   "id": "attention",
   "title": "Why attention divides by √d",
-  "dek": "Dot products of random d-dimensional vectors spread out like √d, which pushes a softmax into a one-hot spike. Dividing the scores by √d_k keeps them at unit scale, so attention stays soft and trainable.",
+  "dek": "Attention lets each word decide how much to listen to every other word. When the vectors behind it get long, those decisions turn all-or-nothing. Dividing by √d_k keeps them soft.",
   "source": {
     "kind": "arxiv",
     "url": "https://arxiv.org/abs/1706.03762",
@@ -28,14 +28,14 @@
       "id": "scores-to-weights",
       "heading": "From scores to weights",
       "paragraphs": [
-        "A transformer reads a sentence by letting every word ask a question of every other word. The asking word holds a *query* vector q, each word it looks at offers a *key* vector k, and their dot product `q·k` is a score: how relevant that word looks. Scores can be any real number, so attention turns them into weights with a softmax, `wᵢ = exp(sᵢ / T) / Σⱼ exp(sⱼ / T)`. The weights are positive and add up to 1.",
+        "A transformer reads a sentence by letting every word ask a question of every other word. The asking word holds a *query* vector q, each word it looks at offers a *key* vector k, and their dot product `q·k` is a score: how relevant that word looks. Scores can be any real number, so attention turns them into weights with a softmax.[[m1]] The weights are positive and add up to 1.",
         "Below, the word “sat” is asking about the six words of “the cat sat on the mat”. The scores are fixed by hand so you can watch the softmax on its own. The one knob is the temperature T, which divides every score before the softmax. Drag it."
       ],
       "figure": {
         "id": "fig-temperature",
         "kind": "bars",
         "title": "Temperature sets how sharp the softmax is",
-        "caption": "The scores are fixed by hand; the softmax is computed live. Drag the temperature T and watch one word take over or the weights even out.",
+        "caption": "The scores are fixed by hand; the softmax is computed live. Drag the temperature T and watch how the word “sat” spreads its attention: one word takes over or the weights even out.",
         "alt": "Bar chart of how much attention the word “sat” pays to each word of “the cat sat on the mat” at temperature 1: cat 0.51, mat 0.17, sat 0.14, on 0.06, and each “the” 0.06. Lower temperatures sharpen the bars into a single spike on “cat”.",
         "model": {
           "id": "softmax-temperature",
@@ -84,14 +84,14 @@
       "heading": "Sharp or soft is a matter of scale",
       "paragraphs": [
         "At T = 1, “cat” gets about half of the attention and the rest is shared. Drag T down to 0.25 and “cat” takes 98%: the entropy, a measure of how spread out the weights are, falls from 2.05 bits to 0.15. Push T up to 5 and the weights flatten toward 1/6 each, close to the 2.58-bit maximum for six words. The order of the scores never changes. Only their scale does, and the scale alone decides whether attention is a spotlight or a floodlight.",
-        "The spotlight end is a problem for learning. How much a weight moves when a score moves is `∂wᵢ/∂sⱼ = wᵢ(δᵢⱼ − wⱼ)`. When one weight is nearly 1 and the rest are nearly 0, every one of those terms is nearly 0, so a training signal that tries to move attention elsewhere barely registers. A saturated softmax has stopped listening."
+        "The spotlight end is a problem for learning. How much a weight moves when you nudge a score depends on the weights themselves.[[m2]] When one weight is nearly 1 and the rest are nearly 0, a nudge to any score barely moves anything, so a training signal that tries to move attention elsewhere barely registers. A saturated softmax has stopped listening."
       ]
     },
     {
       "id": "where-scale-comes-from",
       "heading": "Where the scale comes from",
       "paragraphs": [
-        "Nobody sets a temperature by hand inside a transformer. The scale of the scores comes from the vectors themselves. A dot product of two d_k-dimensional vectors is a sum of d_k products, `q·k = Σᵢ qᵢkᵢ`. If every component is random with mean 0 and variance 1, each product also has mean 0 and variance 1, and the variances of independent terms add up. So the score has variance d_k and a standard deviation of √d_k.",
+        "Nobody sets a temperature by hand inside a transformer. The scale of the scores comes from the vectors themselves. A dot product of two d_k-dimensional vectors is a sum of d_k products, one for each pair of matching components.[[m3]] If every component is random with mean 0 and variance 1, each product also has mean 0 and variance 1, and the variances of independent terms add up. So the score has variance d_k and a standard deviation of √d_k.",
         "The figure draws one query and eight keys at random, with components from N(0, 1), and shows the softmax of their eight scores with no scaling at all. Drag d_k, the width of the vectors, from 1 to 512. The scores spread out roughly as √d_k, and a softmax that is soft at d_k = 4 turns into a single spike long before 512."
       ],
       "figure": {
@@ -131,9 +131,17 @@
           "query": "random q",
           "handle": "dk",
           "itemName": "key",
-          "ticks": ["1", "8", "64", "512"],
+          "ticks": [
+            "1",
+            "8",
+            "64",
+            "512"
+          ],
           "compare": true,
-          "compareLabels": ["with ÷√d_k", "without ÷√d_k"]
+          "compareLabels": [
+            "with ÷√d_k",
+            "without ÷√d_k"
+          ]
         }
       }
     },
@@ -141,11 +149,45 @@
       "id": "divide-by-root-d",
       "heading": "The fix: divide by √d_k",
       "paragraphs": [
-        "Vaswani et al. suspect exactly this: for large d_k the dot products grow large in magnitude and push the softmax into regions where its gradients are extremely small. Their remedy is one division. Scaled dot-product attention is `softmax(QKᵀ / √d_k) · V`. A score whose spread is √d_k, divided by √d_k, has a spread of about 1, whatever the width.",
+        "[[vaswani]] suspect exactly this: for large d_k the dot products grow large in magnitude and push the softmax into regions where its gradients are extremely small. Their remedy is one division: every score is divided by √d_k before the softmax.[[m4]] A score whose spread is √d_k, divided by √d_k, has a spread of about 1, whatever the width.",
         "Turn on “divide by √d_k” in the figure above and drag d_k again. The spread now stays near 1 and the weights stay soft at every width. In the paper's base model d_k = 64, so without the division the scores would be 8 times too spread out, the same as running the softmax at T = 1/8. Dividing by √d_k is the temperature knob from the first figure, set to T = √d_k so the scores always arrive at unit scale.",
         "Why the square root and not d_k itself? Dividing by d_k would shrink the spread to 1/√d_k, which is 0.04 at d_k = 512, and the weights would be nearly uniform: attention would see nothing. √d_k is the one choice that keeps the spread fixed as the width changes."
       ]
     }
   ],
-  "takeaway": "The sharpness of a softmax depends on the scale of its scores, not just their order. Dot products of d_k-dimensional vectors spread out like √d_k, so attention divides by √d_k: a fixed temperature that hands the softmax unit-scale scores at any width."
+  "takeaway": "The sharpness of a softmax depends on the scale of its scores, not just their order. Dot products of d_k-dimensional vectors spread out like √d_k, so attention divides by √d_k: a fixed temperature that hands the softmax unit-scale scores at any width.",
+  "notes": [
+    {
+      "id": "m1",
+      "kind": "math",
+      "formula": "wᵢ = exp(sᵢ / T) / Σⱼ exp(sⱼ / T)",
+      "plain": "Each weight *w* is its score *s*, divided by the temperature *T* and exponentiated, as a share of the total."
+    },
+    {
+      "id": "m2",
+      "kind": "math",
+      "formula": "∂wᵢ/∂sⱼ = wᵢ(δᵢⱼ − wⱼ)",
+      "plain": "The change is a product of weights. If one weight is 1 and the others 0, every product is 0."
+    },
+    {
+      "id": "m3",
+      "kind": "math",
+      "formula": "q·k = Σᵢ qᵢkᵢ",
+      "plain": "Multiply the matching components of the query *q* and the key *k*, then add them up."
+    },
+    {
+      "id": "m4",
+      "kind": "math",
+      "formula": "softmax(QKᵀ / √d_k) · V",
+      "plain": "Q stacks every word's query, K every key and V what each word passes on; each row of scores is divided by √d_k, softmaxed, and used to average V. Equation 1 of the paper."
+    },
+    {
+      "id": "vaswani",
+      "kind": "source",
+      "label": "Vaswani et al.",
+      "title": "Attention Is All You Need",
+      "detail": "Vaswani, Shazeer, Parmar and 5 others, 2017",
+      "url": "https://arxiv.org/abs/1706.03762"
+    }
+  ]
 }

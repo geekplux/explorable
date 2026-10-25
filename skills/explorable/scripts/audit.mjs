@@ -1,8 +1,10 @@
 #!/usr/bin/env node
 // node audit.mjs <explorable.json | page.html>
-// Proves a spec or a built page is correct: schema, models, params, expressions,
-// palette (CVD + contrast via the kit), no network, reduced motion, landmarks.
-// Prints numbered problems and exits 1, or ends with the line `audit passed`.
+// Proves a spec or a built page is correct: schema (v1 or v2, with note references),
+// models, params, expressions, palette (CVD + contrast via the kit), no network,
+// reduced motion, landmarks. Prints numbered problems and exits 1, or ends with the
+// line `audit passed`. Body text that reads like a formula is a warning, printed
+// before that line: it belongs in a math note (schema 2).
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -139,30 +141,68 @@ export function auditDoc(input) {
   return figures.flatMap((fig) => auditFigure(fig).map((p) => `figure "${fig.id}": ${p}`));
 }
 
-/** Last value of each `--token: #hex` in the CSS (the cascade winner in one :root). */
-const tokens = (css) => Object.fromEntries([...css.matchAll(/--([\w-]+)\s*:\s*(#[0-9a-f]{6})\b/gi)].map((m) => [m[1], m[2].toUpperCase()]));
+/** Body text (the dek, paragraphs, the takeaway) that reads like a formula, as `kit.findFormula` sees it. */
+export function docWarnings(input) {
+  const parsed = kit.parseDoc(input);
+  if (!parsed.ok) return [];
+  const { doc } = parsed;
+  const bodies = [
+    ['dek', doc.dek],
+    ...doc.sections.flatMap((s, i) => s.paragraphs.map((p, j) => [`sections[${i}].paragraphs[${j}]`, p])),
+    ['takeaway', doc.takeaway],
+  ];
+  return bodies.flatMap(([path, text]) => {
+    const formula = kit.findFormula(text);
+    return formula ? [`${path} reads like a formula (${formula}); say it in words and move the formula into a math note (schema 2, references/spec-format.md)`] : [];
+  });
+}
 
-/** Palette problems, measured with the kit's colour-vision and contrast functions. */
+/** The system dark scheme (the kit writes `:root:not([data-theme=light])` inside it, so a chosen light theme opts out). */
+const DARK = /@media\s*(?:screen\s+and\s*)?\(\s*prefers-color-scheme\s*:\s*dark\s*\)\s*\{((?:[^{}]*\{[^{}]*\})*[^{}]*)\}/gi;
+/** A chosen dark theme (`<html data-theme="dark">`, as the app's header toggle sets): also the dark scheme, never light. */
+const CHOSEN_DARK = /@media\s*screen\s*\{\s*:root\[data-theme=["']?dark["']?\]\s*\{([^{}]*)\}\s*\}/gi;
+const decls = (css) => [...css.matchAll(/--([\w-]+)\s*:\s*([^;}]+)/g)].map((m) => [m[1], m[2].trim()]);
+const hasDark = (css) => /prefers-color-scheme\s*:\s*dark/i.test(css) || new RegExp(CHOSEN_DARK.source, 'i').test(css);
+
+/** Each colour token as the cascade resolves it in one scheme (last value wins; `var(--x)` chains followed to a #hex). */
+function tokens(css, dark = false) {
+  const darkBlocks = dark ? [...css.matchAll(DARK), ...css.matchAll(CHOSEN_DARK)].flatMap((m) => decls(m[1])) : [];
+  const vars = Object.fromEntries([...decls(css.replace(DARK, '').replace(CHOSEN_DARK, '')), ...darkBlocks]);
+  const hex = (name, depth = 0) => {
+    const v = vars[name];
+    const ref = v && depth < 8 && /^var\(\s*--([\w-]+)\s*\)$/.exec(v);
+    if (ref) return hex(ref[1], depth + 1);
+    return v && /^#[0-9a-f]{6}$/i.test(v) ? v.toUpperCase() : undefined;
+  };
+  return Object.fromEntries(Object.keys(vars).flatMap((k) => (hex(k) ? [[k, hex(k)]] : [])));
+}
+
+/** Palette problems, measured with the kit's colour-vision and contrast functions, in the light and (if present) dark scheme. */
 function auditPalette(css) {
-  const t = tokens(css);
   const out = [];
-  const surfaces = ['paper', 'well'].filter((s) => t[s]);
-  if (surfaces.length < 2) out.push('the --paper and --well surface tokens are missing');
-  const series = Object.keys(t).filter((k) => /^(series-\d+|live)$/.test(k));
-  if (series.length > 3) out.push(`${series.length} hue-coded series (${series.map((k) => `--${k}`).join(', ')}); at most 3 pass the colour-vision checks, so encode the rest with line style or pattern`);
-  for (const f of kit.seriesFailures(series.map((k) => t[k]))) out.push(`series ${f.a} and ${f.b} are too close for ${f.vision} vision (ΔE ${f.deltaE.toFixed(1)})`);
-  const need = [...series.map((k) => [k, 3]), ...['ink', 'ink-2', 'live-ink'].filter((k) => t[k]).map((k) => [k, 4.5])];
-  for (const [k, min] of need) {
-    for (const s of surfaces) {
-      const c = kit.contrast(t[k], t[s]);
-      if (c < min) out.push(`--${k} on --${s} has contrast ${c.toFixed(2)}:1; it needs ${min}:1`);
+  for (const dark of hasDark(css) ? [false, true] : [false]) {
+    const t = tokens(css, dark);
+    const tag = dark ? ' in the dark scheme' : '';
+    const surfaces = ['paper', 'well'].filter((s) => t[s]);
+    if (surfaces.length < 2) out.push(`the --paper and --well surface tokens are missing${tag}`);
+    const series = Object.keys(t).filter((k) => /^(series-\d+|live)$/.test(k));
+    if (series.length > 3) out.push(`${series.length} hue-coded series (${series.map((k) => `--${k}`).join(', ')}); at most 3 pass the colour-vision checks, so encode the rest with line style or pattern`);
+    for (const f of kit.seriesFailures(series.map((k) => t[k]))) out.push(`series ${f.a} and ${f.b} are too close for ${f.vision} vision (ΔE ${f.deltaE.toFixed(1)})${tag}`);
+    const need = [...series.map((k) => [k, 3]), ...['ink', 'ink-2', 'live-ink', 'link'].filter((k) => t[k]).map((k) => [k, 4.5])];
+    for (const [k, min] of need) {
+      for (const s of surfaces) {
+        const c = kit.contrast(t[k], t[s]);
+        if (c < min) out.push(`--${k} on --${s} has contrast ${c.toFixed(2)}:1${tag}; it needs ${min}:1`);
+      }
     }
   }
-  const css2 = css.replace(/url\(data:[^)]*\)/g, '').replace(/--[\w-]+\s*:\s*#[0-9a-f]{6}\b/gi, '');
+  const css2 = css.replace(/url\(data:[^)]*\)/g, '')
+    // Only the kit's own scale steps and Radix blackA tokens may hold a hex value (as the minifier writes them).
+    .replace(/--(?:(?:sand|indigo|orange)-\d{1,2}\s*:\s*#[0-9a-f]{6}|black-a\d{1,2}\s*:\s*#000(?:[0-9a-f]|000[0-9a-f]{2}))(?![0-9a-f])/gi, '');
   // Fully transparent (#0000, #rrggbb00: the minifier's `transparent`) is not a colour.
   const raw = new Set([...css2.matchAll(/[:\s,(](#[0-9a-f]{3,8})\b/gi)].map((m) => m[1]).filter((c) => !/^#(?:[0-9a-f]{3}0|[0-9a-f]{6}00)$/i.test(c)));
   if (raw.size) out.push(`colours used outside the palette tokens: ${[...raw].join(', ')}`);
-  return out;
+  return [...new Set(out)];
 }
 
 /** Problems with the page itself: landmarks, title, network, motion and palette. */
@@ -174,11 +214,11 @@ export function auditPage(html, doc) {
   if (!/<title>\s*\S[\s\S]*?<\/title>/i.test(html)) out.push('the page has no <title>');
   if ((outside.match(/<main\b/gi) ?? []).length !== 1) out.push('the page needs exactly one <main> landmark');
   if (!/<h1\b/i.test(outside)) out.push('the page has no <h1>');
-  const source = doc?.source?.url && kit.safeHttpUrl(doc.source.url);
+  const links = new Set([doc?.source?.url, ...(doc?.notes ?? []).map((n) => n.url)].map((u) => u && kit.safeHttpUrl(u)).filter(Boolean).map(kit.escapeHtml));
   for (const m of outside.matchAll(/\s(src|href|srcset|action|poster|data)\s*=\s*["']?([^"'\s>]*)/gi)) {
     const [, attr, value] = m;
-    if (attr.toLowerCase() === 'href' && (value.startsWith('#') || (source && value === kit.escapeHtml(source)))) continue;
-    if (!value.startsWith('data:') || attr.toLowerCase() === 'src') out.push(`external reference ${attr}="${value}": only source.url may link out, and nothing may load from the network`);
+    if (attr.toLowerCase() === 'href' && (value.startsWith('#') || links.has(value))) continue;
+    if (!value.startsWith('data:') || attr.toLowerCase() === 'src') out.push(`external reference ${attr}="${value}": only source.url and source notes may link out, and nothing may load from the network`);
   }
   for (const m of css.matchAll(/@import\b|url\(\s*["']?(?!data:)[^)]*\)/gi)) out.push(`CSS loads ${m[0]}: inline it as a data: URL`);
   if (/\sstyle\s*=/i.test(outside)) out.push('inline style= attribute in the markup; put styles in the stylesheet');
@@ -186,6 +226,9 @@ export function auditPage(html, doc) {
   const shells = (outside.match(/<figure class="xfig"/g) ?? []).length;
   const figures = doc?.sections?.filter((s) => s.figure).length ?? 0;
   if (doc && shells !== figures) out.push(`${shells} figure shells in the markup but ${figures} figures in the doc`);
+  const math = doc?.notes?.filter((n) => n.kind === 'math').length ?? 0;
+  const markers = (outside.match(/<button class="xnote-mk"/g) ?? []).length;
+  if (doc && markers !== math) out.push(`${markers} math markers in the markup but ${math} math notes in the doc`);
   return [...out, ...auditPalette(css)];
 }
 
@@ -209,6 +252,17 @@ export function auditSpec(input) {
   return parsed.ok ? [...problems, ...auditPage(buildPage(parsed.doc, { fonts: false }), parsed.doc)] : problems;
 }
 
+/** The doc in a file: a spec, or the doc a built page embeds (undefined if there is none). */
+function readDoc(file, text) {
+  try {
+    if (!/\.html?$/i.test(file)) return JSON.parse(text);
+    const m = /<script type="application\/json" id="explorable-doc">([\s\S]*?)<\/script>/.exec(text);
+    return m ? JSON.parse(m[1]) : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
 /** Audit a file by extension. */
 export function auditFile(file) {
   const text = readFileSync(file, 'utf8');
@@ -220,6 +274,12 @@ export function auditFile(file) {
   }
 }
 
+/** Warnings for a file (they never fail the audit). */
+export function warnFile(file) {
+  const doc = readDoc(file, readFileSync(file, 'utf8'));
+  return doc === undefined ? [] : docWarnings(doc);
+}
+
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   const file = process.argv[2];
   if (!file) {
@@ -228,8 +288,9 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
   }
   const problems = auditFile(file);
   console.log(`audit ${file}`);
+  if (problems.length) console.log(problems.map((p, i) => `${i + 1}. ${p}`).join('\n'));
+  for (const w of warnFile(file)) console.log(`warning: ${w}`);
   if (problems.length) {
-    console.log(problems.map((p, i) => `${i + 1}. ${p}`).join('\n'));
     console.log(`audit failed: ${problems.length} problem${problems.length === 1 ? '' : 's'}`);
     process.exitCode = 1;
   } else {

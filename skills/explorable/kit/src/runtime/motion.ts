@@ -1,12 +1,11 @@
 /**
- * Motion rules (PLAN §4.4): drags are 1:1, keyboard steps ease with an
- * exponential follow (τ = 90 ms), one knob nudge as a hint. Under
- * `prefers-reduced-motion: reduce` callers skip all of it.
+ * Motion rules (DESIGN, Motion): the knob follows a drag 1:1 while the drawing
+ * settles in 250 ms ease-out; keyboard steps ease with an exponential follow
+ * (τ = 90 ms). Nothing moves on its own. Under `prefers-reduced-motion: reduce`
+ * callers skip all of it.
  */
 export const FOLLOW_TAU = 90;
-export const HINT_DELAY = 1200;
-const HINT_MS = 600;
-const HINT_PX = 8;
+export const SETTLE_MS = 250;
 
 export const reducedMotion = (): boolean =>
   typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -53,11 +52,15 @@ export function follow(from: number[], to: number[], draw: (v: number[]) => void
   return loop((_, dt) => step(dt));
 }
 
-/** The one-time hint: `draw(dx)` goes 0 → 8 px → 0 over 600 ms. */
-export function nudge(draw: (dx: number) => void): () => void {
+/** Call `draw(e)` each frame for `ms`, with `e` eased out from 0 to 1 (cubic). Returns a cancel function. */
+export function settle(draw: (e: number) => void, ms = SETTLE_MS): () => void {
+  if (typeof requestAnimationFrame !== 'function') {
+    draw(1);
+    return () => {};
+  }
   return loop((t) => {
-    const p = Math.min(1, t / HINT_MS);
-    draw(HINT_PX * Math.sin(Math.PI * p));
+    const p = Math.min(1, t / ms);
+    draw(1 - (1 - p) ** 3);
     return p < 1;
   });
 }

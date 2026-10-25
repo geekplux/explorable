@@ -1,0 +1,278 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Explorable Motion</title><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap"><style>body{margin:0;background:#888}
+.ex { --sand-1: #fdfdfc; --sand-2: #f9f9f8; --sand-3: #f1f0ef; --sand-4: #e9e8e6; --sand-5: #e2e1de; --sand-6: #dad9d6; --sand-7: #cfceca; --sand-8: #bcbbb5; --sand-9: #8d8d86; --sand-10: #82827c; --sand-11: #63635e; --sand-12: #21201c;
+  --indigo-1: #fdfdfe; --indigo-2: #f7f9ff; --indigo-3: #edf2fe; --indigo-4: #e1e9ff; --indigo-5: #d2deff; --indigo-6: #c1d0ff; --indigo-7: #abbdf9; --indigo-8: #8da4ef; --indigo-9: #3e63dd; --indigo-10: #3358d4; --indigo-11: #3a5bc7; --indigo-12: #1f2d5c;
+  --orange-1: #fefcfb; --orange-2: #fff7ed; --orange-3: #ffefd6; --orange-4: #ffdfb5; --orange-5: #ffd19a; --orange-6: #ffc182; --orange-7: #f5ae73; --orange-8: #ec9455; --orange-9: #f76b15; --orange-10: #ef5f00; --orange-11: #cc4e00; --orange-12: #582d1d;
+  --bg: var(--sand-1); --handle: var(--orange-10);
+  --serif: "Source Serif 4", "Source Serif Pro", Georgia, serif; --sans: "Geist", ui-sans-serif, system-ui, sans-serif; --mono: "Geist Mono", ui-monospace, monospace;
+  background: var(--sand-1); color: var(--sand-12); font: 400 20px/1.6 var(--serif); font-optical-sizing: auto; -webkit-font-smoothing: antialiased; box-sizing: border-box; }
+.ex.dark { --sand-1: #111110; --sand-2: #191918; --sand-3: #222221; --sand-4: #2a2a28; --sand-5: #31312e; --sand-6: #3b3a37; --sand-7: #494844; --sand-8: #62605b; --sand-9: #6f6d66; --sand-10: #7c7b74; --sand-11: #b5b3ad; --sand-12: #eeeeec;
+  --indigo-1: #11131f; --indigo-2: #141726; --indigo-3: #182449; --indigo-4: #1d2e62; --indigo-5: #253974; --indigo-6: #304384; --indigo-7: #3a4f97; --indigo-8: #435db1; --indigo-9: #3e63dd; --indigo-10: #5472e4; --indigo-11: #9eb1ff; --indigo-12: #d6e1ff;
+  --orange-1: #17120e; --orange-2: #1e160f; --orange-3: #331e0b; --orange-4: #462100; --orange-5: #562800; --orange-6: #66350c; --orange-7: #7e451d; --orange-8: #a35829; --orange-9: #f76b15; --orange-10: #ff801f; --orange-11: #ffa057; --orange-12: #ffe0c2; --handle: var(--orange-9); }
+/* Paper variant: Radix gold 1-8 for grounds and lines, sand 9-12 kept for text */
+.ex.paper { --sand-1: #faf9f2; --sand-2: #f2f0e7; --sand-3: #f2f0e7; --sand-4: #eae6db; --sand-5: #e1dccf; --sand-6: #d8d0bf; --sand-7: #cbc0aa; --sand-8: #b9a88d; background: var(--sand-1); }
+.ex *, .ex *::before, .ex *::after { box-sizing: border-box; }
+.ex h1, .ex h2, .ex p, .ex ol, .ex ul, .ex figure { margin: 0; padding: 0; }
+.ex ol, .ex ul { list-style: none; }
+.ex a { color: inherit; text-decoration: none; }
+.ex p a, .ex .fig-cap a { color: var(--indigo-11); text-decoration: underline 0.5px var(--indigo-8); text-underline-offset: 3px; }
+.ex button { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; }
+.ex .muted { color: var(--sand-11); }
+.ex .code { font: 400 12px var(--mono); }
+.ex .math { font-style: italic; white-space: nowrap; }
+.ex em { font-style: italic; }
+
+/* Bar */
+.ex .masthead { height: 64px; display: flex; align-items: center; justify-content: space-between; padding: 0 120px; border-bottom: 0.5px solid var(--sand-6); }
+.ex .brand { display: inline-flex; align-items: center; gap: 10px; font: 600 20px/1 var(--serif); letter-spacing: -0.01em; }
+.ex .brand .logo { margin-left: -1px; }
+.ex .brand.small { font-size: 14px; gap: 8px; }
+.ex .nav { display: flex; gap: 24px; font: 400 14px var(--sans); color: var(--sand-11); }
+
+/* Hero: the promise and the one action on the left, a live figure on the right */
+.ex .hero { display: grid; grid-template-columns: 480px 600px; justify-content: space-between; align-items: start; padding: 88px 120px 96px; }
+.ex h1 { font: 600 32px/1.15 var(--serif); letter-spacing: -0.015em; text-wrap: balance; }
+.ex .lede { margin-top: 16px; font-size: 20px; line-height: 1.5; color: var(--sand-11); }
+.ex .ask { margin-top: 40px; display: grid; gap: 8px; }
+.ex .ask label { font: 500 14px var(--sans); }
+.ex .ask-row { display: flex; gap: 8px; }
+.ex .field { flex: 1; min-width: 0; height: 44px; padding: 0 14px; border: 0; border-radius: 10px; background: var(--sand-2); box-shadow: inset 0 0 0 0.5px var(--sand-8); font: 400 14px var(--mono); color: var(--sand-12); }
+.ex .field::placeholder { color: var(--sand-9); }
+.ex .btn { height: 44px; padding: 0 18px; border-radius: 10px; font: 500 14px var(--sans); }
+.ex .btn.primary { background: var(--sand-12); color: var(--sand-1); }
+
+/* Figures: hairline frame top and bottom, numbered like a paper */
+.ex .hero-fig, .ex .fig { padding: 16px 0 14px; border-top: 0.5px solid var(--sand-7); border-bottom: 0.5px solid var(--sand-7); }
+.ex .fig-head { display: flex; align-items: baseline; gap: 10px; margin-bottom: 16px; font: 500 14px var(--sans); }
+.ex .fig-no { font: 500 12px var(--sans); color: var(--sand-11); }
+.ex .fig-svg, .ex .thumb { display: block; overflow: visible; }
+.ex .readout { display: flex; gap: 20px; font: 400 12px var(--mono); color: var(--sand-11); }
+.ex .readout b { font-weight: 500; color: var(--sand-12); }
+.ex .hero-fig .readout { margin-top: 4px; }
+.ex .fig-cap { margin-top: 12px; font: italic 400 14px/1.5 var(--serif); color: var(--sand-11); }
+.ex .fig-foot { display: flex; justify-content: space-between; align-items: center; margin-top: 4px; }
+.ex .fig-ctl { display: flex; gap: 24px; margin: 4px 0 8px; }
+.ex .switch { display: inline-flex; align-items: center; gap: 10px; font: 400 14px var(--sans); }
+.ex .switch input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.ex .sw { position: relative; width: 32px; height: 18px; border-radius: 9px; background: var(--sand-6); }
+.ex .sw::after { content: ""; position: absolute; left: 2px; top: 2px; width: 14px; height: 14px; border-radius: 7px; background: var(--handle); }
+.ex .textbtn { font: 500 12px var(--sans); color: var(--indigo-11); text-decoration: underline 0.5px var(--indigo-8); text-underline-offset: 3px; }
+.ex .grid { stroke: var(--sand-5); stroke-width: 0.5; }
+.ex .axis { stroke: var(--sand-9); stroke-width: 1; }
+.ex svg .bar { fill: var(--indigo-9); }
+.ex svg .bar.top { fill: var(--indigo-11); }
+.ex .ref { fill: none; stroke: var(--sand-11); stroke-width: 1; stroke-dasharray: 1 3; stroke-linecap: round; }
+.ex .bit { fill: var(--sand-1); stroke: var(--sand-7); stroke-width: 0.5; }
+.ex .bit.on { fill: var(--sand-12); stroke: var(--sand-12); }
+.ex .bit-hit { fill: none; stroke: var(--indigo-9); stroke-width: 1.5; }
+.ex .f-lab { font: 400 12px var(--sans); fill: var(--sand-11); }
+.ex .f-val { font: 500 12px var(--mono); fill: var(--sand-12); }
+.ex .f-cat { font: 400 14px var(--serif); fill: var(--sand-12); }
+.ex .f-name { font: italic 400 14px var(--serif); fill: var(--sand-12); }
+.ex .tick { stroke: var(--sand-8); stroke-width: 0.5; }
+.ex .sl-track { stroke: var(--sand-6); stroke-width: 2; stroke-linecap: round; }
+.ex .sl-fill { stroke: var(--handle); stroke-width: 2; stroke-linecap: round; }
+.ex .handle { fill: var(--handle); stroke: var(--sand-1); stroke-width: 3; }
+
+/* Essay index: a table of contents, not cards */
+.ex .essays, .ex .how { padding: 0 120px; }
+.ex .essays h2, .ex .how h2 { font: 600 20px/1.3 var(--serif); padding-bottom: 16px; border-bottom: 0.5px solid var(--sand-7); }
+.ex .index li { border-bottom: 0.5px solid var(--sand-6); }
+.ex .row { display: grid; grid-template-columns: 64px minmax(0, 1fr) 240px; gap: 32px; align-items: start; padding: 32px 0; }
+.ex .no { font: 500 12px/28px var(--sans); color: var(--sand-11); }
+.ex .body { display: grid; gap: 8px; max-width: 640px; }
+.ex .e-title { font: 600 20px/1.4 var(--serif); }
+.ex .e-dek { font-size: 20px; line-height: 1.5; color: var(--sand-11); }
+.ex .e-meta { display: flex; gap: 16px; margin-top: 4px; font: 400 12px var(--sans); color: var(--sand-11); }
+.ex .e-meta .src { font-family: var(--mono); }
+.ex .th { padding-top: 6px; }
+
+/* How it works */
+.ex .how { margin-top: 96px; }
+.ex .steps { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 48px; padding-top: 24px; }
+.ex .steps li { display: grid; grid-template-columns: 24px minmax(0, 1fr); gap: 8px; }
+.ex .steps p { font-size: 20px; line-height: 1.5; color: var(--sand-11); }
+.ex .steps b, .ex .skill b { font-weight: 600; color: var(--sand-12); }
+.ex .skill { display: flex; justify-content: space-between; align-items: center; gap: 32px; margin-top: 40px; padding-top: 24px; border-top: 0.5px solid var(--sand-6); }
+.ex .skill p { font-size: 20px; color: var(--sand-11); }
+.ex .cmdbox { display: flex; align-items: center; height: 40px; padding: 0 14px; border-radius: 10px; background: var(--sand-2); box-shadow: inset 0 0 0 0.5px var(--sand-7); white-space: nowrap; }
+
+/* Made by GeekPlux */
+.ex .more { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 48px; margin: 96px 120px 0; padding-top: 32px; border-top: 0.5px solid var(--sand-7); font-family: var(--sans); }
+.ex .maker { display: grid; gap: 8px; align-content: start; }
+.ex .maker h2 { font: 600 20px/1.3 var(--serif); }
+.ex .maker .muted { font-size: 14px; }
+.ex .url { font: 400 12px var(--mono); color: var(--sand-11); }
+.ex .maker .url { color: var(--sand-12); text-decoration: underline 0.5px var(--sand-8); text-underline-offset: 3px; }
+.ex .sites { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 28px 48px; }
+.ex .sites a { display: grid; gap: 2px; font-size: 14px; line-height: 1.5; }
+.ex .s-name { font-weight: 500; }
+.ex .sites .url { margin-top: 4px; }
+.ex .foot { display: flex; align-items: center; justify-content: space-between; margin: 72px 120px 0; padding: 24px 0 40px; border-top: 0.5px solid var(--sand-6); font: 400 14px var(--sans); }
+.ex .foot nav { display: flex; gap: 24px; color: var(--sand-11); }
+
+/* Essay page: a 640px reading column, contents hanging in the left gutter, figures wider than the text */
+.ex .essay { padding: 64px 0 0; }
+.ex .col { position: relative; width: 640px; margin: 0 auto; }
+.ex .back { font: 400 14px var(--sans); color: var(--sand-11); }
+.ex .essay h1 { font-size: 32px; }
+.ex .essay .lede { margin-top: 16px; }
+.ex .byline { margin-top: 16px; font: 400 14px/1.5 var(--sans); color: var(--sand-11); }
+.ex .byline a { color: var(--sand-12); }
+.ex .toc { position: absolute; top: 0; right: calc(100% + 56px); width: 224px; font: 400 14px/1.4 var(--sans); text-align: right; }
+.ex .toc-h { font: 500 12px var(--sans); color: var(--sand-11); margin-bottom: 8px; padding-right: 14px; }
+.ex .toc .rail { position: relative; }
+.ex .toc ol { position: relative; z-index: 1; padding-right: 14px; }
+.ex .toc li { position: relative; padding: 5px 0; }
+.ex .toc li a { color: var(--sand-11); }
+.ex .toc li.on a { color: var(--sand-12); }
+.ex .toc li.on { transform: translateX(3px); }
+.ex .toc li.on::after { content: ""; position: absolute; right: -11px; top: 0; bottom: 0; width: 2px; background: var(--indigo-9); }
+.ex .toc li.on.first::after { top: 3px; border-radius: 1px 1px 0 0; }
+.ex .toc li.on.last::after { bottom: 3px; border-radius: 0 0 1px 1px; }
+.ex .toc .track { position: absolute; right: 0; top: 3px; bottom: 3px; width: 2px; background: var(--sand-4); }
+.ex .toc .prog { position: absolute; left: 0; right: 0; top: 0; background: var(--indigo-6); }
+.ex .essay section { margin-top: 56px; }
+.ex .essay section:first-of-type { margin-top: 64px; }
+.ex .essay h2 { position: relative; font: 600 20px/1.4 var(--serif); margin-bottom: 16px; }
+.ex .essay h2 .no { position: absolute; right: calc(100% + 20px); top: 0; font: 500 12px/28px var(--sans); }
+.ex .essay section p + p { margin-top: 20px; }
+.ex .fig { width: 720px; margin: 48px -40px 0; }
+.ex .take { padding-top: 32px; border-top: 0.5px solid var(--sand-6); }
+.ex .take p + p { margin-top: 16px; }
+
+.ex.spec { padding: 32px 120px 64px; }
+.ex .sp { display: grid; grid-template-columns: 200px minmax(0, 1fr); gap: 48px; padding: 32px 0; border-bottom: 0.5px solid var(--sand-6); }
+.ex .sp h2 { font: 600 20px/1.3 var(--serif); }
+.ex .sp-b { display: grid; gap: 20px; max-width: 900px; }
+.ex .sp-b > p.muted { font: 400 14px/1.5 var(--sans); }
+.ex .lgs { display: grid; grid-template-columns: 1fr 1fr; gap: 0; }
+.ex .lg { display: grid; gap: 24px; padding: 32px; background: var(--sand-1); color: var(--sand-12); }
+.ex .lg-row { display: flex; align-items: end; gap: 24px; }
+.ex .sws { display: flex; flex-wrap: wrap; gap: 12px; }
+.ex .swc { display: grid; gap: 6px; width: 84px; font: 400 12px var(--mono); color: var(--sand-11); }
+.ex .swc i { display: block; height: 40px; border-radius: 6px; box-shadow: inset 0 0 0 0.5px var(--sand-6); }
+
+/* Motion board */
+.ex .mo h2 { display: grid; grid-template-columns: 28px minmax(0, 1fr); }
+.ex .mo-no { font: 500 12px/26px var(--sans); color: var(--sand-11); }
+.ex .mrow { display: flex; align-items: center; gap: 24px; }
+.ex .mf { display: grid; gap: 10px; align-content: start; }
+.ex .mf-in { padding: 20px 24px; background: var(--sand-2); border-radius: 10px; }
+.ex .mf-cap, .ex .mo-from { font: 400 12px var(--sans); color: var(--sand-11); }
+.ex .mo-from { margin-top: -8px; }
+.ex .mstep { white-space: nowrap; display: grid; justify-items: center; gap: 4px; font: 400 12px var(--mono); color: var(--sand-11); margin-bottom: 22px; }
+.ex .toc.still { position: static; width: 224px; }
+.ex .mini-row { display: grid; grid-template-columns: 48px auto; font: 600 20px/1.4 var(--serif); }
+.ex .mini-row .no { font: 500 12px/28px var(--sans); }
+.ex .mini-h1 { display: grid; gap: 12px; }
+.ex .mini-h1 .back { font: 400 14px var(--sans); color: var(--sand-11); }
+.ex .mini-h1 .h1 { font: 600 32px/1.15 var(--serif); letter-spacing: -0.015em; }
+
+/* Plain words first: math and sources open on demand */
+.ex i { font-style: italic; }
+.ex .sub { font-size: 14px; font-style: normal; vertical-align: -0.2em; line-height: 0; }
+.ex .mk { display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; margin-left: 4px; vertical-align: 1px; border-radius: 6px; color: var(--indigo-11); background: var(--indigo-3); }
+.ex .mk[aria-expanded="true"] { color: var(--sand-1); background: var(--indigo-9); }
+.ex .mnote { margin: 16px 0 20px; padding: 16px 20px; border-radius: 10px; background: var(--sand-2); box-shadow: inset 0 0 0 0.5px var(--sand-6); }
+.ex .mn-f { font: italic 400 20px/1.5 var(--serif); text-align: center; }
+.ex .mn-f .op { font-style: normal; }
+.ex .mn-g { margin-top: 8px; font: 400 14px/1.5 var(--sans); color: var(--sand-11); }
+.ex .essay section .mnote + p { margin-top: 0; }
+.ex .ct { position: relative; }
+.ex .ct-name { font: inherit; color: inherit; text-decoration: underline dotted 1px var(--sand-9); text-underline-offset: 4px; }
+.ex .ct.open .ct-name { text-decoration-color: var(--indigo-9); }
+.ex .pop { position: absolute; left: 0; top: calc(100% + 8px); z-index: 2; display: grid; gap: 2px; width: 300px; padding: 12px 14px; border-radius: 10px; background: var(--sand-1); box-shadow: 0 0 0 0.5px var(--sand-7), 0 8px 24px rgb(0 0 0 / 0.08); font: 400 14px/1.45 var(--sans); }
+.ex .pop b { font-weight: 500; }
+.ex .pop span { color: var(--sand-11); }
+.ex .pop a { margin-top: 6px; color: var(--indigo-11); text-decoration: underline 0.5px var(--indigo-8); text-underline-offset: 3px; }
+.ex .byrow { display: flex; justify-content: space-between; align-items: center; gap: 16px; margin-top: 16px; }
+.ex .byrow .byline { margin-top: 0; }
+.ex .pdf { display: inline-flex; align-items: center; gap: 6px; height: 32px; padding: 0 12px; border-radius: 8px; font: 500 14px var(--sans); color: var(--sand-12); box-shadow: inset 0 0 0 0.5px var(--sand-8); align-self: center; }
+
+/* Print and PDF: A4, no chrome, figures frozen at the state you left them, math notes print only if open */
+.ex.print { padding: 40px 72px 0; height: 1123px; overflow: hidden; }
+.ex.print .runhead { display: flex; justify-content: space-between; align-items: center; padding-bottom: 12px; border-bottom: 0.5px solid var(--sand-7); font: 400 12px var(--sans); color: var(--sand-11); }
+.ex.print .runhead .brand { font-size: 12px; gap: 6px; color: var(--sand-12); }
+.ex.print .essay { padding-top: 40px; }
+.ex.print .col { width: auto; margin: 0; }
+.ex.print .essay h1 { font-size: 32px; }
+.ex.print .essay p, .ex.print .lede { font-size: 14px; line-height: 1.6; }
+.ex.print .essay h2 { font-size: 14px; margin-bottom: 8px; }
+.ex.print .essay h2 .no { position: static; margin-right: 10px; }
+.ex.print .essay section { margin-top: 28px; }
+.ex.print .essay section p + p { margin-top: 10px; }
+.ex.print .fig { width: auto; margin: 24px 0 0; }
+.ex.print .mk { display: none; }
+.ex.print .state { margin-top: 4px; font: 400 12px var(--sans); color: var(--sand-11); }
+.ex.print .ct-name { text-decoration: none; }
+
+/* Logo board */
+.ex { --logo-bg: var(--sand-1); --logo-faint: #b9bbc6; }
+.ex.dark { --logo-faint: #5a6169; }
+.ex.logos { padding: 48px 120px 64px; }
+.ex .lgs3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 48px; }
+.ex .lgc { display: grid; gap: 12px; align-content: start; }
+.ex .lgc h2 { margin-top: 12px; font: 600 20px/1.3 var(--serif); }
+.ex .lgc p { font: 400 14px/1.5 var(--sans); }
+.ex .lg-pair { display: grid; grid-template-columns: 1fr 1fr; border-radius: 10px; overflow: hidden; box-shadow: inset 0 0 0 0.5px var(--sand-6); }
+.ex .lg-t { display: grid; gap: 20px; justify-items: start; padding: 24px; background: var(--sand-1); color: var(--sand-12); }
+.ex .lg-t.dark-t { --logo-bg: var(--sand-1); --logo-ink: #edeef0; --logo-faint: #5a6169; --logo-blend: screen; }
+.ex .lg-t.light-t { --logo-ink: #1c2024; --logo-faint: #b9bbc6; --logo-blend: multiply; }
+
+/* Spiral board */
+.ex.spiral { padding: 48px 120px 56px; }
+.ex .sp-grid { display: grid; grid-template-columns: 1fr 1fr; border-radius: 12px; overflow: hidden; box-shadow: inset 0 0 0 0.5px var(--sand-6); }
+.ex .sp-tile { display: grid; gap: 32px; justify-items: center; padding: 40px 32px; background: var(--sand-1); color: var(--sand-12); }
+.ex .sp-tile.dark-t { --logo-bg: var(--sand-1); --logo-faint: #5a6169; }
+.ex .sp-tile.light-t { --logo-faint: #b9bbc6; }
+.ex .sp-sizes { display: flex; align-items: end; gap: 28px; }
+.ex .sp-sizes div, .ex .sp-icons div { display: grid; justify-items: center; gap: 8px; font: 400 12px var(--mono); color: var(--sand-11); }
+.ex .sp-lock { display: flex; align-items: center; gap: 48px; }
+.ex .brand.big { font-size: 32px; gap: 14px; }
+.ex .sp-icons { display: flex; gap: 48px; justify-content: center; margin-top: 40px; --logo-faint: #5a6169; }
+.ex .sp-icons div:nth-child(2) { --logo-faint: #b9bbc6; }
+.ex .sp-note { max-width: 760px; margin: 32px auto 0; font: 400 14px/1.5 var(--sans); text-align: center; }
+
+/* Phone */
+.ex.phone .masthead { height: 56px; padding: 0 16px; }
+.ex.phone .brand { font-size: 20px; }
+.ex.phone .hero { display: block; padding: 40px 16px 56px; }
+.ex.phone h1 { font-size: 32px; }
+.ex.phone .lede { font-size: 20px; }
+.ex.phone .ask { margin-top: 28px; }
+.ex.phone .ask-row { flex-direction: column; }
+.ex.phone .field { flex: none; }
+.ex.phone .btn { width: 100%; }
+.ex.phone .hero-fig { margin-top: 40px; }
+.ex.phone .essays, .ex.phone .how { padding: 0 16px; }
+.ex.phone .row { grid-template-columns: 32px minmax(0, 1fr); gap: 8px; padding: 24px 0; }
+.ex.phone .how { margin-top: 64px; }
+.ex.phone .steps { grid-template-columns: 1fr; gap: 20px; }
+.ex.phone .skill { display: block; }
+.ex.phone .cmdbox { margin-top: 12px; overflow: hidden; }
+.ex.phone .more { grid-template-columns: 1fr; gap: 28px; margin: 64px 16px 0; }
+.ex.phone .sites { grid-template-columns: 1fr; gap: 20px; }
+.ex.phone .foot { flex-direction: column; align-items: flex-start; gap: 16px; margin: 56px 16px 0; }
+.ex.phone .foot nav { flex-wrap: wrap; gap: 8px 16px; }
+.ex.phone .essay { padding-top: 32px; }
+.ex.phone .col { width: auto; margin: 0 16px; }
+.ex.phone .essay h2 .no { position: static; margin-right: 10px; }
+.ex.phone .fig { width: auto; margin: 40px 0 0; }
+.ex.phone .essay p, .ex.phone .lede, .ex.phone .e-dek, .ex.phone .steps p { font-size: 20px; }
+</style></head><body><div class="ex light desk spec motion" style="width:1440px"><section class="sp mo"><h2><span class="mo-no">01</span>Contents follow your reading</h2><div class="sp-b"><div class="mrow"><div class="mf "><div class="mf-in"><nav class="toc still" aria-label="Contents"><div class="rail"><ol><li class="on first last"><a href="#scores-to-weights">From scores to weights</a></li><li class=""><a href="#sharp-or-soft">Sharp or soft is a matter of scale</a></li><li class=""><a href="#where-scale-comes-from">Where the scale comes from</a></li><li class=""><a href="#divide-by-root-d">The fix: divide by √d</a></li><li class=""><a href="#take">Takeaway</a></li></ol><span class="track" aria-hidden="true"><span class="prog" style="height:6%"></span></span></div></nav></div><p class="mf-cap">At the top</p></div><div class="mf "><div class="mf-in"><nav class="toc still" aria-label="Contents"><div class="rail"><ol><li class=""><a href="#scores-to-weights">From scores to weights</a></li><li class="on first"><a href="#sharp-or-soft">Sharp or soft is a matter of scale</a></li><li class="on last"><a href="#where-scale-comes-from">Where the scale comes from</a></li><li class=""><a href="#divide-by-root-d">The fix: divide by √d</a></li><li class=""><a href="#take">Takeaway</a></li></ol><span class="track" aria-hidden="true"><span class="prog" style="height:45%"></span></span></div></nav></div><p class="mf-cap">In section 3</p></div><div class="mf "><div class="mf-in"><nav class="toc still" aria-label="Contents"><div class="rail"><ol><li class=""><a href="#scores-to-weights">From scores to weights</a></li><li class=""><a href="#sharp-or-soft">Sharp or soft is a matter of scale</a></li><li class=""><a href="#where-scale-comes-from">Where the scale comes from</a></li><li class="on first"><a href="#divide-by-root-d">The fix: divide by √d</a></li><li class="on last"><a href="#take">Takeaway</a></li></ol><span class="track" aria-hidden="true"><span class="prog" style="height:93%"></span></span></div></nav></div><p class="mf-cap">Near the end</p></div></div><p class="muted">The sections on screen get an indigo bracket on the track and move 3px toward the text, in ink. The bracket slides between positions in 250 ms. The track fills from top to bottom as you read, driven by CSS scroll timelines with no script. Under reduced motion the bracket jumps and the fill stays still.</p><p class="mo-from">From geekplux.com, the same behaviour and timings.</p></div></section><section class="sp mo"><h2><span class="mo-no">02</span>The title travels from the index into the essay</h2><div class="sp-b"><div class="mrow"><div class="mf w-row"><div class="mf-in"><div class="mini-row"><span class="no">01</span><span class="e-title">Why attention divides by √d</span></div></div><p class="mf-cap">Index row</p></div><div class="mstep"><svg width="40" height="12" viewBox="0 0 40 12" aria-hidden="true"><path d="M0 6H36M31 1.5L36 6L31 10.5" fill="none" stroke="var(--sand-9)" stroke-width="1"/></svg><span>300 ms</span></div><div class="mf w-h1"><div class="mf-in"><div class="mini-h1"><span class="h1">Why attention divides by √d</span></div></div><p class="mf-cap">Essay page</p></div></div><p class="muted">Opening an essay is a cross-document view transition. The title is its own group: it grows from its place in the index into the page title while the rest of the page cross-fades. Browsers without it navigate normally.</p><p class="mo-from">From geekplux.com, the list to article transition.</p></div></section><section class="sp mo"><h2><span class="mo-no">03</span>A dragged figure settles in 250 ms</h2><div class="sp-b"><div class="mrow"><div class="mf w-fig"><div class="mf-in"><svg class="thumb" width="360" height="170" viewBox="0 0 360 170" role="img" aria-label="Bar chart of how much attention the word “sat” pays to each word of “the cat sat on the mat” at temperature 1: cat 0.51, mat 0.17, sat 0.14, on 0.06, and each “the” 0.06. Lower temperatures sharpen the bars into a single spike on “cat”."><path d="M36 116H352" class="axis"/><rect x="47.6" y="115" width="29.5" height="1" class="bar"/><text x="62.3" y="134" text-anchor="middle" class="f-cat">the</text><rect x="100.3" y="34.3" width="29.5" height="81.7" class="bar top"/><text x="115" y="134" text-anchor="middle" class="f-cat">cat</text><rect x="152.9" y="109.9" width="29.5" height="6.1" class="bar"/><text x="167.7" y="134" text-anchor="middle" class="f-cat">sat</text><rect x="205.6" y="114.8" width="29.5" height="1.2" class="bar"/><text x="220.3" y="134" text-anchor="middle" class="f-cat">on</text><rect x="258.3" y="115" width="29.5" height="1" class="bar"/><text x="273" y="134" text-anchor="middle" class="f-cat">the</text><rect x="310.9" y="107" width="29.5" height="9" class="bar"/><text x="325.7" y="134" text-anchor="middle" class="f-cat">mat</text><g class="sl" role="slider" aria-label="Temperature T = 0.50" aria-valuetext="Temperature T = 0.50" tabindex="0">
+    <path d="M36 156H352" class="sl-track"/><path d="M36 156H166" class="sl-fill"/>
+    
+    <circle cx="166" cy="156" r="9" class="handle"/>
+  </g></svg></div><p class="mf-cap">T = 0.5</p></div><div class="mstep"><svg width="40" height="12" viewBox="0 0 40 12" aria-hidden="true"><path d="M0 6H36M31 1.5L36 6L31 10.5" fill="none" stroke="var(--sand-9)" stroke-width="1"/></svg><span>drag</span></div><div class="mf w-fig"><div class="mf-in"><svg class="thumb" width="360" height="170" viewBox="0 0 360 170" role="img" aria-label="Bar chart of how much attention the word “sat” pays to each word of “the cat sat on the mat” at temperature 1: cat 0.51, mat 0.17, sat 0.14, on 0.06, and each “the” 0.06. Lower temperatures sharpen the bars into a single spike on “cat”."><path d="M36 116H352" class="axis"/><rect x="47.6" y="110.3" width="29.5" height="5.7" class="bar"/><text x="62.3" y="134" text-anchor="middle" class="f-cat">the</text><rect x="100.3" y="64.7" width="29.5" height="51.3" class="bar top"/><text x="115" y="134" text-anchor="middle" class="f-cat">cat</text><rect x="152.9" y="102" width="29.5" height="14" class="bar"/><text x="167.7" y="134" text-anchor="middle" class="f-cat">sat</text><rect x="205.6" y="109.7" width="29.5" height="6.3" class="bar"/><text x="220.3" y="134" text-anchor="middle" class="f-cat">on</text><rect x="258.3" y="110.3" width="29.5" height="5.7" class="bar"/><text x="273" y="134" text-anchor="middle" class="f-cat">the</text><rect x="310.9" y="98.9" width="29.5" height="17.1" class="bar"/><text x="325.7" y="134" text-anchor="middle" class="f-cat">mat</text><g class="sl" role="slider" aria-label="Temperature T = 1.00" aria-valuetext="Temperature T = 1.00" tabindex="0">
+    <path d="M36 156H352" class="sl-track"/><path d="M36 156H222" class="sl-fill"/>
+    
+    <circle cx="222" cy="156" r="9" class="handle"/>
+  </g></svg></div><p class="mf-cap">T = 1</p></div></div><p class="muted">While you drag, bars follow the handle with a 250 ms ease-out, so a fast drag reads as a change and not a flicker. Numbers in the readout change at once, in tabular figures, with no counting animation. Arrow keys step the handle; Shift steps ten times further.</p></div></section><section class="sp mo"><h2><span class="mo-no">04</span>Hovering an essay shows what you can do</h2><div class="sp-b"><div class="mrow"><div class="mf w-th"><div class="mf-in"><svg class="thumb" width="240" height="170" viewBox="0 0 240 170" role="img" aria-label="Bar chart of how much attention the word “sat” pays to each word of “the cat sat on the mat” at temperature 1: cat 0.51, mat 0.17, sat 0.14, on 0.06, and each “the” 0.06. Lower temperatures sharpen the bars into a single spike on “cat”."><path d="M36 116H232" class="axis"/><rect x="43.2" y="102.4" width="18.3" height="13.6" class="bar"/><text x="52.3" y="134" text-anchor="middle" class="f-cat">the</text><rect x="75.9" y="92.3" width="18.3" height="23.7" class="bar top"/><text x="85" y="134" text-anchor="middle" class="f-cat">cat</text><rect x="108.5" y="98.9" width="18.3" height="17.1" class="bar"/><text x="117.7" y="134" text-anchor="middle" class="f-cat">sat</text><rect x="141.2" y="102" width="18.3" height="14" class="bar"/><text x="150.3" y="134" text-anchor="middle" class="f-cat">on</text><rect x="173.9" y="102.4" width="18.3" height="13.6" class="bar"/><text x="183" y="134" text-anchor="middle" class="f-cat">the</text><rect x="206.5" y="98" width="18.3" height="18" class="bar"/><text x="215.7" y="134" text-anchor="middle" class="f-cat">mat</text><g class="sl" role="slider" aria-label="Temperature T = 4.00" aria-valuetext="Temperature T = 4.00" tabindex="0">
+    <path d="M36 156H232" class="sl-track"/><path d="M36 156H220.8" class="sl-fill"/>
+    
+    <circle cx="220.8" cy="156" r="9" class="handle"/>
+  </g></svg></div><p class="mf-cap">Mid-sweep, T = 4</p></div><div class="mstep"><svg width="40" height="12" viewBox="0 0 40 12" aria-hidden="true"><path d="M0 6H36M31 1.5L36 6L31 10.5" fill="none" stroke="var(--sand-9)" stroke-width="1"/></svg><span>600 ms</span></div><div class="mf w-th"><div class="mf-in"><svg class="thumb" width="240" height="170" viewBox="0 0 240 170" role="img" aria-label="Bar chart of how much attention the word “sat” pays to each word of “the cat sat on the mat” at temperature 1: cat 0.51, mat 0.17, sat 0.14, on 0.06, and each “the” 0.06. Lower temperatures sharpen the bars into a single spike on “cat”."><path d="M36 116H232" class="axis"/><rect x="43.2" y="110.3" width="18.3" height="5.7" class="bar"/><text x="52.3" y="134" text-anchor="middle" class="f-cat">the</text><rect x="75.9" y="64.7" width="18.3" height="51.3" class="bar top"/><text x="85" y="134" text-anchor="middle" class="f-cat">cat</text><rect x="108.5" y="102" width="18.3" height="14" class="bar"/><text x="117.7" y="134" text-anchor="middle" class="f-cat">sat</text><rect x="141.2" y="109.7" width="18.3" height="6.3" class="bar"/><text x="150.3" y="134" text-anchor="middle" class="f-cat">on</text><rect x="173.9" y="110.3" width="18.3" height="5.7" class="bar"/><text x="183" y="134" text-anchor="middle" class="f-cat">the</text><rect x="206.5" y="98.9" width="18.3" height="17.1" class="bar"/><text x="215.7" y="134" text-anchor="middle" class="f-cat">mat</text><g class="sl" role="slider" aria-label="Temperature T = 1.00" aria-valuetext="Temperature T = 1.00" tabindex="0">
+    <path d="M36 156H232" class="sl-track"/><path d="M36 156H151.4" class="sl-fill"/>
+    
+    <circle cx="151.4" cy="156" r="9" class="handle"/>
+  </g></svg></div><p class="mf-cap">Back at rest</p></div></div><p class="muted">Hovering or focusing an essay in the index plays its first figure once: the handle sweeps to the far end and back and the bars follow. The row number turns to ink. Nothing plays on touch screens or under reduced motion.</p><p class="mo-from">Like the project tiles on geekplux.com, which play only on hover.</p></div></section><section class="sp mo"><h2><span class="mo-no">05</span>Figures enter once</h2><div class="sp-b"><p class="muted">A figure below the fold fades in and scales from 0.985 to 1 in 250 ms when it first enters the screen. A figure already on screen when the page loads does not animate, and print shows every figure. The essay title and meta line fade in and rise 4px in 200 ms on a fresh load.</p><p class="mo-from">From geekplux.com, the image reveal and the title entrance.</p></div></section><section class="sp mo"><h2><span class="mo-no"></span>Not doing</h2><div class="sp-b"><p class="muted">No figure animates on its own. No parallax, no scroll-jacking, no skeleton screens, no counting numbers, no spring or bounce.</p></div></section></div></body></html>

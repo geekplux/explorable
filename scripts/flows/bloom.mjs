@@ -29,7 +29,7 @@ async function settled(page) {
 
 /** Every control's pointer target is ≥ 44 × 44 CSS px. */
 async function assertHitAreas(page, assert, width) {
-  for (const sel of ['.xfig-knob-hit', '.xfig-track-hit', 'input[type=range]', 'fieldset label', '.xfig-data-toggle']) {
+  for (const sel of ['.xfig-knob-hit', '.xfig-track-hit', '.xfig-control:not(.xfig-sr) input[type=range]', 'fieldset label', '.xfig-data-toggle']) {
     for (const box of await Promise.all((await page.locator(`${FIG} ${sel}`).all()).map((l) => l.boundingBox()))) {
       assert.ok(box.width >= 44 && box.height >= 44, `${sel} hit area ${box.width}×${box.height} ≥ 44 px at ${width} px`);
     }
@@ -47,10 +47,12 @@ export default async function bloom({ page, baseURL, shot, assert, cvd, axe }) {
   const fig = page.locator(FIG);
   await fig.locator('.xfig-knob').waitFor();
   await fig.scrollIntoViewIfNeeded();
-  assert.equal(await readout(page), 'bits set 20 / 32 · predicted FPR 14.7% · observed FP 10 / 50');
+  await page.waitForTimeout(300); // a figure below the fold enters once (250 ms)
+  assert.equal(await readout(page), 'bits set 20 / 32 predicted FPR 14.7% observed FP 10 / 50');
   assert.equal((await fig.locator('.xfig-bit text').allTextContents()).join(''), '11001101111010101011010110010111', 'every cell shows its 1/0 glyph');
   const cell = await fig.locator('.xfig-bit rect').first().boundingBox();
-  assert.ok(cell.width >= 24 && cell.height >= 24, `cells ≥ 24 px on desktop (${cell.width})`);
+  // 32 cells across the 720 px figure (DESIGN §6): about 20 px each, room for the 12 px glyph.
+  assert.ok(cell.width >= 20 && cell.height >= 20, `cells ≥ 20 px on desktop (${cell.width})`);
   assert.equal(new Set(await fig.locator('.xfig-bit').evaluateAll((els) => els.map((e) => e.getBoundingClientRect().top))).size, 1, 'one row on desktop');
   assert.equal(await fig.locator('.xfig-verdict-text').textContent(), 'maybe (true positive)');
   assert.deepEqual(blocking(await axe()).map((v) => `${v.id}: ${v.help}`), [], 'axe: no serious/critical violations');
@@ -81,10 +83,10 @@ export default async function bloom({ page, baseURL, shot, assert, cvd, axe }) {
   await fig.locator('#fig-bits-k').focus();
   await page.keyboard.press('Home');
   const k1 = await readout(page);
-  assert.equal(k1, 'bits set 7 / 32 · predicted FPR 22.1% · observed FP 9 / 50');
+  assert.equal(k1, 'bits set 7 / 32 predicted FPR 22.1% observed FP 9 / 50');
   for (let i = 0; i < 5; i++) await page.keyboard.press('ArrowRight');
   const k6 = await readout(page);
-  assert.equal(k6, 'bits set 26 / 32 · predicted FPR 22.0% · observed FP 15 / 50');
+  assert.equal(k6, 'bits set 26 / 32 predicted FPR 22.0% observed FP 15 / 50');
   assert.notEqual(fpr(k1), fpr(k6), 'predicted FPR changes with k');
   await settled(page);
   assert.equal(await fig.locator('.xfig-arrow').count(), 6, 'six probe arrows at k = 6 once motion settles');
@@ -109,6 +111,7 @@ export default async function bloom({ page, baseURL, shot, assert, cvd, axe }) {
   await page.goto(`${baseURL}/s/bloom-filter`, { waitUntil: 'networkidle' });
   await fig.locator('.xfig-knob').waitFor();
   await fig.scrollIntoViewIfNeeded();
+  await page.waitForTimeout(300); // a figure below the fold enters once (250 ms)
   const rows = await fig.locator('.xfig-bit').evaluateAll((els) => els.map((e) => Math.round(e.getBoundingClientRect().top)));
   assert.equal(new Set(rows).size, 2, 'two rows of cells at 390 px');
   assert.equal(rows.filter((t) => t === rows[0]).length, 16, '16 cells per row');
@@ -130,6 +133,7 @@ async function openCurve(page, baseURL) {
   const fig = page.locator(CURVE);
   await fig.locator('.xfig-knob').waitFor();
   await fig.scrollIntoViewIfNeeded();
+  await page.waitForTimeout(300); // a figure below the fold enters once (250 ms)
   await curveSettled(page);
   return fig;
 }
@@ -150,12 +154,13 @@ async function verticalSwipe(page, assert, fig) {
   await cdp.send('Emulation.setTouchEmulationEnabled', { enabled: false });
   await cdp.detach();
   await fig.scrollIntoViewIfNeeded();
+  await page.waitForTimeout(300); // a figure below the fold enters once (250 ms)
 }
 
 /** Bloom Fig 2: the FPR curve over n for the current m and k. */
 async function fprCurve({ page, baseURL, shot, assert, cvd, axe }) {
   const fig = await openCurve(page, baseURL);
-  assert.equal(await curveReadout(page), 'items inserted n 8 · false-positive rate 14.7%');
+  assert.equal(await curveReadout(page), 'items inserted n 8 false-positive rate 14.7%');
   assert.equal(await fig.locator('.xfig-marker-label').textContent(), 'k = 3 is best at n ≈ 7.4');
   assert.equal(await fig.locator('.xfig-series-label').textContent(), 'k = 3, m = 32');
   assert.equal(await fig.locator('.xfig-ref-label').textContent(), 'best possible k');
@@ -175,7 +180,7 @@ async function fprCurve({ page, baseURL, shot, assert, cvd, axe }) {
   await page.mouse.move(xOf(16), ring.y - 60, { steps: 8 });
   await page.mouse.up();
   assert.equal(await fig.locator('.xfig-knob').getAttribute('aria-valuenow'), '16');
-  assert.equal(await curveReadout(page), 'items inserted n 16 · false-positive rate 46.9%');
+  assert.equal(await curveReadout(page), 'items inserted n 16 false-positive rate 46.9%');
   await page.waitForFunction((sel) => document.querySelector(`${sel}-desc`)?.textContent === 'At n = 16 items, the false-positive rate is 46.9%; k = 3 is best at n ≈ 7.4.', CURVE, { timeout: 10_000 });
   const knobY = (await fig.locator('.xfig-knob-ring').boundingBox()).y;
   assert.ok(knobY < ring.y - 40, 'the knob climbs the curve as n grows');
@@ -188,7 +193,7 @@ async function fprCurve({ page, baseURL, shot, assert, cvd, axe }) {
   await page.keyboard.press('End');
   await curveSettled(page);
   assert.equal(await fig.locator('.xfig-marker-label').textContent(), 'k = 6 is best at n ≈ 3.7');
-  assert.match(await curveReadout(page), /^items inserted n 16 · /);
+  assert.match(await curveReadout(page), /^items inserted n 16 /);
   await curveSettled(page);
   for (const vision of ['deutan', 'protan', 'tritan']) {
     await cvd(vision);

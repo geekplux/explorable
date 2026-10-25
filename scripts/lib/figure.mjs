@@ -32,7 +32,7 @@ export const textProblems = (page, fig) =>
   }, fig);
 
 /** Every matching pointer target in `fig` is ≥ 44 × 44 CSS px. */
-export async function assertHitAreas(page, assert, fig, width, sels = ['.xfig-knob-hit', '.xfig-track-hit', 'input[type=range]', '.xfig-data-toggle']) {
+export async function assertHitAreas(page, assert, fig, width, sels = ['.xfig-knob-hit', '.xfig-track-hit', '.xfig-control:not(.xfig-sr) input[type=range]', '.xfig-data-toggle']) {
   for (const sel of sels) {
     for (const box of await Promise.all((await page.locator(`${fig} ${sel}`).all()).map((l) => l.boundingBox()))) {
       assert.ok(box.width >= 44 && box.height >= 44, `${fig} ${sel} hit area ${box.width}×${box.height} ≥ 44 px at ${width} px`);

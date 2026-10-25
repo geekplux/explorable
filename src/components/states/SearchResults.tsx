@@ -1,12 +1,12 @@
 import { useEffect, useState } from 'react';
 import type { ExplorableDoc } from '@kit/doc/schema.ts';
-import { MiniCards } from '../SampleCard.tsx';
+import { EssayIndex } from '../EssayIndex.tsx';
 
 /** How long typing must pause before the match count is announced. */
 export const COUNT_DELAY_MS = 500;
 
 export const countText = (n: number): string =>
-  n ? `${n} built-in ${n === 1 ? 'match' : 'matches'}. Open one, or paste a link.` : 'No built-in match: paste a link instead.';
+  n === 1 ? '1 match. Open it, or paste a link.' : n ? `${n} matches. Open one, or paste a link.` : 'No match: paste a link instead.';
 
 /**
  * Local matches for typed words. The visible count updates at once; screen
@@ -27,13 +27,11 @@ export function SearchResults({ results }: { results: readonly ExplorableDoc[] |
       <output className="visually-hidden search-live">{said}</output>
       {results && (
         <>
-          <h2 id="search-heading" className="kicker">
-            Built-in matches
-          </h2>
+          <h2 id="search-heading">Built-in matches</h2>
           <p className="search-count" aria-hidden="true">
             {text}
           </p>
-          {results.length > 0 && <MiniCards docs={results} />}
+          {results.length > 0 && <EssayIndex docs={results} compact />}
         </>
       )}
     </section>

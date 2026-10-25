@@ -1,0 +1,117 @@
+// node scripts/gen-logo.mjs: the spiral mark (docs/redesign/DESIGN.md §3) as compact outlines.
+// The tapered stroke along the golden spiral's Fibonacci arcs is traced densely, then each edge is
+// refitted with cubic Béziers (adaptive, error ≤ 0.02 viewBox units), so the inline mark stays small
+// and smooth at any zoom. Writes src/components/logo-paths.ts, public/favicon.svg and src/assets/mark.svg.
+import { writeFileSync } from 'node:fs';
+
+const ARCS = [[38, 48, 32, 180, 270], [38, 36, 20, 270, 360], [46, 36, 12, 0, 90], [46, 40, 8, 90, 180], [42, 40, 4, 180, 270], [42, 38, 2, 270, 360]];
+const TOL = 0.02;
+
+/** Dense left and right edges of the tapered stroke (same width law as the board generator), with arc joints marked. */
+function trace(w0, w1) {
+  const pts = [], joints = [0];
+  for (const [cx, cy, r, a0, a1] of ARCS) {
+    const n = Math.max(96, Math.round(r * 32));
+    for (let i = pts.length ? 1 : 0; i <= n; i++) {
+      const a = ((a0 + ((a1 - a0) * i) / n) * Math.PI) / 180;
+      pts.push([cx + r * Math.cos(a), cy + r * Math.sin(a)]);
+    }
+    joints.push(pts.length - 1);
+  }
+  const len = [0];
+  for (let i = 1; i < pts.length; i++) len.push(len[i - 1] + Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1]));
+  const L = len[len.length - 1], left = [], right = [];
+  pts.forEach(([x, y], i) => {
+    const t = len[i] / L, u = Math.min(1, t / 0.16), sm = u * u * (3 - 2 * u);
+    const w = (w0 * Math.pow(sm, 0.6) * Math.pow(1 - t, 1.1) + w1 * (0.35 + 0.65 * sm)) / 2;
+    const [px, py] = pts[Math.max(0, i - 1)], [nx, ny] = pts[Math.min(pts.length - 1, i + 1)];
+    let dx = nx - px, dy = ny - py;
+    const m = Math.hypot(dx, dy) || 1;
+    dx /= m; dy /= m;
+    left.push([x - dy * w, y + dx * w]);
+    right.push([x + dy * w, y - dx * w]);
+  });
+  // The taper starts fast (smoothstep over the first 16%): keep a joint there too.
+  joints.push(len.findIndex((v) => v / L >= 0.16));
+  return { left, right, joints: [...new Set(joints)].toSorted((a, b) => a - b), end: pts.at(-1) };
+}
+
+const sub = (a, b) => [a[0] - b[0], a[1] - b[1]];
+const unit = (v) => { const m = Math.hypot(v[0], v[1]) || 1; return [v[0] / m, v[1] / m]; };
+const bez = (p0, c1, c2, p1, t) => { const s = 1 - t; return [0, 1].map((k) => s * s * s * p0[k] + 3 * s * s * t * c1[k] + 3 * s * t * t * c2[k] + t * t * t * p1[k]); };
+
+/** One cubic from dense[i] to dense[j]; tangents from the dense neighbours, handle lengths by least squares on two samples. */
+function fit(d, i, j) {
+  const p0 = d[i], p1 = d[j];
+  const t0 = unit(sub(d[Math.min(i + 1, d.length - 1)], d[Math.max(i - 1, 0)]));
+  const t1 = unit(sub(d[Math.min(j + 1, d.length - 1)], d[Math.max(j - 1, 0)]));
+  const chord = Math.hypot(...sub(p1, p0));
+  let best;
+  for (let a = 0.2; a <= 0.6; a += 0.01) {
+    for (let b = 0.2; b <= 0.6; b += 0.01) {
+      const c1 = [p0[0] + t0[0] * chord * a, p0[1] + t0[1] * chord * a], c2 = [p1[0] - t1[0] * chord * b, p1[1] - t1[1] * chord * b];
+      const e = error(d, i, j, p0, c1, c2, p1);
+      if (!best || e < best.e) best = { e, c1, c2 };
+    }
+  }
+  return best;
+}
+
+/** Largest distance from the dense points between i and j to the curve. */
+function error(d, i, j, p0, c1, c2, p1) {
+  const curve = Array.from({ length: 41 }, (_, k) => bez(p0, c1, c2, p1, k / 40));
+  let worst = 0;
+  for (let k = i; k <= j; k += Math.max(1, Math.floor((j - i) / 24))) {
+    let near = Infinity;
+    for (let m = 1; m < curve.length; m++) near = Math.min(near, segDist(d[k], curve[m - 1], curve[m]));
+    worst = Math.max(worst, near);
+  }
+  return worst;
+}
+function segDist(p, a, b) {
+  const ab = sub(b, a), ap = sub(p, a), l = ab[0] * ab[0] + ab[1] * ab[1];
+  const t = l ? Math.max(0, Math.min(1, (ap[0] * ab[0] + ap[1] * ab[1]) / l)) : 0;
+  return Math.hypot(ap[0] - ab[0] * t, ap[1] - ab[1] * t);
+}
+
+/** Adaptive cubic segments over one edge, split at the joints and wherever the error is too big. */
+function cubics(d, joints) {
+  const out = [];
+  const go = (i, j) => {
+    const f = fit(d, i, j);
+    if (f.e > TOL && j - i > 4) { const m = (i + j) >> 1; go(i, m); go(m, j); } else out.push([f.c1, f.c2, d[j]]);
+  };
+  for (let k = 1; k < joints.length; k++) go(joints[k - 1], joints[k]);
+  return out;
+}
+
+const n = (v) => { const s = (Math.round(v * 100) / 100).toString(); return s.replace(/^(-?)0\./, '$1.'); };
+const pt = (p) => `${n(p[0])} ${n(p[1])}`.replace(' -', '-');
+const C = (segs) => segs.map(([a, b, p]) => `C${pt(a)} ${pt(b)} ${pt(p)}`).join('');
+
+function outline(w0, w1) {
+  const { left, right, joints, end } = trace(w0, w1);
+  const last = left.length - 1, rj = joints.map((i) => last - i).toReversed();
+  const r = right.toReversed();
+  return { d: `M${pt(left[0])}${C(cubics(left, joints))}L${pt(r[0])}${C(cubics(r, rj))}Z`, end };
+}
+
+const large = outline(7.5, 1), small = outline(10, 2.4);
+const end = large.end.map((v) => Math.round(v * 10) / 10);
+
+writeFileSync(
+  new URL('../src/components/logo-paths.ts', import.meta.url),
+  `// Generated by scripts/gen-logo.mjs; do not edit.\n` +
+    `/** The spiral's outline at ≥ 28px (with construction) and below 28px (thicker, no construction), viewBox 0 0 64 64. */\n` +
+    `export const SPIRAL_LARGE = '${large.d}';\nexport const SPIRAL_SMALL = '${small.d}';\n` +
+    `/** Where the spiral lands: the amber point. */\nexport const SPIRAL_END = [${end.join(', ')}] as const;\n`,
+);
+
+// Favicon / app icon: the small mark on an ink rounded square.
+const grad = (id) => `<radialGradient id="${id}" cx="${end[0]}" cy="${end[1]}" r="40" gradientUnits="userSpaceOnUse"><stop offset=".05" stop-color="#ff8b3e"/><stop offset=".3" stop-color="#e54666"/><stop offset=".55" stop-color="#8e4ec6"/><stop offset=".95" stop-color="#3e63dd"/></radialGradient>`;
+const icon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><defs>${grad('g')}</defs><rect width="64" height="64" rx="14" fill="#111110"/><path d="${small.d}" fill="url(#g)"/><circle cx="${end[0]}" cy="${end[1]}" r="3.4" fill="#ffc53d"/></svg>\n`;
+writeFileSync(new URL('../public/favicon.svg', import.meta.url), icon);
+// The bare mark (large variant, construction in the light faint grey), for docs and the social image.
+const mark = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64"><defs>${grad('g')}<radialGradient id="h" cx="${end[0]}" cy="${end[1]}" r="7" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#ffc53d" stop-opacity=".55"/><stop offset="1" stop-color="#ffc53d" stop-opacity="0"/></radialGradient></defs><path d="M6 16H58V48H6ZM38 16V48M38 36H58M46 36V48M38 40H46M42 36V40" fill="none" stroke="#b9bbc6" stroke-width=".5"/><g fill="#b9bbc6"><circle cx="38" cy="48" r=".9"/><circle cx="38" cy="36" r=".9"/><circle cx="46" cy="36" r=".9"/><circle cx="46" cy="40" r=".9"/></g><path d="${large.d}" fill="url(#g)"/><circle cx="${end[0]}" cy="${end[1]}" r="7" fill="url(#h)"/><circle cx="${end[0]}" cy="${end[1]}" r="2.6" fill="#ffc53d"/></svg>\n`;
+writeFileSync(new URL('../src/assets/mark.svg', import.meta.url), mark);
+console.log(`large ${large.d.length} B, small ${small.d.length} B, favicon ${icon.length} B, mark ${mark.length} B`);

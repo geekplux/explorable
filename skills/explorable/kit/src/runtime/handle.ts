@@ -5,6 +5,9 @@
  */
 import type { ParamDef } from '../registry.ts';
 import { keyValue, snap, fromPos, spoken, valueOnly } from './controls.ts';
+import { setMath } from './math.ts';
+
+export { setMath };
 
 const NS = 'http://www.w3.org/2000/svg';
 
@@ -20,27 +23,37 @@ export interface HandleOptions {
   def: ParamDef;
   /** A new value; `instant` is true while dragging (no easing). */
   onChange(value: number, instant: boolean): void;
+  /** Draw the track from its start to the knob in the handle colour (a straight track only). */
+  fill?: boolean;
 }
 
 export type Handle = ReturnType<typeof createHandle>;
 
-export function createHandle(parent: SVGElement, { def, onChange }: HandleOptions) {
+/** The knob's symbol at the start of its track. */
+export function trackLabel(parent: Element, x: number, y: number, symbol: string) {
+  setMath(svgEl(parent, 'text', { x, y, 'text-anchor': 'end', class: 'xfig-track-label' }), symbol);
+}
+
+export function createHandle(parent: SVGElement, { def, onChange, fill }: HandleOptions) {
   const root = svgEl(parent, 'g', { class: 'xfig-handle' });
   const band = svgEl(root, 'rect', { class: 'xfig-track-hit' });
+  const filled = fill ? svgEl(root, 'path', { class: 'xfig-track-fill', 'aria-hidden': 'true' }) : undefined;
+  // The symbol in words ("d_k" reads "d sub k"), added unless the spoken label already ends with it.
+  const said = def.symbol?.replace(/_/g, ' sub ');
   const knob = svgEl(root, 'g', {
-    class: 'xfig-knob', role: 'slider', tabindex: 0, 'aria-label': `${spoken(def)} (${def.symbol && !spoken(def).endsWith(` ${def.symbol}`) ? `${def.symbol}, ` : ''}drag on chart)`,
+    class: 'xfig-knob', role: 'slider', tabindex: 0, 'aria-label': `${spoken(def)} (${said && !spoken(def).endsWith(` ${said}`) ? `${said}, ` : ''}drag on chart)`,
     'aria-valuemin': def.min, 'aria-valuemax': def.max, 'aria-orientation': 'horizontal',
   });
   const move = svgEl(knob, 'g');
   svgEl(move, 'circle', { class: 'xfig-knob-hit', r: 23 });
-  svgEl(move, 'circle', { class: 'xfig-knob-hint', r: 15 });
-  svgEl(move, 'text', { class: 'xfig-knob-hint', y: -21, 'text-anchor': 'middle', 'aria-hidden': 'true' }).textContent = 'drag';
   svgEl(move, 'circle', { class: 'xfig-knob-focus', r: 14 });
   svgEl(move, 'circle', { class: 'xfig-knob-ring', r: 9 });
-  svgEl(move, 'path', { class: 'xfig-knob-grip', d: 'M-2.5 -3.5v7M0 -3.5v7M2.5 -3.5v7' });
 
-  let x0 = 0, x1 = 1, y = 0, x = 0, dx = 0, value = def.default, dragging: number | undefined;
-  const placeMove = () => move.setAttribute('transform', `translate(${(x + dx).toFixed(1)} ${y})`);
+  let x0 = 0, x1 = 1, y = 0, x = 0, value = def.default, dragging: number | undefined;
+  const placeMove = () => {
+    move.setAttribute('transform', `translate(${x.toFixed(1)} ${y})`);
+    filled?.setAttribute('d', `M${x0} ${y}H${Math.max(x0, x).toFixed(1)}`);
+  };
 
   const posAt = (clientX: number) => {
     const svg = root.ownerSVGElement;
@@ -117,14 +130,6 @@ export function createHandle(parent: SVGElement, { def, onChange }: HandleOption
       value = v;
       knob.setAttribute('aria-valuenow', String(v));
       knob.setAttribute('aria-valuetext', valueOnly(def, v));
-    },
-    /** Hint offset in px (the nudge), and the static reduced-motion hint. */
-    nudge(px: number) {
-      dx = px;
-      placeMove();
-    },
-    showHint(on: boolean) {
-      knob.classList.toggle('is-hinting', on);
     },
   };
 }

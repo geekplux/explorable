@@ -1,30 +1,83 @@
-/* Identity tokens (docs/design/identity.md §1): the kit's single source. Hex values are tested against color/palette.ts. */
+/* Tokens (docs/redesign/DESIGN.md §2): the kit's single source of colour, type and motion.
+   Radix Colors 3.0 sand, indigo and orange, light and dark; every other colour token points at a step. Tested against color/palette.ts. */
 :root {
-  --paper: #FBF8F1;
-  --well: #F3EEE2;
-  --rule: #D8D0BF;
-  --ink: #1D1B17;
-  --ink-2: #5A554B;
-  --ink-3: #7A7365;
-  --live: #C4451C;
-  --live-ink: #A93A12;
-  --live-wash: #FBE3D8;
-  --series-1: #2851C0;
-  --series-2: #0F8A6E;
-  --note-wash: #F6E7B8;
+  color-scheme: light dark;
+  --sand-1: #fdfdfc; --sand-2: #f9f9f8; --sand-3: #f1f0ef; --sand-4: #e9e8e6; --sand-5: #e2e1de; --sand-6: #dad9d6;
+  --sand-7: #cfceca; --sand-8: #bcbbb5; --sand-9: #8d8d86; --sand-10: #82827c; --sand-11: #63635e; --sand-12: #21201c;
+  --indigo-1: #fdfdfe; --indigo-2: #f7f9ff; --indigo-3: #edf2fe; --indigo-4: #e1e9ff; --indigo-5: #d2deff; --indigo-6: #c1d0ff;
+  --indigo-7: #abbdf9; --indigo-8: #8da4ef; --indigo-9: #3e63dd; --indigo-10: #3358d4; --indigo-11: #3a5bc7; --indigo-12: #1f2d5c;
+  --orange-1: #fefcfb; --orange-2: #fff7ed; --orange-3: #ffefd6; --orange-4: #ffdfb5; --orange-5: #ffd19a; --orange-6: #ffc182;
+  --orange-7: #f5ae73; --orange-8: #ec9455; --orange-9: #f76b15; --orange-10: #ef5f00; --orange-11: #cc4e00; --orange-12: #582d1d;
 
-  --font-display: Fraunces, "Explorable Greek", "Explorable Math", Georgia, "Times New Roman", serif;
-  --font-text: Newsreader, "Explorable Greek", "Explorable Math", Georgia, "Times New Roman", serif;
-  --font-ui: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-  --font-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  /* Roles: page, text, hairlines, fields, data and links (indigo), "you can drag this" (orange). */
+  --bg: var(--sand-1);
+  --text: var(--sand-12);
+  --text-2: var(--sand-11);
+  --line: var(--sand-6);
+  --line-2: var(--sand-7);
+  --field: var(--sand-2);
+  --field-line: var(--sand-8);
+  --data: var(--indigo-9);
+  --data-top: var(--indigo-11);
+  --link: var(--indigo-11);
+  --link-line: var(--indigo-8);
+  --focus: var(--indigo-9);
+  --handle: var(--orange-10);
+  /* Text and glyphs on an indigo-9 solid (an open note marker). */
+  --on-solid: var(--sand-1);
+  /* Radix blackA, for the one floating layer (the source card, which covers text). */
+  --black-a2: #0000001a;
+  --black-a6: #00000066;
+  --float-shadow: 0 0 0 var(--hairline) var(--sand-7), 0 8px 24px var(--black-a2);
 
+  /* v1 names, kept as aliases while pages and figures migrate. */
+  --paper: var(--sand-1);
+  --well: var(--sand-2);
+  --rule: var(--sand-6);
+  --ink: var(--sand-12);
+  --ink-2: var(--sand-11);
+  --ink-3: var(--sand-10);
+  --live: var(--handle);
+  --live-ink: var(--orange-12);
+  --live-wash: var(--orange-3);
+  --series-1: var(--indigo-9);
+  --series-2: var(--sand-12);
+  --note-wash: var(--sand-3);
+
+  --font-text: "Explorable Serif", "Source Serif 4", "Explorable Greek", "Explorable Math", Georgia, "Times New Roman", serif;
+  --font-display: var(--font-text);
+  /* The symbol faces come right after Geist: their unicode-range holds only Greek and math signs (÷ √ ‖ …), which the
+     Latin subsets lack, so they draw those instead of a system face and never take over Latin text. */
+  --font-ui: Geist, "Explorable Greek", "Explorable Math", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-mono: "Geist Mono", "Explorable Greek", "Explorable Math", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+
+  /* Four sizes (DESIGN §2): 12 labels and numbers, 14 interface, 20 reading, 32 titles. */
+  --text-12: .75rem; --text-14: .875rem; --text-20: 1.25rem; --text-32: 2rem;
   --space-1: .25rem; --space-2: .5rem; --space-3: .75rem; --space-4: 1rem;
   --space-5: 1.5rem; --space-6: 2rem; --space-7: 3rem; --space-8: 4rem;
+  --hairline: .5px;
   --radius: 10px;
   --radius-pill: 999px;
   --ease: cubic-bezier(.2, .7, .2, 1);
-  --dur-ui: 160ms;
+  --dur: 250ms;
+  --dur-ui: var(--dur);
   --measure: 38rem;
   --wide: 56rem;
   --shell: 60rem;
+  --gutter: clamp(16px, 8.3vw, 120px);
+}
+/* Dark follows the system unless the page sets data-theme="light" on <html>. The app adds the same block under
+   :root[data-theme="dark"] at build time (scripts/theme-css.mjs); standalone pages follow the system only. */
+@media screen and (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --sand-1: #111110; --sand-2: #191918; --sand-3: #222221; --sand-4: #2a2a28; --sand-5: #31312e; --sand-6: #3b3a37;
+    --sand-7: #494844; --sand-8: #62605b; --sand-9: #6f6d66; --sand-10: #7c7b74; --sand-11: #b5b3ad; --sand-12: #eeeeec;
+    --indigo-1: #11131f; --indigo-2: #141726; --indigo-3: #182449; --indigo-4: #1d2e62; --indigo-5: #253974; --indigo-6: #304384;
+    --indigo-7: #3a4f97; --indigo-8: #435db1; --indigo-9: #3e63dd; --indigo-10: #5472e4; --indigo-11: #9eb1ff; --indigo-12: #d6e1ff;
+    --orange-1: #17120e; --orange-2: #1e160f; --orange-3: #331e0b; --orange-4: #462100; --orange-5: #562800; --orange-6: #66350c;
+    --orange-7: #7e451d; --orange-8: #a35829; --orange-9: #f76b15; --orange-10: #ff801f; --orange-11: #ffa057; --orange-12: #ffe0c2;
+    --handle: var(--orange-9);
+    --on-solid: var(--sand-12);
+    --float-shadow: 0 0 0 var(--hairline) var(--sand-7), 0 8px 24px var(--black-a6);
+  }
 }

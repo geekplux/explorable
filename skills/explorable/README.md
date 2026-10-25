@@ -1,6 +1,6 @@
 # /explorable
 
-An agent skill that turns one idea into a short essay with live, draggable figures. It writes a single HTML file that works offline, and every number on the page comes from a real model. It needs Node.js 20.10+ and nothing else.
+An agent skill that turns one idea into a short read in plain words, with figures you can drag. Formulas and sources wait behind small notes. It writes a single HTML file that works offline, and every number on the page comes from a real model. It needs Node.js 20.10+ and nothing else.
 
 Install it and build the Bloom filter example in one command:
 

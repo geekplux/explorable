@@ -6,12 +6,12 @@ Every kind gets the same frame from the runtime (`kit/src/runtime/mount.ts`): th
 
 ## `bars`: a distribution over labelled items
 
-Models: `softmax-temperature`, `attention-scaling`. The tallest bar gets a filled ▼ and the word "top", not a colour.
+Models: `softmax-temperature`, `attention-scaling`. The tallest bar is the tallest, with its value printed above it; a darker fill only repeats that.
 
 | Option | Meaning |
 |---|---|
 | `labels` | one label per bar, e.g. `["mat", "rug", "floor"]` (set `n` to match for `softmax-temperature`) |
-| `query` | a chip above the bars: `query: sat` |
+| `query` | the word asking (kept for the data; the chip is hidden in essays, so name the query in the figure's `alt` and `caption` too) |
 | `itemName` | the table's item column header (default `item`) |
 | `compare` | `true`: dashed outlines show the weights at the other switch setting (`attention-scaling`) |
 | `compareLabels` | legend text for the two settings |

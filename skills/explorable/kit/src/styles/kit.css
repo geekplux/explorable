@@ -1,60 +1,100 @@
-/* Essay column and figure card. Uses the identity tokens (tokens.css beside this file). */
-:root { --follow-tau: 90ms; --hint-delay: 1200ms; --hint-duration: 600ms; --hint-distance: 8px; }
-.essay { counter-reset: sec; }
-.essay-hero, .essay-section > :not(.xfig), .essay-takeaway { max-width: var(--measure); margin-inline: auto; }
-.essay-hero { margin-bottom: var(--space-7); }
-.essay-kicker { margin-block: 0 var(--space-2); }
-.essay h1 { margin-block: 0 var(--space-3); font-size: clamp(2rem, 5vw, 2.75rem); line-height: 1.1; text-wrap: balance; }
-.essay-dek { margin-block: 0 var(--space-4); font-size: 1.25rem; line-height: 1.45; }
-.essay-source { margin-block: 0 var(--space-2); font: .9375rem/1.4 var(--font-ui); color: var(--ink-2); }
-.essay-provenance { display: inline-block; margin-block: 0; padding: .1rem .6rem; border: 1px solid var(--ink-3); border-radius: var(--radius-pill); font: .8125rem var(--font-ui); color: var(--ink-2); }
-.essay-provenance[data-mode="ai"] { border-style: dashed; }
-.essay-provenance[data-mode="match"] { border-style: dotted; }
-.essay-section { counter-increment: sec; }
-.essay-section h2, .essay-takeaway h2 { position: relative; margin-block: var(--space-7) var(--space-3); font-size: 1.5rem; line-height: 1.25; }
-.essay-section h2::before { content: counter(sec) / ""; display: none; }
-.essay-takeaway { margin-block: var(--space-7) 0; padding-top: var(--space-6); border-top: 1px solid var(--rule); }
-.essay-takeaway h2 { margin-top: 0; }
-.essay-original a { display: inline-flex; align-items: center; min-height: 44px; min-width: 44px; padding-inline: .25rem; margin-inline: -.25rem; font: .9375rem var(--font-ui); }
+/* Essay column and figure chrome (docs/redesign/DESIGN.md §6). Uses the tokens in tokens.css beside this file. */
+.essay { counter-reset: sec; max-width: 640px; margin-inline: auto; font: 400 var(--text-20)/1.6 var(--font-text); }
+:where(.essay) p { margin: 0; }
+.essay h1 { margin: 0; font: 600 var(--text-32)/1.15 var(--font-display); letter-spacing: -.015em; text-wrap: balance; }
+.essay .essay-dek { margin-top: 16px; line-height: 1.5; color: var(--text-2); }
+.essay-byline { display: flex; justify-content: space-between; align-items: center; gap: 16px; margin-top: 16px; font: 400 var(--text-14)/1.5 var(--font-ui); color: var(--text-2); }
+.essay-byline a { color: var(--text); }
+.essay cite { font-style: normal; }
+.essay i { font-style: italic; }
+.xsub { font-size: var(--text-14); font-style: normal; line-height: 0; vertical-align: -.2em; }
+/* In 14px text (figure chrome, byline, contents) a subscript steps down to 12. */
+:is(.xfig, .xfig-stage, .essay-byline, .essay-toc, .hero-fig) .xsub { font-size: var(--text-12); }
+.essay code { font: inherit; overflow-wrap: anywhere; }
+.essay-section { counter-increment: sec; margin-top: 56px; }
+.essay-section:first-of-type { margin-top: 64px; }
+.essay h2 { position: relative; margin: 0 0 16px; font: 600 var(--text-20)/1.4 var(--font-display); }
+.essay-section h2::before { content: counter(sec) / ""; position: absolute; right: calc(100% + 20px); top: 0; font: 500 var(--text-12)/28px var(--font-ui); color: var(--text-2); }
+.essay-section > p + p { margin-top: 20px; }
+.essay-takeaway { margin-top: 56px; padding-top: 32px; border-top: var(--hairline) solid var(--line); }
+.essay-takeaway p + p { margin-top: 16px; }
 
-.xfig { max-width: var(--wide); margin: var(--space-6) auto; }
-.xfig-card { padding: var(--space-4); background: var(--well); border: 1px solid var(--rule); border-radius: var(--radius); }
-.xfig-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: .5rem; }
-.essay-kicker, .xfig-num { font: 500 .8125rem var(--font-ui); font-variant-caps: all-small-caps; letter-spacing: .06em; color: var(--ink-2); }
-.xfig-title { font: 600 .9375rem var(--font-ui); color: var(--ink); }
-.xfig-alt { margin: var(--space-3) 0 0; font-size: 1rem; color: var(--ink-2); }
+/* Notes (DESIGN §7): a math marker after its sentence opens a panel under the paragraph; a source label opens a card. */
+.xnote-mk { display: inline-flex; align-items: center; justify-content: center; position: relative; width: 20px; height: 20px; margin-left: 4px; padding: 0; vertical-align: -2px; border: 0; border-radius: 4px; color: var(--indigo-11); background: var(--indigo-3); cursor: pointer; }
+.xnote-mk::after { content: ""; position: absolute; inset: -2px; }
+.xnote-mk[aria-expanded="true"] { color: var(--on-solid); background: var(--indigo-9); }
+.xnote-mk svg { display: block; }
+.xnote { margin: 16px 0 0; padding: 16px 20px; border-radius: var(--radius); background: var(--sand-2); box-shadow: inset 0 0 0 var(--hairline) var(--sand-6); }
+.xnote[hidden], .xnote-card[hidden] { display: none; }
+:is(.essay-section, .essay-takeaway) > .xnote + p { margin-top: 20px; }
+.xnote-f { font: 400 var(--text-20)/1.5 var(--font-text); text-align: center; overflow-wrap: anywhere; }
+/* Only variables lean: digits, signs, operator names and words stay upright. */
+.xnote-f i { font-style: italic; }
+.xnote-op { font-style: normal; }
+.xnote-f sup { font-size: var(--text-14); line-height: 0; }
+.xnote-f .xsub { font-style: normal; }
+.essay .xnote-g { margin-top: 8px; font: 400 var(--text-14)/1.5 var(--font-ui); color: var(--text-2); }
+.xnote-g .xsub { font-size: var(--text-12); }
+.xnote-cite { position: relative; }
+.xnote-src { padding: 0; font: inherit; color: inherit; background: none; border: 0; text-decoration: underline dotted var(--hairline) var(--sand-9); text-underline-offset: 4px; cursor: pointer; }
+.xnote-src[aria-expanded="true"] { text-decoration-color: var(--indigo-9); }
+.xnote-card { position: absolute; left: var(--xnote-shift, 0); top: calc(100% + 8px); z-index: 2; display: grid; gap: 2px; width: 300px; max-width: calc(100vw - 32px); padding: 12px 14px; border-radius: var(--radius); background: var(--sand-1); box-shadow: var(--float-shadow); font: 400 var(--text-14)/1.5 var(--font-ui); text-align: left; }
+.xnote-card::before { content: ""; position: absolute; inset: -8px 0 auto; height: 8px; }
+.xnote-card-title { font-weight: 500; color: var(--text); }
+.xnote-card-detail { color: var(--text-2); }
+.xnote-card a { justify-self: start; margin-top: 6px; color: var(--link); text-decoration: underline var(--hairline) var(--link-line); text-underline-offset: 3px; }
+.xnote-mk:focus-visible, .xnote-card a:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+/* Tight to the label, so the ring clears a full stop that follows it. */
+.xnote-src:focus-visible { outline: 2px solid var(--focus); outline-offset: 0; border-radius: 2px; }
+@media screen and (prefers-reduced-motion: no-preference) {
+  .xnote, .xnote-card { transition: opacity var(--dur) var(--ease), transform var(--dur) var(--ease); }
+  .xnote[data-enter], .xnote-card[data-enter] { opacity: 0; transform: translateY(-4px); transition: none; }
+}
+@media (forced-colors: active) {
+  .xnote-mk { border: 1px solid CanvasText; }
+  .xnote-mk[aria-expanded="true"] { forced-color-adjust: none; color: Canvas; background: CanvasText; }
+  .xnote, .xnote-card { outline: 1px solid CanvasText; }
+  .xnote-mk:focus-visible, .xnote-src:focus-visible, .xnote-card a:focus-visible { outline-color: Highlight; }
+}
+
+/* Figures: a hairline above and below, no box and no number. */
+.xfig { margin: 48px 0 0; padding: 16px 0 14px; border-block: var(--hairline) solid var(--line-2); font-family: var(--font-ui); }
+.xfig + * { margin-top: 48px; }
+.xfig-title { margin: 0 0 16px; font: 500 var(--text-14)/1.4 var(--font-ui); color: var(--text); }
+.xfig-alt { margin: 0; font-size: var(--text-14); color: var(--text-2); }
+.xfig figcaption { margin-top: 12px; font: italic 400 var(--text-14)/1.5 var(--font-text); color: var(--text-2); }
 .xfig-drawing { aspect-ratio: 16 / 9; }
-.xfig-controls { display: flex; flex-wrap: wrap; gap: var(--space-4); }
-.xfig-foot { display: flex; justify-content: space-between; gap: var(--space-4); }
-.xfig-readout { margin-left: auto; font-family: var(--font-mono); font-variant-numeric: tabular-nums; color: var(--ink); }
+.xfig-drawing:has(> .xfig-bars) { aspect-ratio: auto; height: 300px; }
+@media (min-width: 800px) { .essay .xfig { margin-inline: -40px; } }
+@media (max-width: 799.98px) { .essay-section h2::before { position: static; margin-right: 10px; } }
 .xfig-sr { position: absolute; width: 1px; height: 1px; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
-.xfig-chip { display: inline-block; margin: var(--space-3) 0 0; padding: .1rem .6rem; background: var(--note-wash); border-radius: var(--radius-pill); font: .8125rem var(--font-mono); color: var(--ink); }
-.xfig-svg { display: block; overflow: visible; touch-action: pan-y; font: .8125rem var(--font-ui); user-select: none; }
-.xfig-svg text { fill: var(--ink-2); }
-.xfig-svg .xfig-bar-label { fill: var(--ink); font-size: .875rem; }
-.xfig-svg .xfig-bar-value { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
-.xfig-svg .xfig-bar-value.is-tight { font-size: .6875rem; }
-.xfig-svg .is-top, .xfig-svg .xfig-top text { fill: var(--ink); font-weight: 700; }
-.xfig-bar { fill: var(--series-1); stroke: var(--ink); stroke-width: 1; }
-.xfig-top path { fill: var(--ink); }
-.xfig-grid { stroke: var(--rule); }
-.xfig-baseline { stroke: var(--ink); }
-.xfig-track-line { stroke: var(--ink-3); stroke-width: 2; stroke-linecap: round; }
-.xfig-tick { stroke: var(--ink-3); }
+/* The chip repeats what the drawing, the readout and the live description already say. */
+.xfig-chip { display: none; }
+/* Labels Geist 12, category names serif 14, values mono 12 (DESIGN §6). */
+.xfig-svg { display: block; overflow: visible; touch-action: pan-y; font: 400 var(--text-12) var(--font-ui); user-select: none; }
+.xfig-svg text { fill: var(--text-2); }
+.xfig-svg .xfig-bar-label { font: 400 var(--text-14) var(--font-text); fill: var(--text); }
+.xfig-svg .xfig-bar-value { font: 500 var(--text-12) var(--font-mono); font-variant-numeric: tabular-nums; fill: var(--text); }
+.xfig-svg .xfig-track-label { font: italic 400 var(--text-14) var(--font-text); fill: var(--text); }
+.xfig-svg .xfig-var { font-style: italic; }
+.xfig-svg .xfig-sub { font-style: normal; font-size: var(--text-12); }
+.xfig-bar { fill: var(--data); stroke: none; }
+.xfig-bar.is-top { fill: var(--data-top); }
+.xfig-grid { stroke: var(--sand-5); stroke-width: .5; }
+.xfig-baseline { stroke: var(--sand-9); }
+.xfig-track-line { stroke: var(--line); stroke-width: 2; stroke-linecap: round; }
+.xfig-track-fill { fill: none; stroke: var(--handle); stroke-width: 2; stroke-linecap: round; pointer-events: none; }
+.xfig-tick { stroke: var(--field-line); stroke-width: .5; }
 .xfig-handle { cursor: pointer; touch-action: none; }
 .xfig-track-hit, .xfig-knob-hit { fill: transparent; }
 .xfig-knob { cursor: grab; }
 /* The ring (.xfig-knob-focus) is the focus indicator; no page-level outline on top of it. */
 .xfig-knob, .xfig-knob:focus-visible { outline: none; }
-.xfig-knob-ring { fill: var(--paper); stroke: var(--live); stroke-width: 2.5; }
-.xfig-knob-grip { fill: none; stroke: var(--live); stroke-width: 1.25; stroke-linecap: round; }
-.xfig-knob-focus { fill: none; stroke: var(--series-1); stroke-width: 3; visibility: hidden; }
+.xfig-knob-ring { fill: var(--handle); stroke: var(--bg); stroke-width: 3; }
+.xfig-knob-focus { fill: none; stroke: var(--focus); stroke-width: 2; visibility: hidden; }
 .xfig-knob:focus-visible:not(.is-pointer) .xfig-knob-focus { visibility: visible; }
-circle.xfig-knob-hint { fill: none; stroke: var(--ink-2); stroke-width: 1.5; stroke-dasharray: 3 3; }
-.xfig-svg text.xfig-knob-hint { font-size: .75rem; }
-.xfig-knob-hint { visibility: hidden; }
-.xfig-knob.is-hinting .xfig-knob-hint { visibility: visible; }
-.xfig-controls { margin-top: var(--space-2); }
+.xfig-controls { display: flex; flex-wrap: wrap; gap: 8px 24px; }
+.xfig-controls:has(> :not(.xfig-sr)) { margin: 4px 0 8px; }
 .xfig-bar-other-halo { fill: none; stroke: var(--paper); stroke-width: 3.5; }
 .xfig-bar-other { fill: none; stroke: var(--ink); stroke-width: 1.5; stroke-dasharray: 5 3; }
 .xfig-drawing:has(> .xfig-bits) { aspect-ratio: auto; }
@@ -63,15 +103,14 @@ circle.xfig-knob-hint { fill: none; stroke: var(--ink-2); stroke-width: 1.5; str
 .xfig-svg .xfig-word.is-in text, .xfig-svg .xfig-query-text, .xfig-svg .xfig-verdict-text, .xfig-svg .xfig-bits > g > g > text { fill: var(--ink); }
 .xfig-bit rect { fill: var(--paper); stroke: var(--rule); }
 .xfig-bit.is-set rect { fill: var(--ink); stroke: var(--paper); }
-.xfig-svg .xfig-bit text { font: .8125rem var(--font-mono); fill: var(--ink-2); }
+.xfig-svg .xfig-bit text { font: var(--text-12) var(--font-mono); fill: var(--ink-2); }
 .xfig-svg .xfig-bit.is-set text { fill: var(--paper); }
-.xfig-svg .xfig-bit-index { font: .6875rem var(--font-mono); paint-order: stroke; stroke: var(--well); stroke-width: 3px; }
-.xfig-svg .is-tight > .xfig-bit-index { font-size: .625rem; stroke-width: 2px; }
+.xfig-svg .xfig-bit-index { font: var(--text-12) var(--font-mono); paint-order: stroke; stroke: var(--bg); stroke-width: 3px; }
+.xfig-svg .is-tight > .xfig-bit-index { stroke-width: 2px; }
 @media (prefers-reduced-motion: no-preference) { .xfig-bit rect, .xfig-svg .xfig-bit text { transition: fill 150ms; } }
 .xfig-probe-halo { fill: none; stroke: var(--paper); stroke-width: 7; }
-.xfig-probe { fill: none; stroke: var(--series-1); stroke-width: 3; }
+.xfig-probe { fill: none; stroke: var(--data); stroke-width: 3; }
 .xfig-arrow-halo { fill: none; stroke: var(--paper); stroke-width: 4.5; }
-.xfig-svg .xfig-words.is-tight text { font-size: .6875rem; }
 .xfig-arrow { fill: none; stroke: var(--ink); stroke-width: 1.5; }
 .xfig-arrowhead { fill: var(--ink); }
 .xfig-hatch { stroke: var(--ink-2); stroke-width: 1; }
@@ -80,76 +119,80 @@ circle.xfig-knob-hint { fill: none; stroke: var(--ink-2); stroke-width: 1.5; str
 .xfig-verdict:not([data-fp]) { stroke: none; }
 .xfig-verdict-icon, .xfig-zero { fill: none; stroke: var(--ink); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 .xfig-svg .xfig-verdict-text, .xfig-svg .xfig-query-text { font-weight: 700; paint-order: stroke; stroke: var(--paper); stroke-width: 3px; }
-.xfig-svg .xfig-note { font-size: .75rem; }
 .xfig-choice { flex-wrap: wrap; gap: var(--space-2); min-width: 0; margin: 0; padding: 0; border: 0; }
 .xfig-choice legend { float: left; margin-right: var(--space-2); padding: 0; line-height: 44px; }
-.xfig-choice label { display: inline-flex; align-items: center; gap: .35rem; min-height: 44px; padding: 0 .75rem 0 .5rem; border: 1px solid var(--ink-3); border-radius: var(--radius-pill); background: var(--paper); cursor: pointer; }
-.xfig-choice label:has(:checked) { border: 2px solid var(--ink); font-weight: 700; }
+.xfig-choice label { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 0 12px 0 8px; border-radius: var(--radius); box-shadow: inset 0 0 0 var(--hairline) var(--line-2); cursor: pointer; }
+.xfig-choice label:has(:checked) { box-shadow: inset 0 0 0 1px var(--text); font-weight: 500; }
 .xfig-choice input { width: 18px; height: 18px; margin: 0; accent-color: var(--ink); outline: none; }
-.xfig-choice label:has(:focus-visible), .xfig-switch:focus-visible { outline: 3px solid var(--series-1); outline-offset: 2px; }
-.xfig-switch { display: inline-flex; align-items: center; gap: .5rem; min-height: 44px; padding: 0 .9rem 0 .6rem; font: .875rem var(--font-ui); color: var(--ink); background: var(--paper); border: 1px solid var(--ink-3); border-radius: var(--radius-pill); cursor: pointer; }
-.xfig-switch-track { position: relative; width: 34px; height: 20px; border: 2px solid var(--ink-2); border-radius: 10px; }
-.xfig-switch-track::after { content: ""; position: absolute; top: 2px; left: 2px; width: 12px; height: 12px; border-radius: 50%; background: var(--ink-2); transition: transform var(--dur-ui) var(--ease); }
-.xfig-switch[aria-checked="true"] .xfig-switch-track { background: var(--ink); border-color: var(--ink); }
-.xfig-switch[aria-checked="true"] .xfig-switch-track::after { transform: translateX(14px); background: var(--paper); }
-.xfig-switch-state { min-width: 1.6em; font-family: var(--font-mono); font-weight: 700; }
-.xfig-control { display: flex; flex: 1 1 18rem; flex-wrap: wrap; min-width: 0; align-items: center; gap: var(--space-3); font: .875rem var(--font-ui); }
+.xfig-choice label:has(:focus-visible), .xfig-switch:focus-visible .xfig-switch-face { outline: 2px solid var(--focus); outline-offset: 2px; }
+.xfig-switch:focus-visible { outline: none; }
+/* A switch: 32 × 18 track, the knob in the handle colour; its position (not colour) shows the state. */
+.xfig-switch { display: inline-flex; align-items: center; min-height: 44px; margin-block: -13px; padding: 0; font: 400 var(--text-14) var(--font-ui); color: var(--text); background: none; border: 0; cursor: pointer; }
+.xfig-switch-face { display: inline-flex; align-items: center; gap: 10px; border-radius: 4px; }
+.xfig-switch-track { position: relative; flex: none; width: 32px; height: 18px; border-radius: 9px; background: var(--line); }
+.xfig-switch-track::after { content: ""; position: absolute; top: 2px; left: 2px; width: 14px; height: 14px; border-radius: 7px; background: var(--handle); }
+.xfig-switch[aria-checked="true"] .xfig-switch-track { background: var(--text); }
+.xfig-switch[aria-checked="true"] .xfig-switch-track::after { transform: translateX(14px); }
+@media (prefers-reduced-motion: no-preference) { .xfig-switch-track::after { transition: transform var(--dur) var(--ease); } }
+.xfig-control { display: flex; flex: 1 1 18rem; flex-wrap: wrap; min-width: 0; align-items: center; gap: var(--space-3); font: 400 var(--text-14) var(--font-ui); }
+.xfig-control:has(.xfig-switch) { flex: none; }
 .xfig-control input[type=range] { flex: 1 1 8rem; min-width: 0; height: 44px; margin: 0; appearance: none; background: transparent; cursor: pointer; }
-.xfig-control input::-webkit-slider-runnable-track { height: 4px; border-radius: 2px; background: var(--ink-3); }
-.xfig-control input::-moz-range-track { height: 4px; border-radius: 2px; background: var(--ink-3); }
-.xfig-control input::-webkit-slider-thumb { appearance: none; width: 20px; height: 20px; margin-top: -8px; border: 2.5px solid var(--live); border-radius: 50%; background: var(--paper); }
-.xfig-control input::-moz-range-thumb { width: 15px; height: 15px; border: 2.5px solid var(--live); border-radius: 50%; background: var(--paper); }
-.xfig-control input[type=range]:focus-visible, .xfig-data-toggle:focus-visible { outline: 3px solid var(--series-1); outline-offset: 2px; }
+.xfig-control input::-webkit-slider-runnable-track { height: 2px; border-radius: 1px; background: var(--line); }
+.xfig-control input::-moz-range-track { height: 2px; border-radius: 1px; background: var(--line); }
+.xfig-control input::-webkit-slider-thumb { appearance: none; width: 24px; height: 24px; margin-top: -11px; border: 3px solid var(--bg); border-radius: 50%; background: var(--handle); }
+.xfig-control input::-moz-range-thumb { width: 18px; height: 18px; border: 3px solid var(--bg); border-radius: 50%; background: var(--handle); }
+.xfig-control input[type=range]:focus-visible, .xfig-data-toggle:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
 .xfig-control output, .xfig-table td { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
 .xfig-control output { white-space: nowrap; }
-.xfig-foot { flex-wrap: wrap; align-items: center; margin-top: var(--space-2); }
-.xfig-readout { margin: 0; font-size: .875rem; }
-.xfig-data-toggle { min-height: 44px; min-width: 44px; padding: 0 .9rem; font: .875rem var(--font-ui); color: var(--ink); background: var(--paper); border: 1px solid var(--ink-3); border-radius: var(--radius-pill); cursor: pointer; }
+/* The foot row: the readout, then "Show data" as a text button (44 px tall to the pointer, 18 px to the eye). */
+.xfig-foot { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 4px 16px; margin-top: 4px; }
+.xfig-readout { display: flex; flex-wrap: wrap; gap: 0 20px; margin: 0; font: 400 var(--text-12)/1.5 var(--font-mono); font-variant-numeric: tabular-nums; color: var(--text-2); }
+.xfig-readout b { font-weight: 500; color: var(--text); }
+.xfig-data-toggle { min-width: 44px; min-height: 44px; margin: -13px -8px -13px auto; padding: 0 8px; font: 500 var(--text-12) var(--font-ui); color: var(--link); background: none; border: 0; text-decoration: underline var(--hairline) var(--link-line); text-underline-offset: 3px; cursor: pointer; }
+.xfig-data-toggle:hover { text-decoration-color: currentColor; }
 .xfig-table-wrap { max-width: 100%; overflow-x: auto; margin-top: var(--space-3); }
-.xfig-table-wrap:focus-visible { outline: 3px solid var(--series-1); outline-offset: 2px; }
-.xfig-table { border-collapse: collapse; border-collapse: collapse; font: .875rem var(--font-ui); }
+.xfig-table-wrap:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.xfig-table { border-collapse: collapse; font: 400 var(--text-14) var(--font-ui); }
 .xfig-table caption { padding-bottom: var(--space-1); text-align: left; color: var(--ink-2); }
-.xfig-table th, .xfig-table td { padding: .25rem .75rem; border-bottom: 1px solid var(--rule); text-align: left; }
+.xfig-table th, .xfig-table td { padding: .25rem .75rem; border-bottom: var(--hairline) solid var(--line); text-align: left; }
 .xfig-table td { text-align: right; }
 .xfig-line-halo { fill: none; stroke: var(--well); stroke-width: 3.5; stroke-linejoin: round; }
 .xfig-ghost { fill: none; stroke: var(--ink-3); stroke-width: 1.5; stroke-dasharray: 4 3; }
 .xfig-ref { fill: none; stroke: var(--ink); stroke-width: 1.5; stroke-dasharray: 1 3; stroke-linecap: round; }
 .xfig-sigma { fill: none; stroke: var(--ink); stroke-width: 1.5; }
-.xfig-svg .xfig-sigma-label { font-size: .75rem; }
 .xfig-svg .xfig-ref-label, .xfig-svg .xfig-ghost-label { fill: var(--ink); paint-order: stroke; stroke: var(--well); stroke-width: 3px; }
 .xfig-svg .is-hidden { visibility: hidden; }
 .xfig-line { fill: none; stroke-width: 2; stroke-linejoin: round; }
-.xfig-line.xfig-s0 { stroke: var(--series-1); }
+.xfig-line.xfig-s0 { stroke: var(--data); }
 .xfig-line.xfig-s1 { stroke: var(--series-2); stroke-dasharray: 6 3; }
 .xfig-line.xfig-s2 { stroke: var(--ink-2); stroke-dasharray: 8 3 2 3; }
 .xfig-marks { stroke: var(--paper); stroke-width: 1; }
-.xfig-marks.xfig-s0 { fill: var(--series-1); }
+.xfig-marks.xfig-s0 { fill: var(--data); }
 .xfig-marks.xfig-s1 { fill: var(--series-2); }
 .xfig-marks.xfig-s2 { fill: var(--ink-2); }
 .xfig-marker-line { stroke: var(--ink); stroke-width: 1; }
 .xfig-meet { fill: var(--ink); stroke: var(--paper); stroke-width: 1; }
 .xfig-drop { stroke: var(--ink-3); stroke-width: 1.5; stroke-dasharray: 2 2; }
 .xfig-svg .xfig-series-label, .xfig-svg .xfig-marker-label { fill: var(--ink); paint-order: stroke; stroke: var(--well); stroke-width: 3px; }
-.xfig-svg .xfig-marker-label.is-tight { font-size: .6875rem; }
-.xfig-legend { display: flex; flex-wrap: wrap; gap: .25rem 1rem; margin: var(--space-3) 0 0; padding: 0; list-style: none; font: .8125rem var(--font-ui); color: var(--ink-2); }
+.xfig-legend { display: flex; flex-wrap: wrap; gap: .25rem 1rem; margin: var(--space-3) 0 0; padding: 0; list-style: none; font: 400 var(--text-12) var(--font-ui); color: var(--text-2); }
 .xfig-legend li { display: inline-flex; align-items: center; gap: .4rem; }
 @media (forced-colors: active) {
   .xfig-knob-focus { stroke: Highlight; }
-  .xfig-control input:focus-visible, .xfig-data-toggle:focus-visible, .xfig-table-wrap:focus-visible, .xfig-switch:focus-visible, .xfig-choice label:has(:focus-visible) { outline-color: Highlight; }
+  .xfig-control input:focus-visible, .xfig-data-toggle:focus-visible, .xfig-table-wrap:focus-visible, .xfig-switch:focus-visible .xfig-switch-face, .xfig-choice label:has(:focus-visible) { outline-color: Highlight; }
   .xfig-probe { stroke: Highlight; }
   /* SVG paint is not forced, so every stroke and fill that carries meaning names a system colour here. */
   .xfig-line, .xfig-line:is(.xfig-s0, .xfig-s1, .xfig-s2), .xfig-ref, .xfig-ghost, .xfig-sigma, .xfig-marker-line, .xfig-axis path, .xfig-baseline, .xfig-tick, .xfig-drop,
-  .xfig-track-line, .xfig-bar-other, .xfig-arrow, .xfig-hatch, .xfig-zero, .xfig-verdict-icon, .xfig-knob-grip, circle.xfig-knob-hint { stroke: CanvasText; }
+  .xfig-track-line, .xfig-track-fill, .xfig-bar-other, .xfig-arrow, .xfig-hatch, .xfig-zero, .xfig-verdict-icon { stroke: CanvasText; }
   .xfig-axis .xfig-grid { stroke: GrayText; }
   .xfig-line-halo, .xfig-bar-other-halo, .xfig-probe-halo, .xfig-arrow-halo { stroke: Canvas; }
   .xfig-marks, .xfig-marks:is(.xfig-s0, .xfig-s1, .xfig-s2), .xfig-meet { fill: CanvasText; stroke: Canvas; }
-  .xfig-arrowhead, .xfig-top path { fill: CanvasText; }
-  .xfig-bar { fill: Canvas; stroke: CanvasText; stroke-width: 2; }
+  .xfig-arrowhead { fill: CanvasText; }
+  .xfig-bar, .xfig-bar.is-top { fill: Canvas; stroke: CanvasText; stroke-width: 2; }
   .xfig-knob-ring { fill: Canvas; stroke: CanvasText; }
   .xfig-word rect, .xfig-word.is-in rect, .xfig-bit rect, .xfig-query:not([data-fp]), .xfig-verdict:not([data-fp]) { fill: Canvas; stroke: CanvasText; }
   .xfig-query, .xfig-verdict { stroke: CanvasText; }
   .xfig-bit.is-set rect { fill: CanvasText; stroke: Canvas; }
-  .xfig-svg text, .xfig-svg .xfig-bar-label, .xfig-svg .is-top, .xfig-svg .xfig-top text, .xfig-svg .xfig-bit text,
+  .xfig-svg text, .xfig-svg .xfig-bar-label, .xfig-svg .xfig-bar-value, .xfig-svg .xfig-track-label, .xfig-svg .xfig-bit text,
   .xfig-svg .xfig-word.is-in text, .xfig-svg .xfig-query-text, .xfig-svg .xfig-verdict-text, .xfig-svg .xfig-bits > g > g > text { fill: CanvasText; }
   .xfig-svg .xfig-bit.is-set text { fill: Canvas; }
   /* Labels drawn with a halo (paint-order: stroke) keep it, in the canvas colour. */
@@ -160,25 +203,41 @@ circle.xfig-knob-hint { fill: none; stroke: var(--ink-2); stroke-width: 1.5; str
   .xfig-control input::-moz-range-track { forced-color-adjust: none; background: CanvasText; }
   .xfig-control input::-webkit-slider-thumb { forced-color-adjust: none; background: Canvas; border-color: CanvasText; }
   .xfig-control input::-moz-range-thumb { forced-color-adjust: none; background: Canvas; border-color: CanvasText; }
+  .xfig-switch-track { outline: 1px solid CanvasText; outline-offset: -1px; }
   .xfig-switch-track::after { forced-color-adjust: none; background: CanvasText; }
   .xfig-switch[aria-checked="true"] .xfig-switch-track { forced-color-adjust: none; background: CanvasText; border-color: CanvasText; }
   .xfig-switch[aria-checked="true"] .xfig-switch-track::after { background: Canvas; }
 }
-.xfig figcaption { max-width: var(--measure); margin: var(--space-3) 0 0; font-size: .9375rem; font-style: italic; line-height: 1.5; color: var(--ink-2); }
-
-@media (min-width: 1100px) {
-  .essay-section h2::before {
-    display: block; position: absolute; right: calc(100% + .5rem); top: 0; padding-right: 2rem;
-    font: 400 1.5rem/1.25 var(--font-display); color: var(--ink-2);
-    background: linear-gradient(var(--rule), var(--rule)) right center / 1.5rem 1px no-repeat;
-  }
-}
 @media (max-width: 639.98px) {
-  .essay-hero, .essay-section > :not(.xfig), .essay-takeaway { padding-inline: .25rem; }
-  .essay-source { line-height: 2.75; }
-  .xfig-card { padding: var(--space-3); }
   .xfig-drawing { aspect-ratio: 4 / 3; }
   .xfig-drawing:has(> .xfig-hist), .xfig-drawing:has(> .xfig-curve) { aspect-ratio: 1; }
+  .xfig-drawing:has(> .xfig-bars) { height: 270px; }
 }
 @media (max-width: 480px) { .xfig-table th, .xfig-table td { padding: .25rem .375rem; } }
 @media (max-width: 340px) { .xfig-drawing { aspect-ratio: 1; } }
+/* Motion (DESIGN, Motion 05): a figure below the fold at load enters once, on screen only; print shows every figure. */
+@media screen and (prefers-reduced-motion: no-preference) {
+  .xfig[data-enter] { transition: opacity var(--dur) var(--ease), transform var(--dur) var(--ease); }
+  .xfig[data-enter=""] { opacity: 0; transform: scale(.985); }
+}
+/* Print (DESIGN §8, board Print): white paper, 14px text, figures whole and in the state they were left in, with a state
+   line; open math notes print, closed ones and source cards do not; no buttons. */
+.xfig-state { display: none; }
+@media print {
+  :root { color-scheme: light; }
+  html, body { background: none; }
+  .essay { max-width: none; font-size: var(--text-14); }
+  .essay .essay-dek { font-size: var(--text-14); }
+  .essay h2 { margin-bottom: 8px; font-size: var(--text-14); break-after: avoid; }
+  .essay-section, .essay-section:first-of-type, .essay-takeaway { margin-top: 28px; }
+  .essay-section > p + p { margin-top: 10px; }
+  .essay .xfig { margin: 24px 0 0; break-inside: avoid; }
+  .xfig-drawing:has(> .xfig-bars) { height: 240px; }
+  .xfig + * { margin-top: 24px; }
+  .xfig[data-enter] { opacity: 1; transform: none; transition: none; }
+  .xfig-state { display: block; margin: 4px 0 0; font: 400 var(--text-12)/1.5 var(--font-ui); color: var(--text-2); }
+  .xfig-state a { color: inherit; text-decoration: none; }
+  .xfig-state:empty, .xfig-controls, .xfig-data-toggle, .xnote-mk, .xnote-card { display: none; }
+  .xnote-src { text-decoration: none; }
+  .xnote { break-inside: avoid; }
+}

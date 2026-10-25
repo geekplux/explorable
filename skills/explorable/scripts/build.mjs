@@ -11,18 +11,20 @@ import * as kit from '../kit/dist/explorable-kit.js';
 const DIST = fileURLToPath(new URL('../kit/dist/', import.meta.url));
 const dist = (file, encoding) => readFileSync(join(DIST, file), encoding);
 
-/** Page-level CSS on top of the kit's tokens and styles: only Newsreader is inlined, so it also sets the headings. */
-const PAGE_CSS = `:root{--font-display:Newsreader,Georgia,"Times New Roman",serif}
-*,*::before,*::after{box-sizing:border-box}
-html{color:var(--ink);background:var(--paper)}
+/** The code points of serif-math.woff2 (src/styles/fonts.css). */
+const SERIF_MATH = 'U+2190,U+2192,U+2202,U+2206,U+2211,U+221A,U+221E,U+222B,U+2248,U+2260,U+2264-2265';
+
+/** Page-level CSS on top of the kit's tokens and styles. Only the roman serif (Source Serif 4, as "Explorable Serif") and its math signs are inlined. */
+const PAGE_CSS = `*,*::before,*::after{box-sizing:border-box}
+html{color:var(--text);background:var(--bg)}
 body{margin:0;font:400 1.1875rem/1.6 var(--font-text);overflow-wrap:break-word}
 main{padding:var(--space-7) 1rem var(--space-6)}
-h1,h2,h3{font-family:var(--font-display);font-weight:600;color:var(--ink)}
-a{color:var(--series-1);text-decoration-thickness:1px;text-underline-offset:.18em}
+h1,h2,h3{font-family:var(--font-display);font-weight:600;color:var(--text)}
+a{color:var(--link);text-decoration:underline var(--hairline) var(--link-line);text-underline-offset:3px}
 code{font:.9em var(--font-mono);overflow-wrap:anywhere}
-:focus-visible{outline:3px solid var(--series-1);outline-offset:2px}
+:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
 h1[tabindex="-1"]:focus{outline:none}
-.page-foot{max-width:var(--measure);margin:0 auto;padding:var(--space-4) 1rem var(--space-7);font:.8125rem var(--font-ui);color:var(--ink-2)}
+.page-foot{max-width:var(--measure);margin:0 auto;padding:var(--space-4) 1rem var(--space-7);font:var(--text-12) var(--font-ui);color:var(--text-2)}
 @media (max-width:639.98px){body{font-size:1.0625rem}}
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{transition:none!important;animation:none!important;scroll-behavior:auto!important}}
 @media (forced-colors:active){:focus-visible{outline-color:Highlight}}`;
@@ -43,9 +45,10 @@ const plain = (text) => kit.escapeHtml(text.replace(/[*`]/g, ''));
 
 /** One standalone page for a validated doc. Deterministic: same doc, same bytes. */
 export function buildPage(doc, { fonts = true } = {}) {
-  const font = fonts
-    ? `@font-face{font-family:Newsreader;src:url(data:font/woff2;base64,${dist('newsreader-latin.woff2').toString('base64')}) format("woff2");font-weight:400 700;font-display:swap}\n`
-    : '';
+  const face = (file, range = '') =>
+    `@font-face{font-family:"Explorable Serif";src:url(data:font/woff2;base64,${dist(file).toString('base64')}) format("woff2");font-weight:400 600;font-display:swap${range}}\n`;
+  // The serif's own math signs, as in the app (src/styles/fonts.css), so √ in the text matches the letters around it.
+  const font = fonts ? face('serif-latin.woff2') + face('serif-math.woff2', `;unicode-range:${SERIF_MATH}`) : '';
   const css = `${font}${dist('explorable-kit.css', 'utf8').trim()}\n${PAGE_CSS}`;
   const js =
     `${inlineKit(dist('explorable-kit.js', 'utf8').trim())}\n` +
@@ -59,7 +62,7 @@ export function buildPage(doc, { fonts = true } = {}) {
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta http-equiv="Content-Security-Policy" content="${csp}">
-<meta name="color-scheme" content="light">
+<meta name="color-scheme" content="light dark">
 <meta name="description" content="${plain(doc.dek)}">
 <meta name="generator" content="explorable kit">
 <title>${kit.escapeHtml(doc.title)}</title>

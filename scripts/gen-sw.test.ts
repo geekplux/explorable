@@ -27,14 +27,15 @@ const BUILD = {
   '.assetsignore': 'wrangler.json',
   'assets/index-abc.js': 'js',
   'assets/index-abc.css': 'css',
-  'fonts/newsreader-latin.woff2': 'font',
+  'fonts/serif-latin.woff2': 'font',
   'fonts/OFL.txt': 'licence',
   'favicon.svg': '<svg/>',
+  'pdf/attention.pdf': '%PDF',
 };
 
 describe('gen-sw', () => {
-  it('precaches the shell as / plus every asset and font, not platform files', () => {
-    expect(precacheUrls(Object.keys(BUILD).toSorted())).toEqual(['/', '/assets/index-abc.css', '/assets/index-abc.js', '/favicon.svg', '/fonts/newsreader-latin.woff2']);
+  it('precaches the shell as / plus every asset and font, not platform files or the sample PDFs', () => {
+    expect(precacheUrls(Object.keys(BUILD).toSorted())).toEqual(['/', '/assets/index-abc.css', '/assets/index-abc.js', '/favicon.svg', '/fonts/serif-latin.woff2']);
   });
 
   it('writes sw.js with a cache name that changes with the build and not with sw.js', () => {
@@ -65,6 +66,7 @@ describe('gen-sw', () => {
     };
     expect(handled('https://x.test/api/explain?url=a')).toBeUndefined();
     expect(handled('https://x.test/api/explain', { mode: 'navigate' })).toBeUndefined();
+    expect(handled('https://x.test/pdf/attention.pdf', { mode: 'navigate' })).toBeUndefined();
     expect(handled('https://x.test/assets/index-abc.js', { method: 'POST' })).toBeUndefined();
     expect(handled('https://fonts.example.com/a.woff2')).toBeUndefined();
     expect(await handled('https://x.test/s/diffusion', { mode: 'navigate' })).toBe(shell);

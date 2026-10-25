@@ -2,10 +2,12 @@
  * "Show data": a toggle button and a real `<table>` of the current values (A3),
  * in a focusable, labelled scroll region so a wide table never scrolls the page.
  */
+import { setMath } from './math.ts';
+
 /** A column header: its text, or the text plus a spoken form for screen readers (e.g. "signal" for "signal √ᾱ_t"). */
 export type Column = string | { text: string; spoken?: string };
 
-export function createDataTable(id: string, caption: string, columns: readonly Column[], rowHeader = 0) {
+export function createDataTable(id: string, caption: string, columns: readonly Column[], rowHeader = 0, vars?: ReadonlySet<string>) {
   const button = document.createElement('button');
   button.type = 'button';
   button.className = 'xfig-data-toggle';
@@ -25,7 +27,7 @@ export function createDataTable(id: string, caption: string, columns: readonly C
   wrap.append(table);
   const cap = table.createCaption();
   cap.id = `${id}-caption`;
-  cap.textContent = caption;
+  setMath(cap, caption, { vars });
   const head = table.createTHead().insertRow();
   const body = table.createTBody();
   let shown = '';
@@ -37,7 +39,8 @@ export function createDataTable(id: string, caption: string, columns: readonly C
     shown = key;
     head.replaceChildren(
       ...parts.map(({ text, spoken }) => {
-        const th = Object.assign(document.createElement('th'), { scope: 'col', textContent: text });
+        const th = Object.assign(document.createElement('th'), { scope: 'col' });
+        setMath(th, text, { vars });
         if (spoken && spoken !== text) th.setAttribute('aria-label', spoken);
         return th;
       }),
@@ -59,7 +62,7 @@ export function createDataTable(id: string, caption: string, columns: readonly C
     setColumns,
     /** A one-line summary after the caption, e.g. the current verdict. */
     setNote(note: string) {
-      cap.textContent = note ? `${caption} — ${note}` : caption;
+      setMath(cap, note ? `${caption} — ${note}` : caption, { vars });
     },
     /** Replace the body rows; the `rowHeader` cell of each row is a row header. */
     setRows(rows: readonly (readonly string[])[]) {
@@ -69,7 +72,7 @@ export function createDataTable(id: string, caption: string, columns: readonly C
           cells.forEach((text, i) => {
             const cell = document.createElement(i === rowHeader ? 'th' : 'td');
             if (i === rowHeader) cell.setAttribute('scope', 'row');
-            cell.textContent = text;
+            setMath(cell, text, { vars });
             tr.append(cell);
           });
           return tr;

@@ -41,8 +41,8 @@ let root: HTMLElement;
 let destroy: () => void;
 const $ = <T extends Element = HTMLElement>(s: string) => root.querySelector<T>(s)!;
 const readout = () => $('.xfig-readout').textContent;
-/** Fallback geometry: 640 px wide, track from 56 to 616 px. */
-const xFor = (T: number) => 56 + (Math.log(T / 0.05) / Math.log(100)) * 560;
+/** Fallback geometry: 640 × 300 px, track from 60 to 632 px. */
+const xFor = (T: number) => 60 + (Math.log(T / 0.05) / Math.log(100)) * 572;
 const ev = (type: string, x: number, y = 0) => new PointerEvent(type, { pointerId: 7, pointerType: 'touch', clientX: x, clientY: y, bubbles: true, cancelable: true });
 /** Drawn height of the "cat" bar. */
 const bar = () => Number(root.querySelectorAll('rect.xfig-bar')[1]!.getAttribute('height'));
@@ -69,14 +69,25 @@ afterEach(() => {
 });
 
 describe('hydrateFigures: fig-temperature', () => {
-  it('draws 6 labelled bars, the readout, the chip and the top marker', () => {
+  it('draws 6 labelled bars, the readout before "Show data", and the chip', () => {
     mount();
     expect([...root.querySelectorAll('.xfig-bar-label')].map((t) => t.textContent)).toEqual(['the', 'cat', 'sat', 'on', 'the', 'mat']);
     expect(root.querySelectorAll('rect.xfig-bar')).toHaveLength(6);
-    expect(readout()).toBe('top weight 0.51 · entropy 2.05 bits');
+    expect(readout()).toBe('top weight 0.51 entropy 2.05 bits');
+    // One span per output (spaced by CSS, no "·" joiner), the number in <b>.
+    expect([...root.querySelectorAll('.xfig-readout > span')].map((s) => s.textContent)).toEqual(['top weight 0.51', 'entropy 2.05 bits']);
+    expect([...root.querySelectorAll('.xfig-readout b')].map((b) => b.textContent)).toEqual(['0.51', '2.05']);
+    // The track fills from its start to the knob.
+    expect($('.xfig-track-fill').getAttribute('d')).toBe(`M60 264H${xFor(1).toFixed(1)}`);
+    // The leading bar is marked on the rect too (indigo-11 in kit.css), and follows T.
+    expect([...root.querySelectorAll('#fig-temperature rect.xfig-bar')].map((r) => r.classList.contains('is-top'))).toEqual([false, true, false, false, false, false]);
     expect($('.xfig-chip').textContent).toBe('query: sat');
-    expect($('.xfig-top text').textContent).toBe('top');
-    expect($('.xfig-top path')).toBeTruthy();
+    // No ▼ marker and no drag hint or grip: the tallest bar and its value say which leads.
+    expect(root.querySelector('.xfig-top, .xfig-knob-hint, .xfig-knob-grip')).toBeNull();
+    expect([...$('.xfig-foot').children].map((c) => c.className)).toEqual(['xfig-readout', 'xfig-sr', 'xfig-data-toggle']);
+    // The native twin of the knob stays for assistive tech, out of sight and out of the Tab order.
+    expect($('input[type=range]').closest('.xfig-control')?.classList.contains('xfig-sr')).toBe(true);
+    expect($('input[type=range]').getAttribute('tabindex')).toBe('-1');
     expect([...root.querySelectorAll('.xfig-bar-value.is-top')].map((t) => t.textContent)).toEqual(['0.51']);
     expect(root.querySelector('#fig-temperature')?.hasAttribute('data-live')).toBe(true);
   });
@@ -107,10 +118,10 @@ describe('hydrateFigures: fig-temperature', () => {
     mount();
     key(knob(), 'Home');
     expect(knob().getAttribute('aria-valuetext')).toBe('0.05');
-    expect(readout()).toBe('top weight 1.00 · entropy 0.00 bits');
+    expect(readout()).toBe('top weight 1.00 entropy 0.00 bits');
     key(knob(), 'End');
     expect(knob().getAttribute('aria-valuenow')).toBe('5');
-    expect(readout()).toBe('top weight 0.22 · entropy 2.57 bits');
+    expect(readout()).toBe('top weight 0.22 entropy 2.57 bits');
     expect($('output').textContent).toBe('T = 5.00');
     expect($<HTMLInputElement>('input[type=range]').getAttribute('aria-valuetext')).toBe('5.00');
     key(knob(), 'PageDown');
@@ -120,20 +131,36 @@ describe('hydrateFigures: fig-temperature', () => {
     expect(knob().getAttribute('aria-valuenow')).toBe('0.05');
   });
 
-  it('reads exactly "top weight 0.98 · entropy 0.15 bits" at T = 0.25 (native slider)', () => {
+  it('keeps a print-only state line in step with T, linked to the interactive version when given a link', () => {
+    mount();
+    const state = $('#fig-temperature .xfig-state');
+    expect(state.innerHTML).toBe('Shown at <i>T</i> = 1.');
+    expect(state.getAttribute('aria-hidden')).toBe('true');
+    key(knob(), 'End');
+    expect(state.textContent).toBe('Shown at T = 5.');
+    destroy();
+    root.remove();
+    root.innerHTML = essayHtml(doc);
+    document.body.append(root);
+    destroy = hydrateFigures(root, doc, { reducedMotion: true, link: 'explorable.geekplux.com/s/attention' }).destroy;
+    expect($('.xfig-state').textContent).toBe('Shown at T = 1. Interactive version at explorable.geekplux.com/s/attention#fig-temperature');
+    expect($('.xfig-state a').getAttribute('href')).toBe('https://explorable.geekplux.com/s/attention#fig-temperature');
+  });
+
+  it('reads exactly "top weight 0.98 entropy 0.15 bits" at T = 0.25 (native slider)', () => {
     mount();
     const input = $<HTMLInputElement>('input[type=range]');
     input.value = String(Math.round(1000 * (Math.log(0.25 / 0.05) / Math.log(100))));
     input.dispatchEvent(new Event('input', { bubbles: true }));
     expect(knob().getAttribute('aria-valuenow')).toBe('0.25');
-    expect(readout()).toBe('top weight 0.98 · entropy 0.15 bits');
+    expect(readout()).toBe('top weight 0.98 entropy 0.15 bits');
   });
 
   it('keeps the y axis fixed and the two "the" bars equal at every fixture T', () => {
     mount();
     const bars = () => [...root.querySelectorAll('rect.xfig-bar')].map((r) => [r.getAttribute('y'), r.getAttribute('height')]);
-    // Fallback geometry: plot from y = 44 (weight 1) to y = 282 (weight 0).
-    const full = 282 - 44;
+    // Fallback geometry: plot from y = 28 (weight 1) to y = 208 (weight 0).
+    const full = 208 - 28;
     for (const T of [0.05, 0.1, 0.25, 0.5, 1, 2, 5]) {
       const input = $<HTMLInputElement>('input[type=range]');
       input.value = String(Math.round(1000 * (Math.log(T / 0.05) / Math.log(100))));
@@ -143,7 +170,7 @@ describe('hydrateFigures: fig-temperature', () => {
       const heights = b.map(([, h]) => Number(h));
       expect(Math.max(...heights)).toBeLessThanOrEqual(full);
     }
-    expect([...root.querySelectorAll('.xfig-grid')]).toHaveLength(4);
+    expect([...root.querySelectorAll('.xfig-grid')]).toHaveLength(2);
   });
 
   it('drags with touch pointers using pointer capture', () => {
@@ -247,54 +274,47 @@ describe('hydrateFigures: fig-temperature', () => {
     io.fire(false);
     key(knob(), 'End');
     expect(knob().getAttribute('aria-valuenow')).toBe('5');
-    expect(readout()).toBe('top weight 0.51 · entropy 2.05 bits');
+    expect(readout()).toBe('top weight 0.51 entropy 2.05 bits');
     io.fire(true);
-    expect(readout()).toBe('top weight 0.22 · entropy 2.57 bits');
+    expect(readout()).toBe('top weight 0.22 entropy 2.57 bits');
   });
 
-  it('reduced motion: no nudge, a static "drag" hint, instant keyboard steps', () => {
+  it('reduced motion: instant keyboard steps and drags', () => {
     vi.useFakeTimers();
     mount(true);
-    const move = () => knob().querySelector('g')!.getAttribute('transform');
-    expect(knob().classList.contains('is-hinting')).toBe(true);
-    const before = move();
-    vi.advanceTimersByTime(1500);
-    expect(move()).toBe(before);
     const h = bar();
     key(knob(), 'Home');
     expect(bar()).toBeGreaterThan(h);
     const settled = bar();
     vi.advanceTimersByTime(1000);
     expect(bar()).toBe(settled);
-    expect(knob().classList.contains('is-hinting')).toBe(false);
+    $('.xfig-handle').dispatchEvent(new PointerEvent('pointerdown', { pointerId: 3, pointerType: 'mouse', clientX: xFor(5), bubbles: true, cancelable: true }));
+    expect(bar()).toBeLessThan(settled);
   });
 
-  it('without reduced motion: exactly one nudge, never repeated; keyboard steps ease', () => {
+  it('nothing moves on its own; a drag settles the bars in 250 ms while the knob and readout jump; keys ease', () => {
     vi.useFakeTimers();
     mount(false);
-    const io = MockIO.all[0]!;
-    const dx = () => Number(knob().querySelector('g')!.getAttribute('transform')?.match(/translate\(([-\d.]+)/)?.[1]);
-    const base = dx();
-    expect(knob().classList.contains('is-hinting')).toBe(false);
-    vi.advanceTimersByTime(1200 + 300);
-    expect(dx() - base).toBeGreaterThan(6);
-    vi.advanceTimersByTime(1000);
-    expect(dx()).toBeCloseTo(base, 1);
-    io.fire(false);
-    io.fire(true);
-    let moved = 0;
-    for (let t = 0; t < 3000; t += 50) {
-      vi.advanceTimersByTime(50);
-      if (Math.abs(dx() - base) > 0.01) moved++;
-    }
-    expect(moved).toBe(0);
+    const at = () => knob().querySelector('g')!.getAttribute('transform');
+    const rest = at();
+    vi.advanceTimersByTime(3000);
+    expect(at()).toBe(rest);
     const h0 = bar();
-    key(knob(), 'Home');
+    $('.xfig-handle').dispatchEvent(new PointerEvent('pointerdown', { pointerId: 3, pointerType: 'mouse', clientX: xFor(0.1), bubbles: true, cancelable: true }));
+    expect(now()).toBe('0.1');
+    expect(at()).toBe(`translate(${xFor(0.1).toFixed(1)} 264)`);
+    expect(readout()).toBe('top weight 1.00 entropy 0.00 bits');
+    expect(bar()).toBe(h0);
+    vi.advanceTimersByTime(100);
+    const mid = bar();
+    vi.advanceTimersByTime(300);
+    expect(mid).toBeGreaterThan(h0);
+    expect(bar()).toBeGreaterThan(mid);
     const h1 = bar();
-    expect(readout()).toBe('top weight 1.00 · entropy 0.00 bits');
+    key(knob(), 'End');
+    expect(readout()).toBe('top weight 0.22 entropy 2.57 bits');
     vi.advanceTimersByTime(1000);
-    expect(h1).toBeGreaterThan(h0);
-    expect(bar()).toBeGreaterThan(h1);
+    expect(bar()).toBeLessThan(h1);
   });
 
   it('leaves a figure whose kind/model is not available as a static shell, and destroy restores Fig 1', () => {

@@ -7,7 +7,7 @@ import { dirname, join } from 'node:path';
 import { describe, it } from 'node:test';
 import { fileURLToPath } from 'node:url';
 import * as kit from '../kit/dist/explorable-kit.js';
-import { auditFile, auditHtml, auditSpec } from './audit.mjs';
+import { auditFile, auditHtml, auditSpec, docWarnings, warnFile } from './audit.mjs';
 import { buildPage } from './build.mjs';
 
 const here = (p) => fileURLToPath(new URL(p, import.meta.url));
@@ -179,10 +179,20 @@ describe('audit: failing fixtures', () => {
     fails(auditSpec(doc), /options\.colors sets a colour/);
   });
   it('series colours too close under colour-vision deficiency', () => {
-    fails(auditHtml(page().replace('--series-2:#0f8a6e', '--series-2:#2a55c4')), /too close for (normal|protan|deutan|tritan) vision/);
+    fails(auditHtml(page().replace('--series-2:var(--sand-12)', '--series-2:#3a5fd0')), /too close for (normal|protan|deutan|tritan) vision/);
   });
   it('low-contrast text token', () => {
-    fails(auditHtml(page().replace('--ink-2:#5a554b', '--ink-2:#c8c2b5')), /--ink-2 on --paper has contrast/);
+    fails(auditHtml(page().replace('--ink-2:var(--sand-11)', '--ink-2:#c8c2b5')), /--ink-2 on --paper has contrast/);
+  });
+  it('low-contrast token in the dark scheme only', () => {
+    const problems = auditHtml(page().replace('--sand-11:#b5b3ad', '--sand-11:#3b3a37'));
+    fails(problems, /--ink-2 on --paper has contrast [\d.]+:1 in the dark scheme/);
+    assert.ok(!problems.some((p) => /--ink-2 on --paper has contrast [\d.]+:1;/.test(p)), 'light is unaffected');
+  });
+  it('low-contrast token in a chosen dark theme only (data-theme="dark")', () => {
+    const problems = auditHtml(withCss('@media screen{:root[data-theme=dark]{--sand-11:#3b3a37}}'));
+    fails(problems, /--ink-2 on --paper has contrast [\d.]+:1 in the dark scheme/);
+    assert.ok(!problems.some((p) => /--ink-2 on --paper has contrast [\d.]+:1;/.test(p)), 'light is unaffected');
   });
   it('raw colour outside the tokens', () => {
     fails(auditHtml(page().replace('</style>', '.x{fill:#ff00aa}</style>')), /colours used outside the palette tokens: #ff00aa/);
@@ -328,4 +338,103 @@ describe('audit: the app samples pass', () => {
       assert.equal(out.trim().split('\n').at(-1), 'audit passed');
     });
   }
+});
+
+// ExplorableDoc v2: notes behind markers, checked by the schema; formulas left in the body are warnings.
+const v2 = () => {
+  const doc = newton();
+  doc.schema = 2;
+  for (const section of doc.sections) section.paragraphs = ['Drag the time and watch the gap close.'];
+  doc.sections[0].paragraphs = ['Hot coffee loses heat fast at first, then slowly.[[law]] [[newton]] wrote it down.'];
+  doc.takeaway = 'The gap to the room shrinks by the same share every minute.';
+  doc.notes = [
+    { id: 'law', kind: 'math', formula: 'dT/dt = −k·(T − Tₐ)', plain: 'The cooling rate is proportional to the gap to the room.' },
+    { id: 'newton', kind: 'source', label: 'Newton', title: 'Scala graduum caloris', detail: 'Isaac Newton, 1701', url: 'https://example.org/newton-1701' },
+  ];
+  return doc;
+};
+
+describe('audit: ExplorableDoc v2 notes', () => {
+  it('a v2 spec and its page pass, and the source note may link out', () => {
+    assert.deepEqual(auditSpec(v2()), []);
+    const html = page(v2());
+    assert.match(html, /<button class="xnote-mk"[^>]*aria-controls="note-law"/);
+    assert.match(html, /href="https:\/\/example\.org\/newton-1701"/);
+    assert.deepEqual(auditHtml(html), []);
+  });
+  it('an unknown note id fails with its path', () => {
+    const doc = v2();
+    doc.sections[0].paragraphs[0] += ' Again.[[nope]]';
+    fails(auditSpec(doc), /schema: sections\[0\]\.paragraphs\[0\]: unknown note "nope"/);
+  });
+  it('a note never referenced fails', () => {
+    const doc = v2();
+    doc.sections[0].paragraphs[0] = 'Plain words only.';
+    fails(auditSpec(doc), /schema: notes\[0\]: note "law" is never referenced/);
+  });
+  it('two math markers in one paragraph fail', () => {
+    const doc = v2();
+    doc.notes.push({ id: 'law2', kind: 'math', formula: 'T(t) = Tₐ + (T₀ − Tₐ)·e^(−kt)', plain: 'The solution.' });
+    doc.sections[0].paragraphs[0] += ' Solved.[[law2]]';
+    fails(auditSpec(doc), /at most one math note per paragraph/);
+  });
+  it('markers in a v1 spec fail', () => {
+    const doc = v2();
+    doc.schema = 1;
+    delete doc.notes;
+    fails(auditSpec(doc), /needs "schema": 2/);
+  });
+  it('a link that is neither the source nor a source note still fails', () => {
+    const doc = v2();
+    const html = page(doc).replace('href="https://example.org/newton-1701"', 'href="https://evil.example/"');
+    fails(auditHtml(html), /external reference href="https:\/\/evil\.example\/"/);
+  });
+  it('a page whose math markers do not match the doc fails', () => {
+    const html = page(v2()).replace(/<button class="xnote-mk"[\s\S]*?<\/button>/, '');
+    fails(auditHtml(html), /0 math markers in the markup but 1 math notes in the doc/);
+  });
+  it('a formula in body text is a warning, not a problem', () => {
+    const doc = v2();
+    doc.takeaway = 'So T(t) = Tₐ + (T₀ − Tₐ)·e^(−kt) for all t.';
+    assert.deepEqual(auditSpec(doc), []);
+    const warnings = docWarnings(doc);
+    assert.equal(warnings.length, 1);
+    assert.match(warnings[0], /^takeaway reads like a formula \(T\(t\) = Tₐ \+ \(T₀ − Tₐ\)·e\^\(−kt\)\); say it in words/);
+    assert.deepEqual(docWarnings(v2()), []);
+  });
+  it('the CLI prints warnings before "audit passed" (a v1 spec may keep its formulas)', () => {
+    const doc = newton();
+    doc.schema = 1;
+    delete doc.notes;
+    for (const s of doc.sections) s.paragraphs = s.paragraphs.map((p) => p.replace(/\[\[[a-z-]+\]\]/g, ''));
+    doc.takeaway = 'The gap decays exponentially, `T(t) = Tₐ + (T₀ − Tₐ)·e^(−kt)`.';
+    const dir = mkdtempSync(join(tmpdir(), 'explorable-v1-'));
+    const file = join(dir, 'explorable.json');
+    try {
+      writeFileSync(file, JSON.stringify(doc));
+      assert.ok(warnFile(file).length > 0, 'the takeaway has a formula');
+      const lines = execFileSync(process.execPath, [AUDIT, file], { encoding: 'utf8' }).trim().split('\n');
+      assert.ok(lines.slice(1, -1).every((l) => l.startsWith('warning: ')), lines.join('\n'));
+      assert.equal(lines.at(-1), 'audit passed');
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+  it('the worked examples and the app samples have no formula in their body text', () => {
+    for (const name of ['bloom-filter', 'newton-cooling']) assert.deepEqual(warnFile(here(`../examples/${name}/explorable.json`)), [], name);
+    for (const name of ['attention', 'bloom-filter', 'diffusion']) {
+      const file = join(APP_SAMPLES, `${name}.json`);
+      if (existsSync(file)) assert.deepEqual(warnFile(file), [], name);
+    }
+  });
+});
+
+const withCss = (extra) => page().replace('</style>', `${extra}</style>`);
+describe('audit: hex values only on the kit tokens', () => {
+  it('a custom property of its own holding a colour fails', () => {
+    fails(auditHtml(withCss('.zz{--zz:#f00}.xfig{color:var(--zz)}')), /colours used outside the palette tokens: #f00/);
+  });
+  it('a blackA name holding a non-black colour fails', () => {
+    fails(auditHtml(withCss('.zz{--black-a3:#f006}')), /colours used outside the palette tokens: #f006/);
+  });
 });

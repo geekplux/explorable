@@ -8,17 +8,12 @@ export function SamplePage({ slug }: { slug: string }) {
 
   // The not-found branch sets its own title in NotFoundPage.
   useEffect(() => {
-    if (doc) document.title = `${doc.title} · explorable`;
+    if (doc) document.title = `${doc.title} – Explorable`;
   }, [doc]);
 
   if (!doc) return <NotFoundPage />;
   return (
     <main className="page essay-page">
-      <nav aria-label="Back">
-        <a href="/" className="back hit">
-          <span aria-hidden="true">← </span>All explorables
-        </a>
-      </nav>
       <EssayView doc={doc} />
     </main>
   );

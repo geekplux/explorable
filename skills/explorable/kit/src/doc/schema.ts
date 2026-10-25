@@ -1,9 +1,12 @@
 /**
- * ExplorableDoc v1: the contract shared by built-in samples, the Worker output
+ * ExplorableDoc v1 and v2: the contract shared by built-in samples, the Worker output
  * and skill specs (docs/PLAN.md §5.2), as a valibot schema. Types are inferred
- * from the schema; `parseDoc` returns path-specific error messages.
+ * from the schema; `parseDoc` returns path-specific error messages. v2 adds doc-level
+ * `notes` (formulas and sources behind a marker, docs/redesign/DESIGN.md §9) that
+ * paragraphs and the takeaway reference with `[[id]]`; see `notes.ts`.
  */
 import * as v from 'valibot';
+import { NOTE_ID as NOTE_ID_RE, noteIssues } from './notes.ts';
 
 export const FIGURE_KINDS = ['bars', 'bits', 'histogram', 'curve'] as const;
 
@@ -99,10 +102,22 @@ const SectionSchema = v.strictObject({
   figure: v.optional(FigureSchema),
 });
 
-/** The valibot schema for ExplorableDoc v1. */
+const NOTE_ID = v.pipe(v.string(), v.regex(NOTE_ID_RE, 'must be a lowercase letter, then up to 23 lowercase letters, digits or dashes'));
+const MathNoteSchema = v.strictObject({ id: NOTE_ID, kind: v.literal('math'), formula: text(160), plain: text(240) });
+const SourceNoteSchema = v.strictObject({
+  id: NOTE_ID,
+  kind: v.literal('source'),
+  label: label(60),
+  title: text(200),
+  detail: v.optional(text(120)),
+  url: v.optional(v.pipe(v.string(), v.url('must be a URL'), v.regex(/^https:\/\//i, 'must be an https URL'))),
+});
+const NoteSchema = v.variant('kind', [MathNoteSchema, SourceNoteSchema], 'must be "math" or "source"');
+
+/** The valibot schema for ExplorableDoc v1 and v2. */
 export const ExplorableDocSchema = v.pipe(
   v.strictObject({
-    schema: v.literal(1, 'must be 1 (ExplorableDoc v1)'),
+    schema: v.picklist([1, 2], 'must be 1 or 2 (ExplorableDoc v1 or v2)'),
     id: slug('doc id'),
     title: text(90),
     dek: text(220),
@@ -120,6 +135,7 @@ export const ExplorableDocSchema = v.pipe(
     }),
     sections: list(SectionSchema, 2, 6),
     takeaway: text(300),
+    notes: v.optional(v.pipe(v.array(NoteSchema), v.maxLength(12, 'at most 12 notes'))),
   }),
   v.forward(
     v.check((doc) => {
@@ -128,6 +144,13 @@ export const ExplorableDocSchema = v.pipe(
     }, 'section and figure ids must be unique'),
     ['sections'],
   ),
+  v.rawCheck(({ dataset, addIssue }) => {
+    if (!dataset.typed) return;
+    for (const { path, message } of noteIssues(dataset.value)) {
+      const items = path.map((key) => ({ type: 'object', origin: 'value', input: dataset.value, key, value: undefined }));
+      addIssue({ message, path: items as unknown as [v.IssuePathItem, ...v.IssuePathItem[]] });
+    }
+  }),
 );
 
 export type ExplorableDoc = v.InferOutput<typeof ExplorableDocSchema>;
@@ -139,6 +162,9 @@ export type FigureKind = FigureSpec['kind'];
 export type ExprCurveModel = v.InferOutput<typeof ExprCurveModelSchema>;
 export type ExprParam = v.InferOutput<typeof ExprParamSchema>;
 export type RegistryModelRef = v.InferOutput<typeof RegistryModelSchema>;
+export type Note = v.InferOutput<typeof NoteSchema>;
+export type MathNote = v.InferOutput<typeof MathNoteSchema>;
+export type SourceNote = v.InferOutput<typeof SourceNoteSchema>;
 
 export type ParseResult = { ok: true; doc: ExplorableDoc } | { ok: false; errors: string[] };
 
@@ -152,7 +178,7 @@ function issuePath(issue: v.BaseIssue<unknown>): string {
   return keys.map((k, i) => (typeof k === 'number' ? `[${k}]` : `${i ? '.' : ''}${String(k)}`)).join('') || '(doc)';
 }
 
-/** Validate unknown input as an ExplorableDoc v1. Errors read "path: problem". */
+/** Validate unknown input as an ExplorableDoc (v1 or v2). Errors read "path: problem". */
 export function parseDoc(input: unknown): ParseResult {
   const result = v.safeParse(ExplorableDocSchema, input);
   if (result.success) return { ok: true, doc: result.output };

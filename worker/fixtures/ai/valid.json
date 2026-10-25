@@ -1,25 +1,25 @@
 {
  "response": {
-  "coreIdea": "Dot products of wider random vectors spread out like √d_k, so attention divides them by √d_k to keep the softmax soft.",
+  "coreIdea": "Dot products of longer random vectors spread out more, so attention divides them by the square root of the length to keep its weights soft.",
   "title": "Why attention divides by √d_k",
-  "dek": "A dot product of two d_k-wide random vectors has a spread of about √d_k. Divide by √d_k and the softmax stays soft at any width.",
+  "dek": "Each word in a transformer scores every other word with a dot product. Longer vectors make the scores spread out, and dividing by √d_k keeps them in check.",
   "sections": [
    {
     "heading": "Scores from dot products",
     "paragraphs": [
-     "Each query is compared with every key by a dot product, `q·k`. A softmax turns those scores into weights that add up to 1."
+     "Each word asks a question of every other word: its query vector q is compared with each key vector k by a dot product, `q·k`. A softmax turns those scores into weights that add up to 1.[[m1]]"
     ]
    },
    {
     "heading": "Wider vectors, wilder scores",
     "paragraphs": [
-     "Each dot product adds d_k random terms, so its spread grows like √d_k. Drag d_k up and watch one key take all the weight. Switch on the division and the bars settle."
+     "A dot product adds up d_k random terms, one per component, so its spread grows like √d_k.[[m2]] Drag d_k up and watch one key take all the weight. Switch on the division and the bars settle."
     ]
    },
    {
     "heading": "The square-root law",
     "paragraphs": [
-     "The spread of a sum of d_k unit-variance terms is `√d_k`. Drag x along the curve to read it for any width."
+     "[[source]] divide every score by √d_k, so the spread stays near 1 at any width. Drag x along the curve to read the spread for any width."
     ]
    }
   ],
@@ -83,6 +83,18 @@
     }
    }
   ],
-  "takeaway": "A dot product of d_k-wide random vectors spreads like √d_k, so dividing scores by √d_k keeps the softmax soft at any width."
+  "takeaway": "The longer the vectors, the wider the scores spread, so attention divides every score by the square root of their length and its weights stay soft at any width.",
+  "notes": [
+   {
+    "id": "m1",
+    "formula": "wᵢ = e^(sᵢ) / Σⱼ e^(sⱼ)",
+    "plain": "Each weight is e raised to its score, as a share of the total over every key."
+   },
+   {
+    "id": "m2",
+    "formula": "sd(q·k) = √d_k",
+    "plain": "The spread of a sum of d_k independent terms, each with spread 1, is the square root of d_k."
+   }
+  ]
  }
 }

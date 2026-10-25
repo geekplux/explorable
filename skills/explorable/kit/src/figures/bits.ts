@@ -8,7 +8,7 @@
 import { INSERT, VERDICTS } from '../models/bloom-filter.ts';
 import type { ParamDef } from '../registry.ts';
 import { toPos } from '../runtime/controls.ts';
-import { createHandle, svgEl } from '../runtime/handle.ts';
+import { createHandle, svgEl, trackLabel } from '../runtime/handle.ts';
 import type { FigureMount, FigureView, Outputs, Params } from '../runtime/mount.ts';
 
 const nums = (v: unknown): number[] => (Array.isArray(v) ? v : []);
@@ -37,7 +37,7 @@ export const mountBits: FigureMount = (el, { spec, model, setParam }) => {
   const [words, track, arrows, cells, outlines, mark, query] = Array.from({ length: 7 }, () => svgEl(chart, 'g')) as [SVGGElement, SVGGElement, SVGGElement, SVGGElement, SVGGElement, SVGGElement, SVGGElement];
   track.setAttribute('aria-hidden', 'true');
   words.setAttribute('class', 'xfig-words');
-  const knob = handleDef ? createHandle(svg, { def: handleDef, onChange: (v, instant) => setParam(handleName, v, instant) }) : undefined;
+  const knob = handleDef ? createHandle(svg, { def: handleDef, onChange: (v, instant) => setParam(handleName, v, instant), fill: true }) : undefined;
 
   let g = { w: 640, h: 250, wide: true, cell: 24, pitch: 27, rowGap: 18, top: 124, chipTop: 192 };
   let chips: SVGGElement[] = [];
@@ -80,7 +80,7 @@ export const mountBits: FigureMount = (el, { spec, model, setParam }) => {
     if (knob && handleDef) {
       const [t0, t1] = wide ? [x0, x0 + 12 * cp] : [24, w - 24];
       knob.layout(t0, t1, trackY);
-      svgEl(track, 'text', { x: t0 - 12, y: trackY + 4, 'text-anchor': 'end' }).textContent = handleName;
+      trackLabel(track, t0 - 12, trackY + 4, handleDef.symbol ?? handleName);
       svgEl(track, 'path', { class: 'xfig-track-line', d: `M${t0} ${trackY}H${t1}` });
       for (let t = handleDef.min; t <= handleDef.max; t++) {
         const x = t0 + toPos(handleDef, t) * (t1 - t0);

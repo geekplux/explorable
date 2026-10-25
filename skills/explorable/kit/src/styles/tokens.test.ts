@@ -1,13 +1,58 @@
 /// <reference types="node" />
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { PALETTE } from '../color/palette.ts';
+import { PALETTES, RADIX, type Scheme } from '../color/palette.ts';
 
 const css = readFileSync(new URL('./tokens.css', import.meta.url), 'utf8');
+const kitCss = readFileSync(new URL('./kit.css', import.meta.url), 'utf8');
+
+/** The system-dark block, which a reader's explicit light choice (`<html data-theme="light">`) opts out of. */
+const DARK = /@media screen and \(prefers-color-scheme: dark\) \{\s*:root:not\(\[data-theme="light"\]\) \{([^{}]*)\}\s*\}\s*$/;
+const decls = (block: string) => Object.fromEntries([...block.matchAll(/--([\w-]+):\s*([^;]+);/g)].map((m) => [m[1], m[2]?.trim() ?? '']));
+
+/** Custom properties as the cascade sees them in one scheme: the dark block overrides :root. */
+function scheme(name: Scheme): Record<string, string> {
+  const dark = DARK.exec(css);
+  const base = decls(dark ? css.slice(0, dark.index) : css);
+  return name === 'dark' && dark ? { ...base, ...decls(dark[1] ?? '') } : base;
+}
+
+/** Follow var(--x) chains to a hex value (undefined when the token is not a colour). */
+function resolve(vars: Record<string, string>, name: string): string | undefined {
+  const v = vars[name];
+  const ref = v && /^var\(--([\w-]+)\)$/.exec(v);
+  if (ref?.[1]) return resolve(vars, ref[1]);
+  return v && /^#[0-9a-f]{6}$/i.test(v) ? v.toUpperCase() : undefined;
+}
 
 describe('tokens.css', () => {
-  it('defines exactly the palette colours', () => {
-    const defined = Object.fromEntries([...css.matchAll(/--([\w-]+):\s*(#[0-9a-f]{6})\b/gi)].map((m) => [m[1], m[2]?.toUpperCase()]));
-    expect(defined).toEqual(PALETTE);
+  it.each(['light', 'dark'] as const)('defines the Radix scales and points every token at its step (%s)', (name) => {
+    const vars = scheme(name);
+    for (const [scale, steps] of Object.entries(RADIX[name])) steps.forEach((hex, i) => expect([`${scale}-${i + 1}`, resolve(vars, `${scale}-${i + 1}`)]).toEqual([`${scale}-${i + 1}`, hex]));
+    for (const [token, hex] of Object.entries(PALETTES[name])) expect([token, resolve(vars, token)]).toEqual([token, hex]);
+  });
+
+  it('writes hex only on the scale steps, and nowhere in kit.css', () => {
+    const literal = [...css.matchAll(/--([\w-]+):\s*#/g)].map((m) => m[1]);
+    expect(literal.every((n) => /^((sand|indigo|orange)-\d+|black-a\d+)$/.test(n ?? ''))).toBe(true);
+    expect(literal).toHaveLength(74);
+    expect(kitCss.match(/#[0-9a-f]{3,8}\b|rgba?\(|hsla?\(/gi)).toBeNull();
+  });
+
+  it('uses Radix blackA for the floating card shadow and a light glyph on a solid in the dark scheme', () => {
+    expect([scheme('light')['black-a2'], scheme('light')['black-a6']]).toEqual(['#0000001a', '#00000066']);
+    expect(scheme('light')['float-shadow']).toContain('var(--black-a2)');
+    expect(scheme('dark')['float-shadow']).toContain('var(--black-a6)');
+    expect([scheme('light')['on-solid'], scheme('dark')['on-solid']]).toEqual(['var(--sand-1)', 'var(--sand-12)']);
+  });
+
+  it('keeps dark screen-only and lets an explicit light choice opt out of it', () => {
+    expect(DARK.test(css)).toBe(true);
+    expect(css.match(/prefers-color-scheme/g)).toHaveLength(1);
+  });
+
+  it('swaps the handle to orange-9 in the dark scheme', () => {
+    expect(scheme('light').handle).toBe('var(--orange-10)');
+    expect(scheme('dark').handle).toBe('var(--orange-9)');
   });
 });

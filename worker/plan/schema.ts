@@ -1,5 +1,6 @@
 // The Plan: what the one Workers AI call returns (docs/design/prompt.md, D7).
 // Flat on purpose: a 70B model follows a shallow schema far more reliably.
+// `notes` are math notes only: the source note is built from the article's metadata (plain.ts).
 // One valibot schema gives both the validator and the JSON Schema for JSON Mode.
 import { toJsonSchema } from '@valibot/to-json-schema';
 import * as v from 'valibot';
@@ -47,10 +48,13 @@ export const PlanSchema = v.object({
     2,
     3,
   ),
+  // Paragraphs and the takeaway reference a note as [[id]]; the post-process renumbers them.
+  notes: v.optional(v.pipe(v.array(v.object({ id: str(24), formula: str(160), plain: str(240) })), v.maxLength(12))),
 });
 
 export type Plan = v.InferOutput<typeof PlanSchema>;
 export type PlanFigure = Plan['figures'][number];
+export type PlanNote = NonNullable<Plan['notes']>[number];
 
 let cached: object | undefined;
 /** JSON Schema for Workers AI `response_format.json_schema` (built once per isolate). */

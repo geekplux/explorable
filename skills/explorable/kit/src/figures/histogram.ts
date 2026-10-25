@@ -9,7 +9,7 @@ import { format } from '../format.ts';
 import { BINS, BIN_W, X_MAX, X_MIN, normalPdf } from '../models/diffusion-forward.ts';
 import type { ParamDef } from '../registry.ts';
 import { toPos } from '../runtime/controls.ts';
-import { createHandle, svgEl } from '../runtime/handle.ts';
+import { createHandle, setMath, svgEl, trackLabel } from '../runtime/handle.ts';
 import type { FigureMount, FigureView, Outputs, Params } from '../runtime/mount.ts';
 
 const nums = (v: unknown): number[] => (Array.isArray(v) ? v : []);
@@ -17,6 +17,12 @@ const ATTR = (el: Element, attrs: Record<string, string | number>) => {
   for (const [k, v] of Object.entries(attrs)) el.setAttribute(k, String(v));
 };
 const edge = (j: number) => X_MIN + j * BIN_W;
+
+const span = (text: string) => {
+  const el = document.createElement('span');
+  setMath(el, text);
+  return el;
+};
 
 export const mountHistogram: FigureMount = (el, { spec, model, setParam }) => {
   const o = spec.options ?? {};
@@ -39,17 +45,17 @@ export const mountHistogram: FigureMount = (el, { spec, model, setParam }) => {
   const refHalo = svgEl(plot, 'path', { class: 'xfig-line-halo' });
   const ref = svgEl(plot, 'path', { class: 'xfig-ref' });
   const ghostText = ghost ? svgEl(plot, 'text', { class: 'xfig-ghost-label', 'text-anchor': 'middle' }) : undefined;
-  if (ghostText) ghostText.textContent = 'data (t = 0)';
+  if (ghostText) setMath(ghostText, 'data (t = 0)');
   const refText = svgEl(plot, 'text', { class: 'xfig-ref-label' });
-  refText.textContent = refLabel;
+  setMath(refText, refLabel);
   const trackG = svgEl(svg, 'g', { class: 'xfig-track', 'aria-hidden': 'true' });
-  const knob = handleDef ? createHandle(svg, { def: handleDef, onChange: (v, instant) => setParam(handleName!, v, instant) }) : undefined;
+  const knob = handleDef ? createHandle(svg, { def: handleDef, onChange: (v, instant) => setParam(handleName!, v, instant), fill: true }) : undefined;
 
   let g = { L: 40, R: 628, top: 30, bottom: 252 };
   // The x domain starts 12 px right of the y axis, so the "0" density label and the "−4" tick label never meet.
   const px = (x: number) => g.L + 12 + ((x - X_MIN) / (X_MAX - X_MIN)) * (g.R - g.L - 12);
   const py = (d: number) => g.bottom - Math.min(1, Math.max(0, d)) * (g.bottom - g.top);
-  let last: [Params, Outputs] | undefined;
+  let last: [Params, Outputs, Outputs?] | undefined;
 
   function layout() {
     // Unrounded size: one SVG unit is exactly one CSS px, so 44-unit hit areas are ≥ 44 px.
@@ -85,7 +91,7 @@ export const mountHistogram: FigureMount = (el, { spec, model, setParam }) => {
     if (knob && handleDef && handleName) {
       const [x0, x1] = [g.L + 12, g.R - 12];
       knob.layout(x0, x1, trackY);
-      svgEl(trackG, 'text', { x: g.L - 6, y: trackY + 4, 'text-anchor': 'end', class: 'xfig-track-label' }).textContent = handleDef.symbol ?? handleName;
+      trackLabel(trackG, g.L - 6, trackY + 4, handleDef.symbol ?? handleName);
       svgEl(trackG, 'path', { class: 'xfig-track-line', d: `M${x0} ${trackY}H${x1}` });
       const ticks = Array.isArray(o.ticks) ? o.ticks.map(Number) : [handleDef.min, handleDef.max];
       for (const t of ticks) {
@@ -97,9 +103,9 @@ export const mountHistogram: FigureMount = (el, { spec, model, setParam }) => {
     if (last) draw(...last);
   }
 
-  function draw(p: Params, out: Outputs) {
-    last = [p, out];
-    const hist = nums(out.hist);
+  function draw(p: Params, out: Outputs, eased = out) {
+    last = [p, out, eased];
+    const hist = nums(eased.hist);
     bars.forEach((b, j) => {
       const y = py(hist[j] ?? 0);
       ATTR(b, { y, height: g.bottom - y });
@@ -114,7 +120,8 @@ export const mountHistogram: FigureMount = (el, { spec, model, setParam }) => {
       // At t = 0 the ghost would coincide with the bars.
       for (const n of [ghostHalo, ghost, ghostText]) n.classList.toggle('is-hidden', t === 0);
     }
-    chip.textContent = `t = ${t} · ᾱ_t = ${format(Number(out.alphaBar), 'sig3')}`;
+    // Two spans spaced by CSS (no "·" separator), with a plain space between them for copy and tests.
+    chip.replaceChildren(span(`t = ${t}`), ' ', span(`ᾱ_t = ${format(Number(out.alphaBar), 'sig3')}`));
     if (knob && handleDef && handleName) knob.place(toPos(handleDef, p[handleName]!));
   }
 
@@ -124,6 +131,7 @@ export const mountHistogram: FigureMount = (el, { spec, model, setParam }) => {
 
   const view: FigureView = {
     draw,
+    settles: true,
     handle: knob && handleName ? { name: handleName, knob } : undefined,
     rowHeader: 0,
     columns: ['bin from', 'bin to', 'density now', 'density at t = 0', `${refLabel} at bin centre`],

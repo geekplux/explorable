@@ -26,23 +26,24 @@ async function show(fetchFn: unknown) {
 }
 
 describe('ResultPage', () => {
-  it('shows the skeleton, then the essay with its provenance', async () => {
+  it('shows the steps, then the essay with "Written by AI from the source." once, in the byline', async () => {
     let resolve!: (r: Response) => void;
     await show(vi.fn(() => new Promise<Response>((r) => (resolve = r))));
-    expect(host.querySelector('[aria-busy="true"]')).not.toBeNull();
+    expect(host.querySelectorAll('.loading-step')).toHaveLength(4);
+    expect(host.querySelector('.skeleton, .kicker')).toBeNull();
     expect(host.querySelector('.loading-stage')?.textContent).toBe('Fetching the article…');
     expect(getDraft()).toBe(URL_IN);
     const doc = { ...attention, provenance: { mode: 'ai', model: 'm', generatedAt: '2026-10-21T00:00:00.000Z' } };
     await act(async () => resolve(new Response(JSON.stringify({ ok: true, doc, cache: 'miss', mode: 'ai' }))));
-    expect(host.querySelector('.essay-provenance')?.textContent).toBe('Generated with AI from the source: check the original');
-    expect(host.querySelector('.provenance-tag')?.textContent).toBe('AI-generated');
+    expect(host.querySelector('.essay-byline p')?.textContent).toBe('Based on Attention Is All You Need, Vaswani et al., 2017. Written by AI from the source.');
+    expect(host.textContent?.match(/Written by AI/g)).toHaveLength(1);
   });
 
   it('renders an error panel whose heading takes focus, with three samples', async () => {
     await show(reply({ ok: false, error: { code: 'NO_FIGURE', message: 'm', hint: 'h' } }));
     expect(document.activeElement?.id).toBe('error-heading');
     expect(host.querySelector('.error-panel')?.getAttribute('data-code')).toBe('NO_FIGURE');
-    expect(host.querySelectorAll('.mini-card')).toHaveLength(3);
+    expect(host.querySelectorAll('.error-state a.essay-row')).toHaveLength(3);
   });
 
   it('does not fetch while offline', async () => {

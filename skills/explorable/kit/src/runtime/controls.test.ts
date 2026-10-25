@@ -2,10 +2,27 @@
 import { describe, expect, it } from 'vitest';
 import type { ParamDef } from '../registry.ts';
 import { attentionScaling } from '../models/attention-scaling.ts';
-import { createRange, createToggle, fromPos, keyValue, snap, toPos, valueOnly, valueText } from './controls.ts';
+import { bloomFilter } from '../models/bloom-filter.ts';
+import { createRange, createToggle, fromPos, keyValue, snap, stateText, toPos, valueOnly, valueText } from './controls.ts';
 
 const T: ParamDef = { label: 'temperature', min: 0.05, max: 5, step: 0.01, default: 1, scale: 'log' };
 const K: ParamDef = { label: 'hashes per word', min: 1, max: 6, step: 1, default: 3 };
+
+describe('stateText (the print state line)', () => {
+  const scaling = attentionScaling.params as Record<string, ParamDef>;
+  it('names sliders by symbol and value, switches as on or off, choices by name', () => {
+    expect(stateText({ T }, ['T'], { T: 1 })).toBe('Shown at T = 1.');
+    expect(stateText({ T }, ['T'], { T: 0.25 })).toBe('Shown at T = 0.25.');
+    expect(stateText(scaling, ['dk', 'scaled'], { dk: 4, scaled: 0, seed: 229 })).toBe('Shown at d_k = 4, divide by √d_k off.');
+    expect(stateText(scaling, ['dk', 'scaled'], { dk: 512, scaled: 1 })).toBe('Shown at d_k = 512, divide by √d_k on.');
+    expect(stateText(bloomFilter.params as Record<string, ParamDef>, ['n', 'k', 'q'], { n: 8, k: 3, q: 2 })).toBe('Shown at n = 8, k = 3, ask about “plum”.');
+  });
+  it('is empty for a figure with no controls, and skips unknown ones', () => {
+    expect(stateText({ T }, [], { T: 1 })).toBe('');
+    expect(stateText({ T }, ['x'], { T: 1 })).toBe('');
+    expect(stateText({ SNR: { ...K, label: 'SNR', control: 'toggle' } }, ['SNR'], { SNR: 1 })).toBe('Shown at SNR off.');
+  });
+});
 
 describe('control value rules', () => {
   it('snaps to step and clamps', () => {
@@ -63,7 +80,7 @@ describe('control value rules', () => {
     const def = attentionScaling.params.scaled;
     const button = createToggle('fig-s', def, () => {}).el.querySelector('button')!;
     const visible = def.label.split(/[^\p{L}\s]/u)[0]!.trim();
-    expect(visible).toBe('divide by');
+    expect(visible).toBe('Divide by');
     expect(button.getAttribute('aria-label')?.startsWith(visible)).toBe(true);
   });
 
@@ -71,7 +88,7 @@ describe('control value rules', () => {
     const def = attentionScaling.params.dk;
     const r = createRange('fig-dk', def, () => {});
     r.set(64);
-    expect(r.el.querySelector('input')?.getAttribute('aria-label')).toBe('key width d k');
-    expect(r.el.querySelector('output')?.textContent).toBe('d_k = 64');
+    expect(r.el.querySelector('input')?.getAttribute('aria-label')).toBe('key width d sub k');
+    expect(r.el.querySelector('output')?.textContent).toBe('dk = 64');
   });
 });

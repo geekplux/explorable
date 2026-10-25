@@ -83,7 +83,7 @@ describe('SKILL.md', () => {
   });
   it('leads with the one idea and stays under 200 lines', () => {
     assert.ok(text.split('\n').length <= 200, `${text.split('\n').length} lines`);
-    assert.match(text, /One idea, one live model, and the reader's hand on the parameter that matters\./);
+    assert.match(text, /One idea in plain words, one live model, and the reader's hand on the parameter that matters\./);
   });
   it('links every reference', () => {
     for (const ref of REFS) assert.ok(text.includes(`\`${ref}\``), `SKILL.md does not link ${ref}`);
@@ -143,6 +143,9 @@ describe('evals/evals.json', () => {
       ['PDF link', /\.pdf\b/],
       ['several ideas at once', /picks one idea/],
       ['colour-only encoding', /sets a colour/],
+      ['plain words: no formula in the text', /reads like a formula/],
+      ['citation through a source note', /"kind": "source"/],
+      ['LaTeX request', /\\frac/],
     ]) assert.match(all, re, `no eval covers: ${what}`);
   });
 });

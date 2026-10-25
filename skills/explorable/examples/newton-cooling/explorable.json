@@ -1,8 +1,8 @@
 {
-  "schema": 1,
+  "schema": 2,
   "id": "newton-cooling",
   "title": "Why coffee cools fast, then slowly",
-  "dek": "The rate of cooling is proportional to the gap to room temperature. That one rule gives an exponential curve and a fixed half-life for the gap.",
+  "dek": "A hot drink loses heat in proportion to how much hotter it is than the room. That one rule makes the gap shrink by the same fraction every minute, so it always takes the same time to halve.",
   "source": {
     "kind": "concept",
     "title": "Newton's law of cooling"
@@ -16,36 +16,73 @@
       "id": "heat-flows-down-the-gap",
       "heading": "Heat flows down the gap",
       "paragraphs": [
-        "A cup at 90 °C in a 20 °C room loses heat quickly. At 25 °C it barely cools. Newton's law of cooling makes this exact: the rate of cooling is proportional to the gap, T − Tₐ, between the cup and the room.",
-        "So the hotter the cup is *relative to the room*, the faster it cools. As it cools, the gap shrinks, and so does the rate. That feedback is the whole story."
+        "A cup at 90 °C in a 20 °C room loses heat quickly. At 25 °C it barely cools. Newton's law of cooling makes this exact: the cup cools at a rate proportional to the gap between its temperature and the room's.[[law]]",
+        "So the hotter the cup is *compared with the room*, the faster it cools. As it cools, the gap shrinks, and so does the rate. That feedback is the whole story."
       ]
     },
     {
       "id": "the-curve",
       "heading": "The curve",
       "paragraphs": [
-        "Solve that rule and you get `T(t) = Tₐ + (T₀ − Tₐ)·e^(−kt)`. Drag the point along time and watch the drop slow down. Raise k, the cooling constant, and the whole curve falls faster toward the dotted room-temperature line.",
-        "Now watch the labelled marker line while you change T₀. The curve moves; the marker does not. The time for the gap to halve depends on k alone."
+        "Follow that rule minute by minute and the gap shrinks by the same fraction each minute, so the temperature falls steeply at first and then levels off.[[curve]] Drag the point along time and watch the drop slow down. Raise k, the cooling constant, and the whole curve falls faster toward the dotted room-temperature line.",
+        "Now watch the labelled marker line while you change T₀, the starting temperature. The curve moves; the marker does not. The time for the gap to halve depends on k alone."
       ],
       "figure": {
         "id": "fig-cooling",
         "kind": "curve",
         "title": "Temperature over time",
-        "caption": "`T(t) = Tₐ + (T₀ − Tₐ)·e^(−kt)` with the room at 20 °C. Drag the point along time, then change k and T₀. The labelled vertical line marks where the gap to the room has halved.",
+        "caption": "The temperature of a cup in a 20 °C room over an hour. Drag the point along time, then change k and the starting temperature. The labelled vertical line marks where the gap to the room has halved.",
         "alt": "Line chart of temperature against time from 0 to 60 minutes. The cup starts at 90 °C and falls toward the dotted room-temperature line at 20 °C, steeply at first and then slowly. At 10 minutes it is at about 62.5 °C, and a labelled vertical line at 13.9 minutes shows where the gap has halved.",
         "model": {
           "id": "expr-curve",
           "expr": "Ta + (T0 - Ta)*exp(-k*x)",
-          "x": { "name": "x", "label": "time (minutes)", "min": 0, "max": 60 },
-          "y": { "label": "temperature (°C)", "min": 0, "max": 100 },
+          "x": {
+            "name": "x",
+            "label": "time (minutes)",
+            "min": 0,
+            "max": 60
+          },
+          "y": {
+            "label": "temperature (°C)",
+            "min": 0,
+            "max": 100
+          },
           "params": [
-            { "name": "k", "label": "cooling constant k (per minute)", "min": 0.01, "max": 0.2, "default": 0.05, "step": 0.005 },
-            { "name": "T0", "label": "start temperature T₀ (°C)", "min": 40, "max": 100, "default": 90, "step": 1 },
-            { "name": "Ta", "label": "room temperature Tₐ (°C)", "min": 10, "max": 30, "default": 20, "step": 1 }
+            {
+              "name": "k",
+              "label": "cooling constant k (per minute)",
+              "min": 0.01,
+              "max": 0.2,
+              "default": 0.05,
+              "step": 0.005
+            },
+            {
+              "name": "T0",
+              "label": "start temperature T₀ (°C)",
+              "min": 40,
+              "max": 100,
+              "default": 90,
+              "step": 1
+            },
+            {
+              "name": "Ta",
+              "label": "room temperature Tₐ (°C)",
+              "min": 10,
+              "max": 30,
+              "default": 20,
+              "step": 1
+            }
           ]
         },
-        "controls": ["x", "k", "T0"],
-        "readouts": ["x", "y"],
+        "controls": [
+          "x",
+          "k",
+          "T0"
+        ],
+        "readouts": [
+          "x",
+          "y"
+        ],
         "options": {
           "handle": "x",
           "x0": 10,
@@ -55,8 +92,14 @@
           "yFormat": "fixed1",
           "refExpr": "Ta",
           "refLabel": "room temperature Tₐ",
-          "seriesLabels": ["k = {k}, T₀ = {T0}, Tₐ = {Ta}", "room temperature Tₐ"],
-          "seriesSpoken": ["k = {k}, start temperature {T0} °C, room temperature {Ta} °C", "room temperature"],
+          "seriesLabels": [
+            "k = {k}, T₀ = {T0}, Tₐ = {Ta}",
+            "room temperature Tₐ"
+          ],
+          "seriesSpoken": [
+            "k = {k}, start temperature {T0} °C, room temperature {Ta} °C",
+            "room temperature"
+          ],
           "markerExpr": "ln(2)/k",
           "markerLabel": "gap halves at {marker} min",
           "describe": "At {x} minutes the cup is at {y} °C; the gap to the room halves every {marker} minutes."
@@ -67,24 +110,38 @@
       "id": "a-half-life-for-the-gap",
       "heading": "A half-life for the gap",
       "paragraphs": [
-        "The gap halves every `ln 2 / k` minutes, whatever T₀ is. A cup at 90 °C and one at 50 °C take the same time to halve their gaps: 70 degrees become 35, and 30 become 15.",
-        "Drag k along the curve below. A slow cooler, k = 0.01 per minute, needs about 69 minutes per halving; a fast one, k = 0.3, about 2. The curve falls steeply and then flattens, because the half-life is inversely proportional to k."
+        "Because the gap always shrinks by the same fraction, it takes the same time to halve, whatever the starting temperature.[[half]] A cup at 90 °C and one at 50 °C halve their gaps in the same time: 70 degrees become 35, and 30 become 15.",
+        "Drag k along the curve below. A slow cooler, k = 0.01 per minute, needs about 69 minutes per halving; a fast one, k = 0.3 per minute, about 2 minutes. Double k and the half-life halves, so the curve falls steeply and then flattens."
       ],
       "figure": {
         "id": "fig-half-life",
         "kind": "curve",
         "title": "Faster cooling, shorter half-life",
-        "caption": "The time for the gap to halve, `ln 2 / k`, against the cooling constant k. Drag the point along k.",
+        "caption": "How long the gap takes to halve, against the cooling constant k. Drag the point along k.",
         "alt": "Line chart of the gap's half-life against the cooling constant k from 0.01 to 0.3 per minute: about 69 minutes at k = 0.01, 13.9 minutes at k = 0.05, falling steeply and then flattening near 2 minutes at k = 0.3.",
         "model": {
           "id": "expr-curve",
           "expr": "ln(2)/x",
-          "x": { "name": "x", "label": "cooling constant k (per minute)", "min": 0.01, "max": 0.3 },
-          "y": { "label": "half-life of the gap (minutes)", "min": 0, "max": 70 },
+          "x": {
+            "name": "x",
+            "label": "cooling constant k (per minute)",
+            "min": 0.01,
+            "max": 0.3
+          },
+          "y": {
+            "label": "half-life of the gap (minutes)",
+            "min": 0,
+            "max": 70
+          },
           "params": []
         },
-        "controls": ["x"],
-        "readouts": ["x", "y"],
+        "controls": [
+          "x"
+        ],
+        "readouts": [
+          "x",
+          "y"
+        ],
         "options": {
           "handle": "x",
           "x0": 0.05,
@@ -96,5 +153,25 @@
       }
     }
   ],
-  "takeaway": "Cooling is proportional to the gap, so the gap decays exponentially, `T(t) = Tₐ + (T₀ − Tₐ)·e^(−kt)`, and halves every ln 2 / k minutes from any start."
+  "takeaway": "Cooling is proportional to the gap, so the gap shrinks by the same fraction every minute. The temperature falls fast, then slowly, and the gap halves in the same time from any start.",
+  "notes": [
+    {
+      "id": "law",
+      "kind": "math",
+      "formula": "dT/dt = −k·(T − Tₐ)",
+      "plain": "The temperature T changes at a rate of −k times the gap to the room temperature Tₐ: the bigger the gap, the faster the fall."
+    },
+    {
+      "id": "curve",
+      "kind": "math",
+      "formula": "T(t) = Tₐ + (T₀ − Tₐ)·e^(−kt)",
+      "plain": "After *t* minutes the cup is at the room temperature plus what is left of the starting gap, which shrinks by the same fraction every minute; k sets how fast."
+    },
+    {
+      "id": "half",
+      "kind": "math",
+      "formula": "t½ = ln 2 / k",
+      "plain": "The gap halves every 0.69 divided by k minutes: 13.9 minutes at k = 0.05 per minute, from any starting temperature."
+    }
+  ]
 }

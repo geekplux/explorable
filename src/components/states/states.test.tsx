@@ -50,11 +50,11 @@ describe('SearchResults', () => {
     const live = host.querySelector('output.search-live');
     expect(live?.textContent).toBe('');
     act(() => root.render(<SearchResults results={[attention as unknown as ExplorableDoc]} />));
-    expect(host.querySelector('.search-count')?.textContent).toBe('1 built-in match. Open one, or paste a link.');
+    expect(host.querySelector('.search-count')?.textContent).toBe('1 match. Open it, or paste a link.');
     expect(host.querySelector('output.search-live')).toBe(live);
     expect(live?.textContent).toBe('');
     act(() => vi.advanceTimersByTime(COUNT_DELAY_MS));
-    expect(live?.textContent).toBe('1 built-in match. Open one, or paste a link.');
+    expect(live?.textContent).toBe('1 match. Open it, or paste a link.');
     act(() => root.render(<SearchResults results={null} />));
     act(() => vi.advanceTimersByTime(0));
     expect(host.querySelector('output.search-live')).toBe(live);

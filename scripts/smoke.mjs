@@ -17,15 +17,22 @@ async function check(page, route, viewportName) {
   const where = `${route} @ ${viewportName}`;
   await page.locator('main h1').first().waitFor({ timeout: 10_000 });
   if (route === '/') {
-    const cards = await page.locator('.card a').count();
-    if (cards < 3) problems.push(`${where}: expected ≥ 3 sample cards, found ${cards}`);
+    const rows = await page.locator('#essays a.essay-row').count();
+    if (rows < 3) problems.push(`${where}: expected ≥ 3 essay rows, found ${rows}`);
+    const slider = await page.locator('.hero-fig .xfig-knob[role="slider"][tabindex="0"]').count();
+    if (slider !== 1) problems.push(`${where}: the hero figure has no live keyboard slider`);
   } else if (route.startsWith('/s/')) {
     const figures = await page.locator('figure.xfig').count();
     const takeaway = await page.locator('.essay-takeaway').count();
     if (figures < 1 || takeaway !== 1) problems.push(`${where}: essay incomplete (${figures} figures, ${takeaway} takeaway)`);
   }
-  const fontsOk = await page.evaluate(() => document.fonts.ready.then(() => document.fonts.check('16px Newsreader')));
-  if (!fontsOk) problems.push(`${where}: Newsreader did not load`);
+  // Every face loads (Source Serif 4 as "Explorable Serif", Geist, Geist Mono), and the Greek/Math fallbacks
+  // that draw √, ∂, ∑, Σ and α, which the Latin subsets lack.
+  const missing = await page.evaluate(() => {
+    const faces = [['16px "Explorable Serif"', 'a'], ['italic 16px "Explorable Serif"', 'a'], ['14px Geist', 'a'], ['12px "Geist Mono"', '0'], ['16px "Explorable Math"', '√∂∑'], ['16px "Explorable Greek"', 'αΣ']];
+    return Promise.all(faces.map(([f, text]) => document.fonts.load(f, text).then((loaded) => (loaded.length ? '' : f), () => f))).then((r) => r.filter(Boolean));
+  });
+  if (missing.length) problems.push(`${where}: fonts did not load: ${missing.join(', ')}`);
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
   if (overflow > 0) problems.push(`${where}: horizontal scroll of ${overflow}px`);
 }

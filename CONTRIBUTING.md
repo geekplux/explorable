@@ -1,6 +1,6 @@
 # Contributing to explorable
 
-Thanks for helping. explorable turns the core idea of a paper or post into a short essay with live, draggable figures, and every number on a figure comes from a tested model. Contributions that keep it that way are welcome: new models and figure kinds, new samples, fixes, docs and translations. [docs/GOOD_FIRST_ISSUES.md](docs/GOOD_FIRST_ISSUES.md) lists scoped starting points.
+Thanks for helping. Explorable turns a paper or a blog post into a short read in plain words about its one big idea, with figures you can drag, and every number on a figure comes from a tested model. Contributions that keep it that way are welcome: new models and figure kinds, new samples, fixes, docs and translations. [docs/GOOD_FIRST_ISSUES.md](docs/GOOD_FIRST_ISSUES.md) lists scoped starting points.
 
 By taking part you agree to the [Code of Conduct](CODE_OF_CONDUCT.md). Report security problems privately, as [SECURITY.md](SECURITY.md) describes.
 
@@ -24,7 +24,8 @@ No account and no API key are needed. The built-in samples work offline. Locally
 | `pnpm build` | production build of the app and the Worker into `dist/`. |
 | `pnpm build:kit` | rebuilds the skill's prebuilt kit bundle in `skills/explorable/kit/dist/`. Whenever you change `skills/explorable/kit/src/`, run it, rebuild the example pages (`node skills/explorable/scripts/build.mjs <spec>` for each `skills/explorable/examples/*/explorable.json`) and commit both: CI checks they are fresh. |
 | `pnpm build:examples` | rebuilds the root gallery, `examples/<slug>.html`, from `src/samples/*.json` through the skill's builder. Run it after changing a sample or the kit, and commit the pages: CI checks they are fresh. |
-| `pnpm build:images` | recaptures the README hero (`docs/assets/hero.png`) and the social preview (`docs/assets/social-preview.png`) through the harness. |
+| `pnpm build:images` | recaptures the README hero (`docs/assets/hero.webp`, the home page's hero at 1440 wide) and the social preview (`public/social-preview.png`, served for the `og:image` tags) through the harness. |
+| `pnpm build:pdf` | renders each built-in sample to `public/pdf/<slug>.pdf` (A4, every math note open) through the harness; commit the PDFs when a sample, the kit or the print stylesheet changes. |
 | `pnpm smoke` | the harness: builds, then screenshots `/` and every sample at 1280, 800 and 390 px, checking fonts, overflow and console errors. Shots land in `test-results/smoke/`. |
 | `pnpm e2e <flow…>` | runs the browser flows in `scripts/flows/` (for example `pnpm e2e gallery keyboard`), with axe and colour-vision helpers. |
 | `pnpm check:size` | bundle size budget for the app. |
@@ -58,4 +59,4 @@ These are part of "done", not polish:
 - **Reduced motion.** Under `prefers-reduced-motion: reduce` there is no easing and no animated hint.
 - **No decorative 3D**, and nothing finance-related in samples, examples or tests.
 
-`pnpm e2e gallery keyboard reduced-motion` covers axe, keyboard paths, reduced motion and colour-vision screenshots for the app.
+`pnpm e2e gallery keyboard reduced-motion theme` covers axe, keyboard paths, reduced motion, the light/dark toggle and colour-vision screenshots for the app.

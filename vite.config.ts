@@ -2,6 +2,7 @@ import { fileURLToPath } from 'node:url';
 import { cloudflare } from '@cloudflare/vite-plugin';
 import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vitest/config';
+import { themeCss } from './scripts/theme-css.mjs';
 
 // Vitest reuses this config; it must never start workerd (D15: plain Vitest).
 const testing = Boolean(process.env.VITEST);
@@ -9,7 +10,8 @@ const testing = Boolean(process.env.VITEST);
 export default defineConfig({
   // The Cloudflare plugin runs worker/index.ts in workerd for `vite dev` and
   // `vite preview`, and builds dist/client + dist/explorable (D2).
-  plugins: [react(), ...(testing ? [] : [cloudflare()])],
+  // themeCss writes the explicit-dark copy of each system-dark CSS block (light/dark toggle, DESIGN §4).
+  plugins: [themeCss(), react(), ...(testing ? [] : [cloudflare()])],
   // Keep SVG thumbnails as files (<img src="/assets/…svg">), never data: URIs.
   build: { assetsInlineLimit: (file) => (file.endsWith('.svg') ? false : undefined) },
   resolve: {

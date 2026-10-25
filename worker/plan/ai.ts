@@ -2,6 +2,7 @@
 // JSON Mode per uncached URL. No retries: a bad plan is PLAN_INVALID, cached.
 import { ApiError } from '../errors';
 import type { Extracted } from '../extract';
+import { sourceOf } from './assemble';
 import { type PromptSource, SYSTEM_PROMPT, userMessage } from './prompt';
 import { type Plan, parsePlan, planJsonSchema } from './schema';
 
@@ -32,7 +33,7 @@ const invalid = (message: string) => new ApiError('PLAN_INVALID', message);
 export async function requestPlan(ai: AiBinding, model: string, ex: Extracted, hints: readonly string[]): Promise<Plan> {
   let out: unknown;
   try {
-    out = await ai.run(model, planRequest({ kind: ex.kind === 'arxiv' ? 'arxiv' : 'blog', title: ex.title, url: ex.url, text: ex.text }, hints));
+    out = await ai.run(model, planRequest({ kind: ex.kind === 'arxiv' ? 'arxiv' : 'blog', title: ex.title, url: ex.url, authors: sourceOf(ex).authors ?? [], text: ex.text }, hints));
   } catch (error) {
     if (/JSON Mode couldn'?t be met/i.test(String((error as Error)?.message ?? error))) {
       throw invalid('The model could not produce a plan that matches the schema.');

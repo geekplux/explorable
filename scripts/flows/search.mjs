@@ -3,7 +3,7 @@
 import { readFileSync } from 'node:fs';
 import { blocking } from '../lib/axe.mjs';
 
-const LABEL = 'Paste an arXiv or blog link, or type a topic';
+const LABEL = 'Paste a link or type a topic';
 const bloom = JSON.parse(readFileSync('src/samples/bloom-filter.json', 'utf8'));
 
 export default async function search(ctx) {
@@ -15,16 +15,16 @@ export default async function search(ctx) {
   assert.equal(await page.locator('output.search-live').count(), 1, 'count live region mounted before any typing');
 
   await input.pressSequentially('bloom');
-  assert.deepEqual(await page.locator('.search-results .mini-card a').allTextContents(), [bloom.title]);
-  assert.equal(await page.locator('.search-count').textContent(), '1 built-in match. Open one, or paste a link.');
+  assert.deepEqual(await page.locator('.search-results a.essay-row .essay-title').allTextContents(), [bloom.title]);
+  assert.equal(await page.locator('.search-count').textContent(), '1 match. Open it, or paste a link.');
   // The polite live region was mounted before typing and gets the count once typing pauses.
   assert.equal(await page.locator('output.search-live').count(), 1, 'one live region for the count');
-  await page.locator('output.search-live', { hasText: '1 built-in match. Open one, or paste a link.' }).waitFor();
+  await page.locator('output.search-live', { hasText: '1 match. Open it, or paste a link.' }).waitFor();
   assert.deepEqual(blocking(await ctx.axe()).map((v) => v.id), [], 'axe on search results');
   await shot('search-bloom');
 
   await input.fill('zzqx wibble');
-  assert.equal(await page.locator('.search-count').textContent(), 'No built-in match: paste a link instead.');
+  assert.equal(await page.locator('.search-count').textContent(), 'No match: paste a link instead.');
   await page.keyboard.press('Enter');
   assert.equal(new URL(page.url()).pathname, '/', 'Enter on words does not leave /');
 
@@ -34,19 +34,14 @@ export default async function search(ctx) {
   await page.locator('.url-message', { hasText: /http and https/ }).waitFor();
   assert.equal(await input.getAttribute('aria-invalid'), 'true');
 
-  // A Try chip fills the field with its link.
-  await input.fill('');
-  await page.locator('.try .chip').nth(1).click();
-  assert.equal(await input.inputValue(), bloom.source.url);
-
   // Keyboard only: type, Tab to the match, Enter opens it; Back restores the search.
   await input.fill('');
   await input.pressSequentially('bloom');
-  for (let i = 0; i < 4 && !(await page.evaluate(() => document.activeElement?.closest('.mini-card'))); i++) await page.keyboard.press('Tab');
+  for (let i = 0; i < 4 && !(await page.evaluate(() => document.activeElement?.closest('.search-results .essay-row'))); i++) await page.keyboard.press('Tab');
   await page.keyboard.press('Enter');
   await page.waitForURL(`${baseURL}/s/bloom-filter`);
   await page.goBack();
-  await page.locator('.search-results .mini-card').waitFor();
+  await page.locator('.search-results .essay-row').waitFor();
   assert.equal(await input.inputValue(), 'bloom');
   assert.equal(api, 0, 'search made zero /api requests');
 }

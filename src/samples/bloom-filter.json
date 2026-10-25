@@ -1,8 +1,8 @@
 {
-  "schema": 1,
+  "schema": 2,
   "id": "bloom-filter",
   "title": "How a Bloom filter says “maybe”",
-  "dek": "A Bloom filter stores a set as a handful of bits. It can say “maybe” to a word it never saw, but never “no” to one it did, and the number of hashes sets how often that “maybe” is wrong.",
+  "dek": "A Bloom filter stores a set as a handful of bits. It can say “maybe” to a word it never saw, but never “no” to one it did.",
   "source": {
     "kind": "blog",
     "url": "https://llimllib.github.io/bloomfilter-tutorial/",
@@ -20,7 +20,7 @@
       "id": "a-set-made-of-bits",
       "heading": "A set made of bits",
       "paragraphs": [
-        "Suppose you want to remember which words you have seen without storing the words. A Bloom filter starts with m bits, all 0. To add a word, you hash it k different ways, each hash picking one of the m bits, and set those k bits to 1. That is the whole write path: no words are kept, only bits.",
+        "Suppose you want to remember which words you have seen without storing the words. A Bloom filter starts with a row of m bits, all 0. To add a word, you run it through k hashes. A hash is a fixed recipe that turns a word into a position in the row, the same position every time for the same word. Each of the k hashes picks one of the m bits, and you set those bits to 1. That is all adding does: the words are not kept, only bits.",
         "To ask whether a word is in the set, you hash it the same k ways and look at its bits. If any of them is 0, the word was never added: *definitely not*. If all of them are 1, the word was probably added, but you cannot be sure, because other words may have set those bits. The filter's honest answer is *maybe*."
       ]
     },
@@ -29,7 +29,7 @@
       "heading": "Watch it fill up",
       "paragraphs": [
         "The figure has 32 bits and a list of twelve animal names. Drag n to add the first n animals, and change k, the number of hashes per word. Then pick a word to ask about. Arrows run from the word to its k bits.",
-        "Start with “cat”, which is in the set: all three of its bits are lit, and they always will be. Now ask about “plum”. One of its bits is 0, and that single 0 is proof. Then ask about “cherry”. You never added it, yet all three of its bits are 1: a false positive. At k = 3, “cherry” happens to land on exactly the same three bits as “fox”."
+        "Start with “cat”, which is in the set: all three of its bits are lit, and they always will be. Now ask about “plum”. One of its bits is 0, and that single 0 is proof. Then ask about “cherry”. You never added it, yet all three of its bits are 1: a false positive, a “maybe” that is wrong. At k = 3, “cherry” happens to land on exactly the same three bits as “fox”."
       ],
       "figure": {
         "id": "fig-bits",
@@ -73,22 +73,23 @@
       "id": "predicting-false-positives",
       "heading": "Predicting the false positives",
       "paragraphs": [
-        "You can predict how often “maybe” is wrong. Each of the k·n hashes misses a given bit with probability 1 − 1/m, so after n words a bit is still 0 with probability `(1 − 1/m)^(kn) ≈ e^(−kn/m)`. A word you never added is a false positive when all k of its bits are 1, which gives `FPR ≈ (1 − e^(−kn/m))^k`. For m = 32, n = 8 and k = 3 that is `(1 − e^(−0.75))³ ≈ 14.7%`.",
-        "The figure also measures. It asks about 50 fruits and vegetables it never added and counts how many come back maybe. At the defaults that is 10 of 50, or 20%, a little above the prediction. The formula describes an average filter. This one happens to have 20 of its 32 bits set rather than the expected 17, and `(20/32)³ ≈ 24%`. A filter this small is noisy; with more bits, the measured rate settles onto the formula."
+        "You can predict how often “maybe” is wrong. A bit stays 0 only if every one of the k·n hashes so far has missed it. Each hash misses a given bit easily, but there are many of them, so the chance that a bit is still 0 shrinks steadily as words go in.[[zero]]",
+        "A word you never added is a false positive when all k of its bits happen to be 1. So the chance of a false positive is the chance that one bit is 1, multiplied by itself k times.[[fpr]] For m = 32, n = 8 and k = 3 that comes to about 14.7%.",
+        "The figure also measures. It asks about 50 fruits and vegetables it never added and counts how many come back maybe. At the defaults that is 10 of 50, or 20%, a little above the prediction. The prediction describes an average filter. This one happens to have 20 of its 32 bits set rather than the expected 17, and with 20 of 32 bits set, all three of a word’s bits are 1 about 24% of the time.[[luck]] A filter this small is noisy; with more bits, the measured rate settles onto the prediction."
       ]
     },
     {
       "id": "choosing-k",
       "heading": "Choosing k",
       "paragraphs": [
-        "More hashes cut both ways. Each extra hash is one more bit a stranger has to match, which helps, but it also fills the bits faster, which hurts. In the first figure at n = 8, the predicted rate is 22% at k = 1, 14.7% at k = 3 and 22% again at k = 6. Somewhere in between is a best k.",
-        "Setting the derivative to zero gives `k = (m/n)·ln 2`, the point where about half the bits are set. There the false-positive rate is `(1/2)^k ≈ 0.6185^(m/n)`. The curve below plots the rate against n for your m and k. The marker shows the n at which your k is the best choice, and the dotted curve is the best any k could do. Drag along the curve and watch it touch the dotted line at the marker."
+        "More hashes cut both ways. Each extra hash is one more bit a word you never added has to match, which helps, but it also fills the bits faster, which hurts. In the first figure at n = 8, the predicted rate is 22% at k = 1, 14.7% at k = 3 and 22% again at k = 6. Somewhere in between is a best k.",
+        "The best k is about 0.69 times the number of bits per word, m divided by n. That is the point where about half the bits are set, and there each extra bit per word cuts the false-positive rate to about 62% of what it was.[[best-k]] Drag along the curve and watch it touch the dotted curve at the marker."
       ],
       "figure": {
         "id": "fig-fpr-curve",
         "kind": "curve",
         "title": "False positives as the filter fills",
-        "caption": "The curve is (1 − e^(−kn/m))^k for your m and k. The dotted line is the best any number of hashes could do; the marker shows where your k is the best choice.",
+        "caption": "The curve is the predicted rate of false positives for your m and k as n grows. The dotted curve is the best any number of hashes could do; the marker shows where your k is the best choice.",
         "alt": "Line chart of the false-positive rate against the number of items inserted, for 32 bits and 3 hashes: the rate rises from near 0 at 1 item to 14.7% at 8 items and 86% at 32 items. A dotted curve shows the best possible rate, which the line touches at about 7.4 items, where 3 hashes is optimal.",
         "model": {
           "id": "expr-curve",
@@ -156,5 +157,31 @@
       }
     }
   ],
-  "takeaway": "A Bloom filter never says no to a word it holds, because bits only turn on. Its one error is a false “maybe”, at a rate near (1 − e^(−kn/m))^k, which is lowest when k ≈ (m/n)·ln 2 and half the bits are set."
+  "takeaway": "A Bloom filter never says no to a word it holds, because bits only turn on. Its one error is a false “maybe”, and how often it happens follows from the number of bits, words and hashes. It is rarest when about half the bits are set.",
+  "notes": [
+    {
+      "id": "zero",
+      "kind": "math",
+      "formula": "(1 − 1/m)^(kn) ≈ e^(−kn/m)",
+      "plain": "Each of the *k*·*n* hashes misses a given bit with chance 1 − 1/*m*, so this is the chance that a bit is still 0 after *n* words."
+    },
+    {
+      "id": "fpr",
+      "kind": "math",
+      "formula": "FPR ≈ (1 − e^(−kn/m))^k",
+      "plain": "The false-positive rate is the chance that one bit is 1, raised to the power *k*: all *k* of the word’s bits must be 1 at once."
+    },
+    {
+      "id": "luck",
+      "kind": "math",
+      "formula": "(20/32)³ ≈ 24%",
+      "plain": "Each of the three bits lands on a set bit with chance 20/32, so all three do with that chance cubed."
+    },
+    {
+      "id": "best-k",
+      "kind": "math",
+      "formula": "k = (m/n)·ln 2; then FPR = (1/2)^k ≈ 0.6185^(m/n)",
+      "plain": "Setting the slope of the rate to zero gives this *k*. Half the bits are then set, so each of a word’s *k* bits is 1 half the time."
+    }
+  ]
 }

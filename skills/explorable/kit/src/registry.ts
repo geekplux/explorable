@@ -11,7 +11,7 @@ export type { FigureKind };
 /** One numeric input of a model, with its range and how it is controlled. */
 export interface ParamDef {
   label: string;
-  /** The label in words for assistive tech ("key width d k"), when `label` has symbols. Default `label`. */
+  /** The label in words for assistive tech ("key width d sub k"), when `label` has symbols. Default `label`. */
   spoken?: string;
   /** Short display name for the track label and the slider readout ("d_k"). Default: the param id. */
   symbol?: string;

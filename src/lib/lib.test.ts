@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { STAGES, ndjsonLines, readExplain, stageAt, stageIndex } from './explain.ts';
 import { classifyInput } from './input.ts';
+import { pdfAction, printLink } from './print.ts';
 import { searchSamples } from './search.ts';
 import attention from '../samples/attention.json';
 
@@ -71,5 +72,22 @@ describe('ndjsonLines', () => {
     const out: string[] = [];
     for await (const line of ndjsonLines(body)) out.push(line);
     expect(out).toEqual(['{"type":"stage","stage":"fetching"}', '{"a":"√d"}', '{"type":"result"}']);
+  });
+});
+
+describe('print', () => {
+  it('downloads a sample PDF and prints anything else, naming what happens', () => {
+    expect(pdfAction('attention')).toEqual({ kind: 'download', href: '/pdf/attention.pdf', label: 'Download PDF' });
+    expect(pdfAction(undefined)).toEqual({ kind: 'print', label: 'Print or save as PDF' });
+  });
+
+  it('points a printed page back to its interactive version on the public host', () => {
+    expect(printLink('attention', '/s/attention', '')).toBe('explorable.geekplux.com/s/attention');
+    expect(printLink(undefined, '/x', '?url=https%3A%2F%2Fexample.com%2Fa%3Fb%3D1')).toBe('explorable.geekplux.com/x?url=https://example.com/a?b=1');
+    expect(printLink(undefined, '/x', '?url=%E0%A4%A')).toBe('explorable.geekplux.com/x?url=%E0%A4%A');
+    // Decoding would change what the link means: keep it encoded.
+    expect(printLink(undefined, '/x', '?url=https%3A%2F%2Fa.org%2F%3Fx%3D1%26y%3D2')).toBe('explorable.geekplux.com/x?url=https%3A%2F%2Fa.org%2F%3Fx%3D1%26y%3D2');
+    expect(printLink(undefined, '/x', '?url=https%3A%2F%2Fa.org%2Fp%23s')).toBe('explorable.geekplux.com/x?url=https%3A%2F%2Fa.org%2Fp%23s');
+    expect(printLink(undefined, '/x', '?url=https%3A%2F%2Fa.org%2Fa%20b')).toBe('explorable.geekplux.com/x?url=https%3A%2F%2Fa.org%2Fa%20b');
   });
 });

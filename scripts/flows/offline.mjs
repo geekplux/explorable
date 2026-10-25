@@ -29,9 +29,10 @@ export default async function offline({ page, baseURL, assert, shot }) {
   try {
     await page.reload({ waitUntil: 'load' });
     await page.locator('main h1').first().waitFor();
-    assert.ok((await page.locator('.card').count()) >= 3, 'offline /: the sample cards render');
+    assert.ok((await page.locator('#essays a.essay-row').count()) >= 3, 'offline /: the essay rows render');
+    assert.equal(await page.locator('.hero-fig .xfig-knob[role="slider"]').count(), 1, 'offline /: the hero figure is live');
     assert.equal((await page.locator('.offline-banner').textContent())?.trim(), OFFLINE);
-    assert.ok(await page.evaluate(() => document.fonts.ready.then(() => document.fonts.check('16px Newsreader'))), 'offline /: fonts come from the cache');
+    assert.ok(await page.evaluate(() => document.fonts.ready.then(() => document.fonts.check('16px "Explorable Serif"'))), 'offline /: fonts come from the cache');
     await shot('offline-reload-home');
 
     await page.goto(`${baseURL}/s/diffusion`, { waitUntil: 'load' });
