@@ -147,4 +147,4 @@ Until a figure kind exists, its shell shows the "FIG. n" kicker, the title, the 
 
 ## 10. Content guards
 
-All three essays and every word list were checked against the finance guard terms and contain none. The Bloom word lists are animals, fruits, vegetables and herbs only. Sean's employer is not mentioned. Sources are cited with title, authors and link. Direct quotes are avoided; the attention essay paraphrases the paper's √d_k argument and attributes it.
+All three essays and every word list were checked against the finance guard terms and contain none. The Bloom word lists are animals, fruits, vegetables and herbs only. Sources are cited with title, authors and link. Direct quotes are avoided; the attention essay paraphrases the paper's √d_k argument and attributes it.
