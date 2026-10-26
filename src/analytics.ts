@@ -11,7 +11,7 @@
 
 export const ANALYTICS_HOST = 'explorable.geekplux.com';
 /** The GA4 web stream for {@link ANALYTICS_HOST}; empty keeps analytics off. */
-export const MEASUREMENT_ID = '';
+export const MEASUREMENT_ID = 'G-D23M4JD1C9';
 const PAGE_TITLE = 'Explorable';
 
 type Where = Pick<Location, 'hostname' | 'origin' | 'pathname'>;
