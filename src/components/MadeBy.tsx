@@ -1,5 +1,5 @@
 const SITES = [
-  ['Vert', 'vert.geekplux.org', 'Turn a GPX track into a terrain poster'],
+  ['Vert', 'vert.geekplux.com', 'Turn a GPX track into a terrain poster'],
   ['Reasontrail', 'reasontrail.geekplux.com', 'See how your coding agent got there'],
   ['Pagelapse', 'pagelapse.geekplux.com', 'Watch a web page change over the years'],
   ['markvis', 'github.com/geekplux/markvis', 'Charts written in Markdown'],
