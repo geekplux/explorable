@@ -4,6 +4,9 @@
   "private": true,
   "description": "Hard ideas, made clear with figures you can drag: a paper or a blog post as a short read in plain words.",
   "license": "MIT",
+  "homepage": "https://explorable.geekplux.com",
+  "repository": { "type": "git", "url": "git+https://github.com/geekplux/explorable.git" },
+  "bugs": { "url": "https://github.com/geekplux/explorable/issues" },
   "type": "module",
   "packageManager": "pnpm@9.15.9",
   "engines": {
