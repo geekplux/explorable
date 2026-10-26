@@ -31,7 +31,7 @@ describe('header and footer', () => {
     act(() => root.render(<Footer />));
     expect([...host.querySelectorAll('.made-by a')].map((a) => a.getAttribute('href'))).toEqual([
       'https://geekplux.com',
-      'https://vert.geekplux.org',
+      'https://vert.geekplux.com',
       'https://reasontrail.geekplux.com',
       'https://pagelapse.geekplux.com',
       'https://github.com/geekplux/markvis',
