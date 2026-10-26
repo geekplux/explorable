@@ -201,13 +201,22 @@ describe('contributor docs', () => {
     expect(webp.length).toBeLessThan(200 * 1024);
   });
 
-  it('the social preview is a 1280 × 640 PNG that the og:image tag names', () => {
+  it('the social preview (for the repository setting) is a 1280 × 640 PNG', () => {
     const png = readFileSync('public/social-preview.png');
     expect(png.subarray(1, 4).toString()).toBe('PNG');
     expect(png.length).toBeLessThan(1024 * 1024);
     expect([png.readUInt32BE(16), png.readUInt32BE(20)]).toEqual([1280, 640]);
+  });
+
+  it('the link-preview card is a JPEG og:image with the same card moving as og:video', () => {
+    const jpg = readFileSync('public/og.jpg');
+    expect(jpg.readUInt16BE(0)).toBe(0xffd8);
+    expect(jpg.length).toBeLessThan(300 * 1024);
+    expect(readFileSync('public/og.mp4').length).toBeLessThan(1024 * 1024);
     const html = readFileSync('index.html', 'utf8');
-    expect(html).toContain('<meta property="og:image" content="https://explorable.geekplux.com/social-preview.png" />');
+    expect(html).toContain('<meta property="og:image" content="https://explorable.geekplux.com/og.jpg" />');
+    expect(html).toContain('<meta property="og:video" content="https://explorable.geekplux.com/og.mp4" />');
+    expect(html).toContain('<meta property="og:video:type" content="video/mp4" />');
     expect(html).toContain('<meta name="twitter:card" content="summary_large_image" />');
   });
 
