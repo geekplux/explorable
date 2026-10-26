@@ -6,7 +6,7 @@
 
 ### Show HN (DRAFT — do not post)
 
-**Title:** Show HN: Explorable – turn a paper's core idea into an essay with figures you can drag
+**Title** (75 characters): Show HN: Explorable – paste a paper, get an essay with figures you can drag
 
 **Post:**
 
