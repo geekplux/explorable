@@ -6,7 +6,7 @@ import { readFileSync, readdirSync } from 'node:fs';
 export const pageOptions = { allowApi: true };
 
 export const CSP =
-  "default-src 'self'; img-src 'self' data:; font-src 'self'; style-src 'self'; script-src 'self'; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'";
+  "default-src 'self'; img-src 'self' data: https://*.google-analytics.com https://*.googletagmanager.com; font-src 'self'; style-src 'self'; script-src 'self' https://*.googletagmanager.com; connect-src 'self' https://*.google-analytics.com https://*.analytics.google.com https://*.googletagmanager.com; frame-ancestors 'none'; base-uri 'none'";
 const SAMPLES = readdirSync('src/samples').filter((f) => f.endsWith('.json')).map((f) => f.replace(/\.json$/, ''));
 const doc = { ...JSON.parse(readFileSync('src/samples/attention.json', 'utf8')), provenance: { mode: 'ai', model: '@cf/meta/llama-3.3-70b-instruct-fp8-fast', generatedAt: '2026-10-21T00:00:00.000Z' } };
 const ROUTES = ['/', ...SAMPLES.map((id) => `/s/${id}`), `/x?url=${encodeURIComponent('https://arxiv.org/abs/1706.03762')}`];

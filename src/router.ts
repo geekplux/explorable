@@ -1,5 +1,6 @@
 import { useSyncExternalStore } from 'react';
 import { flushSync } from 'react-dom';
+import { trackPageView } from './analytics.ts';
 
 export type Route =
   | { name: 'gallery' }
@@ -36,6 +37,7 @@ function subscribe(listener: () => void): () => void {
 export function navigate(to: string, shared?: HTMLElement | null): void {
   const go = () => {
     window.history.pushState(null, '', to);
+    trackPageView();
     window.scrollTo(0, 0);
     flushSync(() => listeners.forEach((listener) => listener()));
     // "/#essays" from another page: scroll to the section once the new page has rendered.

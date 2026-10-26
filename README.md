@@ -89,6 +89,12 @@ Accessibility is part of done here, not polish:
 
 The browser harness runs axe and these checks on every page. Found a gap? Please [open an issue](https://github.com/geekplux/explorable/issues/new/choose).
 
+## Privacy
+
+- The live site counts page views with Google Analytics: which page was opened (the gallery, an essay, or the page for a pasted link), never the link you paste or the title of what it explains. No events, no Google signals, no ad personalisation; Google Analytics sets its own `_ga` cookies. The code is [src/analytics.ts](src/analytics.ts).
+- A link you paste goes to the Explorable Worker, which fetches it and asks the model about it once; the explainer is cached by link for 30 days.
+- A self-hosted copy loads no analytics: it only starts on explorable.geekplux.com.
+
 ## Self-hosting
 
 Explorable is one Cloudflare Worker with static assets and a KV cache.

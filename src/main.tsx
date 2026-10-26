@@ -1,6 +1,7 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { App } from './App.tsx';
+import { startAnalytics } from './analytics.ts';
 import { interceptLinks } from './router.ts';
 import '@kit/styles/tokens.css';
 import './styles/fonts.css';
@@ -9,6 +10,7 @@ import '@kit/styles/kit.css';
 import './styles/app.css';
 
 document.addEventListener('click', interceptLinks);
+startAnalytics();
 
 // Production builds only: dist/client/sw.js comes from scripts/gen-sw.mjs and
 // makes the app and samples reload offline (O2). Registered after load so it
