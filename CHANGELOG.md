@@ -4,6 +4,10 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+### Added: page-view counts on the live site
+
+- explorable.geekplux.com counts page views with Google Analytics: the route only (`/`, `/s/<essay>`, `/x`), never a pasted link or the title of what it explains. Self-hosted copies load no analytics.
+
 ### Added: a daily cap on live AI
 
 - Live explains are capped site-wide each day (`DAILY_AI_CAP`, 100 model calls per UTC day). Past the cap, a link that matches a built-in explainer opens in match mode (not cached), any other link gets a new `AI_BUDGET` error page, and the samples keep working. PR Previews never call the model. The footer says so.
