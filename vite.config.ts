@@ -24,7 +24,7 @@ export default defineConfig({
       'worker/**/*.test.ts',
       'scripts/**/*.test.ts',
     ],
-    // Shared, RAM-tight machine: few forked workers. DOM tests opt in per file
+    // Few forked workers keep memory use low. DOM tests opt in per file
     // with `// @vitest-environment happy-dom`.
     pool: 'forks',
     maxWorkers: 2,
