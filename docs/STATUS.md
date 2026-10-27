@@ -51,7 +51,6 @@ Redesign follow-ups:
 
 ## Open items
 
-- Move `ci/github-workflow.yml` to `.github/workflows/` (needs a token with `workflow` scope).
 - Create issue labels `figure` and `sample` on GitHub (the issue forms apply them; `bug` exists by default).
 - Review docs/LAUNCH.md drafts; nothing has been posted.
 
