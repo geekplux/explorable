@@ -1,6 +1,6 @@
 /**
- * The model registry: every number a figure shows comes from a `ModelDef`
- * (docs/PLAN.md §5.2). Models are pure and deterministic (seeded RNG only).
+ * The model registry: every number a figure shows comes from a `ModelDef`.
+ * Models are pure and deterministic (seeded RNG only).
  */
 import type { FigureKind } from './doc/schema.ts';
 import { format, isFormat, type Format } from './format.ts';

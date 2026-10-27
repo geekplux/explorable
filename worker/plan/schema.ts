@@ -1,4 +1,4 @@
-// The Plan: what the one Workers AI call returns (docs/design/prompt.md, D7).
+// The Plan: what the one Workers AI call returns (docs/design/prompt.md).
 // Flat on purpose: a 70B model follows a shallow schema far more reliably.
 // `notes` are math notes only: the source note is built from the article's metadata (plain.ts).
 // One valibot schema gives both the validator and the JSON Schema for JSON Mode.

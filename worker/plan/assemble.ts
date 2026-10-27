@@ -1,4 +1,4 @@
-// Plan → ExplorableDoc v2 (docs/PLAN.md §5.3 step 6). Deterministic and strict:
+// Plan → ExplorableDoc v2. Deterministic and strict:
 // params are clamped to their ranges, expressions are validated by the kit,
 // a figure that fails is dropped, the text goes through the plain-words
 // post-process (plain.ts), and the result must pass `parseDoc`.

@@ -4,12 +4,12 @@ import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vitest/config';
 import { themeCss } from './scripts/theme-css.mjs';
 
-// Vitest reuses this config; it must never start workerd (D15: plain Vitest).
+// Vitest reuses this config; it must never start workerd (Worker tests use plain Vitest with fakes).
 const testing = Boolean(process.env.VITEST);
 
 export default defineConfig({
   // The Cloudflare plugin runs worker/index.ts in workerd for `vite dev` and
-  // `vite preview`, and builds dist/client + dist/explorable (D2).
+  // `vite preview`, and builds dist/client + dist/explorable.
   // themeCss writes the explicit-dark copy of each system-dark CSS block (light/dark toggle, DESIGN §4).
   plugins: [themeCss(), react(), ...(testing ? [] : [cloudflare()])],
   // Keep SVG thumbnails as files (<img src="/assets/…svg">), never data: URIs.
@@ -24,7 +24,7 @@ export default defineConfig({
       'worker/**/*.test.ts',
       'scripts/**/*.test.ts',
     ],
-    // Shared, RAM-tight machine: few forked workers. DOM tests opt in per file
+    // Few forked workers keep memory use low. DOM tests opt in per file
     // with `// @vitest-environment happy-dom`.
     pool: 'forks',
     maxWorkers: 2,

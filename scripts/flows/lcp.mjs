@@ -1,4 +1,4 @@
-// P2: LCP on / and /s/attention with 4× CPU throttling (CDP) is ≤ 1500 ms on the
+// LCP on / and /s/attention with 4× CPU throttling (CDP) is ≤ 1500 ms on the
 // local preview. The harness routes every request, which disables the HTTP
 // cache, so each navigation is a cold load.
 const BUDGET_MS = 1500;

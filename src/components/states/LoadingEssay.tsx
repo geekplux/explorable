@@ -22,7 +22,7 @@ function useElapsed(): number {
 
 /**
  * The steps of a new link with the current one marked, what to expect, and
- * Cancel (PLAN §4.6), in the essay column; no skeleton (DESIGN, Motion). Only the current step (and, once, a
+ * Cancel, in the essay column; no skeleton (DESIGN, Motion). Only the current step (and, once, a
  * "longer than usual" note) is announced, politely; the seconds counter is silent.
  */
 export function LoadingEssay({ url, stage, onCancel }: { url: string; stage: number; onCancel: () => void }) {

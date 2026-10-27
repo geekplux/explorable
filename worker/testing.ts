@@ -1,4 +1,4 @@
-// Test doubles for the Worker (D15: plain Vitest, no workerd): a Map-backed KV
+// Test doubles for the Worker (plain Vitest, no workerd): a Map-backed KV
 // that records TTLs, a fake Workers AI that replays a recorded fixture, and a
 // fake fetch that serves fixtures by URL.
 import { vi } from 'vitest';

@@ -70,7 +70,7 @@ export const PALETTE: Readonly<Record<Token, string>> = resolve('light');
 export const PALETTE_DARK: Readonly<Record<Token, string>> = resolve('dark');
 export const PALETTES: Readonly<Record<Scheme, Readonly<Record<Token, string>>>> = { light: PALETTE, dark: PALETTE_DARK };
 
-/** Hue-coded series: indigo (data), ink, orange (the handle). At most 3: see D22. */
+/** Hue-coded series: indigo (data), ink, orange (the handle). At most 3: every fourth hue tried failed the CVD checks, so further series use line style and labels. */
 export const SERIES: readonly string[] = [PALETTE['series-1'], PALETTE['series-2'], PALETTE.live];
 export const SERIES_DARK: readonly string[] = [PALETTE_DARK['series-1'], PALETTE_DARK['series-2'], PALETTE_DARK.live];
 

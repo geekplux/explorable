@@ -9,7 +9,7 @@ import { samples } from '../samples/index.ts';
 const words = (s: string): string[] => s.toLowerCase().match(/[a-z0-9]+/g) ?? [];
 
 /**
- * Local search over the built-in samples (D11: no network, no model). Words in
+ * Local search over the built-in samples (no network, no model). Words in
  * a sample's title, dek or source score directly; registry keyword hits score
  * for every sample whose figures use that model. Best first; empty if none.
  */

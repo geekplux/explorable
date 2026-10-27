@@ -1,6 +1,6 @@
 # Sample `diffusion`: Noise, one step at a time
 
-Shared rules (formats, keyboard, encodings, motion, RNG, invented fields) are in [samples.md](samples.md). This file has the essay, both figure specs, the reference values and the JSON skeleton for `src/samples/diffusion.json`.
+Shared rules (formats, keyboard, encodings, motion, RNG, optional fields) are in [samples.md](samples.md). This file has the essay, both figure specs, the reference values and the JSON skeleton that became `src/samples/diffusion.json`. Visual details (colours, markers, the knob's look, readout punctuation, motion) follow [DESIGN.md](../redesign/DESIGN.md) and the kit where they differ from this file.
 
 - **Title:** Noise, one step at a time
 - **Dek:** A diffusion model's forward process blurs data into pure Gaussian noise over 1,000 small steps, and a closed form jumps straight to any step: x_t = √ᾱ_t·x₀ + √(1−ᾱ_t)·ε.
@@ -19,7 +19,7 @@ Shared rules (formats, keyboard, encodings, motion, RNG, invented fields) are in
 
 Progressive disclosure: sections 1 and 2 build the one-step rule in words. Fig 1 shows its effect on real samples. Fig 2 pulls out the two numbers that drive Fig 1 and plots them over the whole schedule.
 
-The full prose is in the JSON skeleton at the end.
+The JSON skeleton at the end holds the first draft of the prose; the shipped text is in `src/samples/diffusion.json`.
 
 ---
 
@@ -57,7 +57,7 @@ Outputs and formats:
 
 | Output | Label | Format | Unit |
 |---|---|---|---|
-| `alphaBar` | ᾱ_t | `sig3` (invented, samples.md §4) | – |
+| `alphaBar` | ᾱ_t | `sig3` (samples.md §4) | – |
 | `signal` | signal √ᾱ_t | fixed3 | – |
 | `noise` | noise √(1−ᾱ_t) | fixed3 | – |
 | `snrDb` | SNR | fixed1 (non-finite → ∞) | dB |
@@ -68,27 +68,27 @@ Outputs and formats:
 
 **Honesty note on paths (also in the caption).** Each sample keeps one fixed ε across all t, so scrubbing moves each sample smoothly along the straight line from x₀ toward ε. The histogram at every t is exactly the forward-process marginal q(x_t | x₀) = N(√ᾱ_t·x₀, 1 − ᾱ_t), because DDPM's closed form says so. The path a single sample takes between two values of t is *not* the path the step-by-step chain would take, since the real chain adds fresh noise at every step. The figure shows correct snapshots, not correct trajectories.
 
-**Performance.** One compute at t = 500 bins 2,000 samples in about 0.11 ms in Node on this machine, far under the 8 ms budget (P3). The ε table is never resampled while scrubbing (P6 risk note).
+**Performance.** One compute at t = 500 bins 2,000 samples in about 0.11 ms in Node, far under the 8 ms budget the model tests enforce. The ε table is never resampled while scrubbing.
 
-**Font note.** ᾱ (U+1FB1), √, ₀ and the Greek letters are probably not in the Latin subsets of Fraunces and Newsreader. Formulas sit in `` `code` `` and readouts in the system monospace, which has these glyphs. Headings and prose fall back per glyph to the serif stack. Phase 2 should either add these code points to the Newsreader subset or confirm the fallback looks right in a screenshot. Screen-reader strings spell them out ("alpha-bar", "square root of").
+**Font note.** ᾱ (U+1FB1), ₀ and the Greek letters come from the self-hosted "Explorable Greek" face, and math signs such as √ from the serif or the "Explorable Math" face (`src/styles/fonts.css`); a page fetches each face only when it uses one of its glyphs. Screen-reader strings spell them out ("alpha-bar", "square root of").
 
 ---
 
-## Fig 1: `fig-histogram` (kind `histogram`, Phase 6)
+## Fig 1: `fig-histogram` (kind `histogram`)
 
 **Idea.** Repeated shrink-and-add-noise steps erase any data distribution into N(0, 1), and the closed form shows the state at any step directly.
 
 **Controls.** `t`. A scrubber track under the histogram, 0 to 1000, with the ring knob and labelled ticks at 0, 250, 500, 750 and 1000 (`options.ticks`). It also has a native range with `<output>` showing "t = 0". Keyboard: Arrow ± 1, PageUp/PageDown ± 50, Home 0, End 1000. `aria-valuetext`: "step t 260 of 1000".
 
 **Drawing.**
-- **Data bars:** 60 histogram bars in cobalt with a 1 px ink outline (P6 AC 3).
+- **Data bars:** 60 histogram bars in cobalt with a 1 px ink outline.
 - **Axes:** the x axis runs from −4 to 4 with ticks at every integer. The y axis is "density", **fixed** from 0 to 1.0 with gridlines at 0.25 steps. It is never autoscaled; the peak at t = 0 is 0.82 and the N(0, 1) peak is 0.40.
 - **Reference:** the N(0, 1) density as a dotted ink curve, directly labelled "N(0, 1)" just right of its peak. It is always visible, so the reader sees the target from the start.
 - **Ghost** (`options.ghost = true`): the t = 0 histogram as a dashed `--ink-3` step outline, labelled "data (t = 0)" at the +1.5 clump. It is hidden at t = 0, where it would coincide with the bars.
 - **±2σ guides:** two short ink-2 hairlines at x = −2 and x = +2 above the axis, labelled "−2σ" and "+2σ" with "(of N(0, 1))" in the axis caption. They carry no fill and no colour meaning.
-- **Chip:** a chip at the top left reads `t = 260 · ᾱ_t = 0.498`. It repeats the controlled state next to the drawing, in ink on `--note-wash`.
+- **Chip:** a chip at the top left reads `t = 260, ᾱ_t = 0.498`. It repeats the controlled state next to the drawing, in ink on `--note-wash`.
 
-**Readouts.** `["signal", "noise", "sd"]` → at t = 0: `signal √ᾱ_t 1.000 · noise √(1−ᾱ_t) 0.000 · spread (SD) 1.77`.
+**Readouts.** `["signal", "noise", "sd"]` → at t = 0: `signal √ᾱ_t 1.000 noise √(1−ᾱ_t) 0.000 spread (SD) 1.77`.
 
 **Live description.** `Step t = {t}: {round(signal·100)}% of the original signal and noise of {noise fixed2}; the samples spread with SD {sd fixed2}, and pure noise would be 1.00.` Speak it as "alpha-bar" where ᾱ appears.
 
@@ -106,7 +106,7 @@ Outputs and formats:
 
 **Caption.** "2,000 samples (seed 2020) pushed through DDPM's linear schedule, β from 0.0001 to 0.02 over 1,000 steps. Each histogram is the exact distribution at that step; each sample keeps one fixed noise draw, so its path between steps is illustrative."
 
-**Reduced motion.** The bars jump to the new t; no morph easing (P6 AC 4). Otherwise bar heights follow with the 90 ms exponential follow on keyboard steps, and 1:1 while dragging.
+**Reduced motion.** The bars jump to the new t; no morph easing. Otherwise bar heights follow with the 90 ms exponential follow on keyboard steps, and 1:1 while dragging.
 
 ### Fixtures (`diffusion-forward`, schedule)
 
@@ -130,7 +130,7 @@ Outputs and formats:
 | 900 | 0.00027521 | 0.0166 | 0.9999 | −35.60 | 1.0003 |
 | 1000 | 4.0358e-5 | 0.0064 | 1.0000 | −43.94 | 1.0000 |
 
-- P6 AC 1: ᾱ₁ = 1 − 1e-4 = 0.9999 exactly (to 1e-12), and ᾱ₁₀₀₀ = 4.0358e-5 (the plan's 4.0e-5 ± 10 % holds).
+- ᾱ₁ = 1 − 1e-4 = 0.9999 exactly (to 1e-12), and ᾱ₁₀₀₀ = 4.0358e-5 (within 10 % of 4.0e-5).
 - `crossT = 260`. The first t with signal < 0.1 is 674, and the first with signal < 0.05 is 770.
 - Mixture moments: mean −0.25, variance 0.0625 + (4 + 2.25)/2 − 0.0625 = 3.125, SD 1.7678.
 - Tolerances: 1e-6 relative on ᾱ_t, 1e-4 on everything else.
@@ -150,27 +150,27 @@ Stream check: `x0[0..3] = −2.325990 −2.465774 −2.224807 −1.984393`, `x0[
 | 750 | −0.0264 | 1.0149 | 0.075 | 0.128 | 0.360 | 0.409 | 0.059 |
 | 1000 | −0.0133 | 1.0111 | 0.105 | 0.150 | 0.390 | 0.401 | 0.084 |
 
-These map onto P6 AC 1:
+What the fixtures show:
 - t = 1000: |mean| = 0.013 < 0.1 and SD 1.011, within 1 ± 0.05.
 - t = 0 is bimodal: bins 15 and 41 are both above 0.5 and bin 28 (between them) is 0.
 
 The raw counts are 196, 218 and 0 at t = 0 and 28, 40 and 104 at t = 1000. Snapshot `hist` at t = 0 and 1000.
 
-### Acceptance criteria for the implementer (Fig 1, in addition to P6)
+### Checks (Fig 1)
 
 1. The y axis stays at 0 to 1.0 for every t (a DOM test at t = 0 and t = 1000).
-2. At t = 0 the readout reads exactly `signal √ᾱ_t 1.000 · noise √(1−ᾱ_t) 0.000 · spread (SD) 1.77`, and at t = 1000 `signal √ᾱ_t 0.006 · noise √(1−ᾱ_t) 1.000 · spread (SD) 1.01`.
+2. At t = 0 the readout reads exactly `signal √ᾱ_t 1.000 noise √(1−ᾱ_t) 0.000 spread (SD) 1.77`, and at t = 1000 `signal √ᾱ_t 0.006 noise √(1−ᾱ_t) 1.000 spread (SD) 1.01`.
 3. PageUp from t = 0 goes to 50, and End goes to 1000.
 4. The "N(0, 1)" label and the "data (t = 0)" label are text elements in the SVG (not only in the legend).
 5. Scrubbing never reallocates the sample arrays (a test spies on the RNG: zero draws after the first compute for a seed).
 
 ---
 
-## Fig 2: `fig-signal-noise` (kind `curve`, model `diffusion-forward`, Phase 7)
+## Fig 2: `fig-signal-noise` (kind `curve`, model `diffusion-forward`)
 
 **Idea.** The schedule's shape: the remaining signal √ᾱ_t falls slowly, then fast, then barely, mirrored by the noise √(1 − ᾱ_t), and the two cross at t ≈ 260, where SNR = 1.
 
-**Model.** The same `diffusion-forward` registry model, not `expr-curve` (P7 AC 5). ᾱ_t is a cumulative product with no closed form in the whitelisted expression language, so the registry provides the precomputed series `signalSeries` and `noiseSeries`. The curve kind draws `number[]` outputs named in `options.series`, with the series index as x, and the param named in `options.xParam` as the knob.
+**Model.** The same `diffusion-forward` registry model, not `expr-curve`. ᾱ_t is a cumulative product with no closed form in the whitelisted expression language, so the registry provides the precomputed series `signalSeries` and `noiseSeries`. The curve kind draws `number[]` outputs named in `options.series`, with the series index as x, and the param named in `options.xParam` as the knob.
 
 **Controls.** `t`: a ring knob that rides on the signal curve and drags horizontally, plus a native range. Keyboard as in Fig 1 (PageUp ± 50). `aria-valuetext`: "step t 100 of 1000".
 
@@ -182,7 +182,7 @@ The raw counts are 196, 218 and 0 at t = 0 and 28, 40 and 104 at t = 1000. Snaps
 - At the knob's t, a small filled teal ■ on the noise curve and a dotted ink drop line from the knob to the x axis.
 - A legend appears because there are 2 series; it shows each line style and marker.
 
-**Readouts.** `["alphaBar", "snrDb"]` → at t = 100: `ᾱ_t 0.897 · SNR 9.4 dB`; at t = 0: `ᾱ_t 1.00 · SNR ∞ dB`; at t = 1000: `ᾱ_t 4.04 × 10⁻⁵ · SNR −43.9 dB`.
+**Readouts.** `["alphaBar", "snrDb"]` → at t = 100: `ᾱ_t 0.897 SNR 9.4 dB`; at t = 0: `ᾱ_t 1.00 SNR ∞ dB`; at t = 1000: `ᾱ_t 4.04 × 10⁻⁵ SNR −43.9 dB`.
 
 **Live description.** `At t = {t}, alpha-bar is {alphaBar}: signal {signal fixed2}, noise {noise fixed2}, signal-to-noise ratio {snrDb fixed1} dB.`
 
@@ -200,13 +200,13 @@ The raw counts are 196, 218 and 0 at t = 0 and 28, 40 and 104 at t = 1000. Snaps
 
 **Reduced motion.** The knob and drop line move instantly.
 
-**Implementation note (P7).** This figure draws the registry's precomputed `signalSeries` and `noiseSeries` outputs (`number[]`, index = t); it does not use `expr-curve`, because ᾱ_t is a cumulative product with no closed form in the expression language. Extra options used by the `curve` kind: `yLabel: "coefficient"`, `markEvery: 100` (● / ■ every 100 steps), `tableStep: 10`, `tableColumns: ["alphaBar", "signal", "noise", "snrDb"]` and `describe` (the live-description template above, with `{name:fixed2}` format overrides). Direct labels sit at the right end of each line rather than near t = 120, clear of the default knob at t = 100 and its "drag" hint.
+**Implementation note.** This figure draws the registry's precomputed `signalSeries` and `noiseSeries` outputs (`number[]`, index = t); it does not use `expr-curve`, because ᾱ_t is a cumulative product with no closed form in the expression language. Extra options used by the `curve` kind: `yLabel: "coefficient"`, `markEvery: 100` (● / ■ every 100 steps), `tableStep: 10`, `tableColumns: ["alphaBar", "signal", "noise", "snrDb"]` and `describe` (the live-description template above, with `{name:fixed2}` format overrides). Direct labels sit at the right end of each line rather than near t = 120, clear of the default knob at t = 100 and its "drag" hint.
 
-### Acceptance criteria for the implementer (Fig 2, in addition to P7)
+### Checks (Fig 2)
 
 1. The two series are told apart by line style and marker (solid with ● versus dashed with ■), with direct labels. In a deutan or tritan screenshot both remain identifiable from the labels.
 2. The marker sits at x = 260 and its label reads "signal = noise (t ≈ 260)".
-3. The readout at t = 0 reads `ᾱ_t 1.00 · SNR ∞ dB` (proves the non-finite formatting).
+3. The readout at t = 0 reads `ᾱ_t 1.00 SNR ∞ dB` (proves the non-finite formatting).
 4. The series come from the model outputs. The figure contains no hard-coded ᾱ values (grep the figure source for `0.0001`).
 
 ---
@@ -303,4 +303,4 @@ The raw counts are 196, 218 and 0 at t = 0 and 28, 40 and 104 at t = 1000. Snaps
 }
 ```
 
-Note: `options.ticks` is a `string[]` because the plan's `options` type allows `string[]` but not `number[]`. The figure parses the values as numbers.
+Note: `options.ticks` is a `string[]` because the `options` type allows `string[]` but not `number[]`. The figure parses the values as numbers.

@@ -1,4 +1,4 @@
-// Fetch + extract for a normalised source (docs/PLAN.md §5.3 step 3).
+// Fetch + extract for a normalised source.
 import { ApiError } from '../errors';
 import { type FetchFn, HTML_TYPES, fetchText } from '../fetch';
 import type { Source } from '../url';

@@ -1,4 +1,4 @@
-// API error codes and their HTTP status + default hint (docs/PLAN.md §5.6).
+// API error codes and their HTTP status + default hint.
 const CODES = {
   INVALID_URL: [400, 'Paste a full link, such as https://arxiv.org/abs/1706.03762.'],
   BLOCKED_URL: [400, 'Only public http(s) pages on the default port can be fetched.'],

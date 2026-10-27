@@ -1,4 +1,4 @@
-// URL normalisation and the safety guard (docs/PLAN.md §5.3 step 1, S2).
+// URL normalisation and the safety guard.
 // The guard runs on the pasted URL and again on every redirect (fetch.ts).
 // WHATWG URL parsing already turns decimal/hex/octal IPv4 forms such as
 // http://2130706433 or http://0x7f.1 into dotted form, so one check covers all.

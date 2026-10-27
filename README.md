@@ -114,7 +114,7 @@ The step-by-step guide is in [docs/DEPLOY.md](docs/DEPLOY.md). Local development
 
 ## Contributing
 
-Contributions are welcome: models, figure kinds, essays, fixes, docs and translations. Start with [CONTRIBUTING.md](CONTRIBUTING.md), pick something from [docs/GOOD_FIRST_ISSUES.md](docs/GOOD_FIRST_ISSUES.md), and see [docs/EXTENDING.md](docs/EXTENDING.md) to add a model or a figure kind. The design spec is [docs/redesign/DESIGN.md](docs/redesign/DESIGN.md). Please follow the [Code of Conduct](CODE_OF_CONDUCT.md); report security problems as [SECURITY.md](SECURITY.md) describes. Changes are listed in [CHANGELOG.md](CHANGELOG.md).
+Contributions are welcome: models, figure kinds, essays, fixes, docs and translations. Start with [CONTRIBUTING.md](CONTRIBUTING.md), pick something from [docs/GOOD_FIRST_ISSUES.md](docs/GOOD_FIRST_ISSUES.md), and see [docs/EXTENDING.md](docs/EXTENDING.md) to add a model or a figure kind. [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) explains how the parts fit together. The design spec is [docs/redesign/DESIGN.md](docs/redesign/DESIGN.md). Please follow the [Code of Conduct](CODE_OF_CONDUCT.md); report security problems as [SECURITY.md](SECURITY.md) describes. Changes are listed in [CHANGELOG.md](CHANGELOG.md).
 
 ## Licence
 

@@ -1,4 +1,4 @@
-// GET /api/explain?url= (docs/PLAN.md §5.3, §5.6): normalise → cache → extract →
+// GET /api/explain?url=: normalise → cache → extract →
 // match → at most one model call → assemble → cache. Returns
 // { ok, doc, cache, mode } or { ok: false, error }, with x-explorable-cache.
 //
@@ -20,7 +20,7 @@ import { MODELS } from '../plan/schema';
 import { normaliseUrl } from '../url';
 import type { ExplorableDoc } from '../../skills/explorable/kit/src/doc/schema.ts';
 
-/** Bindings /api/explain uses. AI and the limiter exist only in production (D4, P15). */
+/** Bindings /api/explain uses. AI and the limiter exist only in production. */
 export interface ExplainEnv {
   EXPLORABLE_CACHE?: KvLike;
   AI?: AiBinding;

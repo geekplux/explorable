@@ -1,4 +1,4 @@
-// Local-safe top-level config (docs/PLAN.md §5.4, D2/D4): no Workers AI binding,
+// Local-safe top-level config: no Workers AI binding,
 // a local KV id that Miniflare simulates, debug routes on. `vite dev` and
 // `vite preview` run this Worker in workerd with no login.
 //

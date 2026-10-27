@@ -1,4 +1,4 @@
-// arXiv extraction (D8): metadata from the Atom API, section text from the
+// arXiv extraction: metadata from the Atom API, section text from the
 // LaTeXML HTML at arxiv.org/html/<id> when it exists (older papers fall back
 // to the abstract alone).
 import { Parser } from 'htmlparser2';

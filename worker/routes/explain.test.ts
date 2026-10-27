@@ -241,7 +241,7 @@ describe('rate limiter (EXPLAIN_LIMITER, production only)', () => {
   });
 });
 
-describe('error codes (docs/PLAN.md §5.6)', () => {
+describe('error codes', () => {
   const cases: Array<[string, string, Partial<ExplainEnv>?]> = [
     ['INVALID_URL', ''],
     ['BLOCKED_URL', 'http://127.0.0.1/admin'],

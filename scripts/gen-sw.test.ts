@@ -1,4 +1,4 @@
-// The service worker generator (O2): what is precached, the hashed cache name,
+// The service worker generator: what is precached, the hashed cache name,
 // and that /api/* and other origins are never handled.
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';

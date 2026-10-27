@@ -1,4 +1,4 @@
-// O2: after one online visit the service worker (scripts/gen-sw.mjs) has
+// After one online visit the service worker (scripts/gen-sw.mjs) has
 // precached the app; with the context offline, reloading / and /s/diffusion
 // still renders live figures, and the input shows the offline message.
 // Runs on the harness build (`vite build` + gen-sw: the same client bundle as

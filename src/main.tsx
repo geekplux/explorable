@@ -13,7 +13,7 @@ document.addEventListener('click', interceptLinks);
 startAnalytics();
 
 // Production builds only: dist/client/sw.js comes from scripts/gen-sw.mjs and
-// makes the app and samples reload offline (O2). Registered after load so it
+// makes the app and samples reload offline. Registered after load so it
 // never competes with first paint.
 if (import.meta.env.PROD && 'serviceWorker' in navigator) {
   window.addEventListener('load', () => {

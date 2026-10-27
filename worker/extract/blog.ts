@@ -1,4 +1,4 @@
-// "Readability-lite" for blog posts (D8): keep the paragraphs, headings and
+// "Readability-lite" for blog posts: keep the paragraphs, headings and
 // list items of the main content root, drop chrome (nav, aside, footer,
 // scripts, forms, noisy class names) and link-heavy blocks.
 import { type Attrs, type Extracted, cap, collectBlocks, headingsOf, requireText, yearOf } from './text';

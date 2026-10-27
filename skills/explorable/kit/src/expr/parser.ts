@@ -1,5 +1,5 @@
 /**
- * Recursive-descent parser for the safe expression language (PLAN §5.2).
+ * Recursive-descent parser for the safe expression language.
  * Precedence: `+ -` < `* /` < unary `-` < `^` (right-associative), so
  * `-x^2` is −(x²). Identifiers resolve at parse time to a declared name, `pi`
  * or `e`; calls only to the whitelisted functions. AST depth ≤ 32.

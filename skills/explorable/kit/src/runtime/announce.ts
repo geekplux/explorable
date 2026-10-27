@@ -1,5 +1,5 @@
 /**
- * A polite live region that changes at most once per `gap` ms (A2), so a drag
+ * A polite live region that changes at most once per `gap` ms, so a drag
  * never floods a screen reader. The latest text always lands (trailing edge).
  * `say(text, idle)` instead waits until no new text has come for `idle` ms
  * (used while a pointer drag is active, so only the resting value is spoken).

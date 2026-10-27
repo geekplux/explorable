@@ -28,7 +28,6 @@
     "dist",
     "coverage",
     "node_modules",
-    "docs/screenshots",
     "test-results",
     "worker-configuration.d.ts"
   ]

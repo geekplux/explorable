@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 
-// Count every uniform drawn, to prove scrubbing never resamples (diffusion.md Fig 1 AC 5).
+// Count every uniform drawn, to prove scrubbing never resamples (diffusion.md, Fig 1 check 5).
 const draws = vi.hoisted(() => ({ n: 0 }));
 vi.mock('../rng.ts', async (orig) => {
   const real = await orig<typeof import('../rng.ts')>();
@@ -14,7 +14,7 @@ const four = (a: Float64Array, i: number) => Array.from(a.subarray(i, i + 4), (v
 const rel = (a: number, b: number) => Math.abs(a - b) / Math.abs(b);
 
 describe('diffusion-forward schedule', () => {
-  it('matches P6 AC 1 at both ends', () => {
+  it('matches the schedule at both ends', () => {
     expect(Math.abs(ALPHA_BAR[1]! - (1 - 1e-4))).toBeLessThan(1e-12);
     expect(rel(ALPHA_BAR[1000]!, 4.0e-5)).toBeLessThan(0.1);
   });
@@ -72,7 +72,7 @@ describe('diffusion-forward samples at seed 2020', () => {
     }
   });
 
-  it('meets P6 AC 1: pure noise at t = 1000, two clumps at t = 0', () => {
+  it('is pure noise at t = 1000 and two clumps at t = 0', () => {
     const end = run(1000);
     expect(Math.abs(end.mean)).toBeLessThan(0.1);
     expect(Math.abs(end.sd - 1)).toBeLessThan(0.05);
