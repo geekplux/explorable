@@ -1,5 +1,5 @@
 /**
- * Lexer for the safe expression language (PLAN §5.2): numbers, identifiers,
+ * Lexer for the safe expression language: numbers, identifiers,
  * `+ - * / ^ ( ) ,` and whitespace. Anything else is rejected with a specific
  * message; there are no strings, member access, assignment or statements.
  */

@@ -1,5 +1,5 @@
 /**
- * The on-figure ring knob (PLAN §4.1): an SVG `role="slider"` on a track.
+ * The on-figure ring knob: an SVG `role="slider"` on a track.
  * Pointer capture for mouse, pen and touch; Arrow/Page/Home/End keys.
  * The whole track band is a ≥ 44 px pointer target; so is the knob.
  */

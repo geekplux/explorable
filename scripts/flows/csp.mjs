@@ -1,4 +1,4 @@
-// S3: the preview serves public/_headers, so every page carries the production
+// The preview serves public/_headers, so every page carries the production
 // CSP. Under it, /, every sample and /x (with /api/explain mocked) render and
 // work with zero CSP violations (securitypolicyviolation events or console).
 import { readFileSync, readdirSync } from 'node:fs';

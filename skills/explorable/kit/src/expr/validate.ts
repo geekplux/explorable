@@ -1,5 +1,5 @@
 /**
- * Validation for `expr-curve` expressions (PLAN §5.2): the expression parses,
+ * Validation for `expr-curve` expressions: the expression parses,
  * every identifier is declared, and at least 90% of 64 samples over the x
  * range (other names at their defaults) are finite.
  */

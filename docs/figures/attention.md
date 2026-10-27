@@ -1,6 +1,6 @@
 # Sample `attention`: Why attention divides by √d
 
-Shared rules (formats, keyboard, encodings, motion, RNG, invented fields) are in [samples.md](samples.md). This file has the essay, both figure specs, the reference values and the JSON skeleton for `src/samples/attention.json`.
+Shared rules (formats, keyboard, encodings, motion, RNG, optional fields) are in [samples.md](samples.md). This file has the essay, both figure specs, the reference values and the JSON skeleton that became `src/samples/attention.json`. Visual details (colours, markers, the knob's look, readout punctuation, motion) follow [DESIGN.md](../redesign/DESIGN.md) and the kit where they differ from this file.
 
 - **Title:** Why attention divides by √d
 - **Dek:** Dot products of random d-dimensional vectors spread out like √d, which pushes a softmax into a one-hot spike. Dividing the scores by √d_k keeps them at unit scale, so attention stays soft and trainable.
@@ -18,11 +18,11 @@ Shared rules (formats, keyboard, encodings, motion, RNG, invented fields) are in
 
 Progressive disclosure: Fig 1 isolates softmax with hand-fixed scores. Fig 2 replaces the hand-fixed scores with real random dot products. Section 4 shows that the paper's √d_k is the same temperature knob from Fig 1, set automatically to T = √d_k.
 
-The full prose is in the JSON skeleton at the end. It is first-draft quality and ready to transcribe.
+The JSON skeleton at the end holds the first draft of the prose; the shipped text is in `src/samples/attention.json`.
 
 ---
 
-## Fig 1: `fig-temperature` (kind `bars`, model `softmax-temperature`, Phase 4)
+## Fig 1: `fig-temperature` (kind `bars`, model `softmax-temperature`)
 
 **Idea.** Softmax sharpness depends only on the scale of the scores. Dividing by a temperature T changes the scale while keeping the order.
 
@@ -40,7 +40,7 @@ Outputs: `weights` (number[n]), `top` (label "top weight", fixed2), `entropy` (l
 
 **Doc params (fixed, hand-chosen and illustrative):** query token "sat" over the six tokens of "the cat sat on the mat", with scores `s = [0.3, 2.5, 1.2, 0.4, 0.3, 1.4]`. "cat" is the most relevant, "mat" second and "sat" itself third. The two "the" tokens share a score on purpose: their bars stay equal at every T, which is a quiet check that the weights depend only on the score.
 
-**Controls.** `T`, on a log track under the bars with the ring knob. Ticks are labelled 0.1, 0.5, 1, 2 and 5. The track position is `log(T)`. The same `T` is on a native range in the controls row, with an `<output>` showing `T = 1.00`. Keyboard follows the log rule in samples.md §5 (Arrow ≈ ×1.047, PageUp ≈ ×1.585). `aria-valuetext`: "temperature 1.00" on the native range; the knob (named "temperature (drag on chart)") uses the value only, "1.00" (see DECISIONS.md).
+**Controls.** `T`, on a log track under the bars with the ring knob. Ticks are labelled 0.1, 0.5, 1, 2 and 5. The track position is `log(T)`. The same `T` is on a native range in the controls row, with an `<output>` showing `T = 1.00`. Keyboard follows the log rule in samples.md §5 (Arrow ≈ ×1.047, PageUp ≈ ×1.585). `aria-valuetext`: "temperature 1.00" on the native range; the knob (named "temperature (drag on chart)") uses the value only, "1.00", so the label is not read twice.
 
 **Drawing.**
 - Six vertical bars in token order. The x labels are the tokens.
@@ -50,7 +50,7 @@ Outputs: `weights` (number[n]), `top` (label "top weight", fixed2), `entropy` (l
 - A chip at the top left reads "query: sat".
 - All bars are cobalt with an ink outline. One series, so no legend.
 
-**Readouts.** `["top", "entropy"]` → `top weight 0.51 · entropy 2.05 bits`.
+**Readouts.** `["top", "entropy"]` → `top weight 0.51 entropy 2.05 bits`.
 
 **Live description (`describe`).** `Temperature {T fixed2}: “{label of top}” gets {round(top·100)}% of the attention; entropy {entropy fixed2} bits.` At the default: "Temperature 1.00: “cat” gets 51% of the attention; entropy 2.05 bits." At T = 0.5: "… “cat” gets 82% …" (P4 AC 4 quotes 81 % as an example; with these scores the true value is 81.66 %, so 82 %).
 
@@ -71,7 +71,7 @@ Outputs: `weights` (number[n]), `top` (label "top weight", fixed2), `entropy` (l
 
 ### Fixtures (`softmax-temperature`)
 
-Plan fixture (P4 AC 1): scores `[2, 1, 0.1]`, T = 1 → `[0.6590, 0.2424, 0.0986]`.
+Textbook fixture: scores `[2, 1, 0.1]`, T = 1 → `[0.6590, 0.2424, 0.0986]`.
 
 Sample scores `[0.3, 2.5, 1.2, 0.4, 0.3, 1.4]` (the, cat, sat, on, the, mat):
 
@@ -85,21 +85,21 @@ Sample scores `[0.3, 2.5, 1.2, 0.4, 0.3, 1.4]` (the, cat, sat, on, the, mat):
 | 2 | 0.10687 0.32106 0.16761 0.11235 0.10687 0.18524 | 0.321061 | 2.45264 |
 | 5 | 0.14253 0.22130 0.17064 0.14541 0.14253 0.17760 | 0.221303 | 2.56533 |
 
-Near-equal scores for P4 AC 1: `[0.1, 0, 0.05, 0, 0.1, 0]` at T = 5 → entropy 2.58490 bits, against log₂ 6 = 2.58496.
+Near-equal scores: `[0.1, 0, 0.05, 0, 0.1, 0]` at T = 5 → entropy 2.58490 bits, against log₂ 6 = 2.58496.
 
 Test tolerances: ±1e-4 on weights, ±1e-4 on entropy.
 
-### Acceptance criteria for the implementer (Fig 1, in addition to P4)
+### Checks (Fig 1)
 
 1. The y axis is fixed at 0 to 1 at every T.
 2. The two "the" bars have identical heights at all 7 fixture temperatures (a DOM test on bar heights).
-3. The top marker is ▼ plus the text "top", not a ring (or the deviation is recorded in DECISIONS.md).
-4. With the knob at T = 0.25, the readout reads exactly `top weight 0.98 · entropy 0.15 bits`.
-5. Home sets T = 0.05 and the readout shows `top weight 1.00 · entropy 0.00 bits`. End sets T = 5.00 and it shows `top weight 0.22 · entropy 2.57 bits`.
+3. No ring marks the top bar: a ring means draggable.
+4. With the knob at T = 0.25, the readout reads exactly `top weight 0.98 entropy 0.15 bits`.
+5. Home sets T = 0.05 and the readout shows `top weight 1.00 entropy 0.00 bits`. End sets T = 5.00 and it shows `top weight 0.22 entropy 2.57 bits`.
 
 ---
 
-## Fig 2: `fig-scaling` (kind `bars`, model `attention-scaling`, Phase 5)
+## Fig 2: `fig-scaling` (kind `bars`, model `attention-scaling`)
 
 **Idea.** Without scaling, the spread of dot-product scores grows like √d_k, so softmax saturates as the vectors get wider. Dividing by √d_k holds the spread near 1 at every width.
 
@@ -131,10 +131,10 @@ Outputs: `scores` (number[8]), `weights` (number[8]), `weightsOther` (number[8])
 **Drawing.**
 - Eight bars labelled k₁ … k₈ (`options.labels`), with a fixed y axis from 0 to 1. Value labels (fixed2), and the ▼ "top" marker as in Fig 1. Cobalt fill with an ink outline.
 - `options.compare = true`: a dashed ink outline bar over each bar shows `weightsOther`. A legend (two series) shows a solid swatch for "this setting" and a dashed outline for "with ÷√d_k" or "without ÷√d_k" (the text follows the toggle).
-- `options.scoreStrip = true` (should, may be deferred): above the bars, a number line from −32 to 32 with ticks every 8. It has 8 ink circle markers at the scores, each labelled with its key index. Scores outside the line are drawn as a ▶ or ◀ at the edge with the value. A dotted ink bracket spans ±`sdExpected`, labelled "expected ±√d_k = ±8.00" (unscaled) or "expected ±1" (scaled). A solid ink bracket spans ±`sd`, labelled "measured ±7.93". The strip shows the cause; the bars show the effect.
+- A score strip (designed, not built): above the bars, a number line from −32 to 32 with ticks every 8. It has 8 ink circle markers at the scores, each labelled with its key index. Scores outside the line are drawn as a ▶ or ◀ at the edge with the value. A dotted ink bracket spans ±`sdExpected`, labelled "expected ±√d_k = ±8.00" (unscaled) or "expected ±1" (scaled). A solid ink bracket spans ±`sd`, labelled "measured ±7.93". The strip shows the cause; the bars show the effect.
 - A small "query: random q" chip, and the caption explains that q and k are random.
 
-**Readouts.** `["sd", "top", "entropy"]` → `score SD 2.02 · top weight 0.57 · entropy 1.85 bits`.
+**Readouts.** `["sd", "top", "entropy"]` → `score SD 2.02 top weight 0.57 entropy 1.85 bits`.
 
 **Live description.** `d_k = {dk}, {scaled ? "divided by √d_k" : "not scaled"}: scores spread with SD {sd fixed2} (expected {sdExpected fixed2}); key {topIndex+1} gets {round(top·100)}% of the weight.` Write the screen-reader variant in words: "square root of d sub k".
 
@@ -174,9 +174,9 @@ Full vectors for snapshot tests:
 - d_k = 64, unscaled scores: `2.8841 1.2931 −9.0573 −12.6939 −3.9898 −3.5474 11.7376 −9.1697`; weights `0.0001 0.0000 0.0000 0.0000 0.0000 0.0000 0.9998 0.0000`.
 - d_k = 64, scaled scores: `0.3605 0.1616 −1.1322 −1.5867 −0.4987 −0.4434 1.4672 −1.1462`; weights `0.1586 0.1300 0.0357 0.0226 0.0672 0.0710 0.4797 0.0352`.
 
-Tolerance ±1e-3 on scores, ±1e-4 on weights and SD. P5 AC 4 ("SD ≈ 1 ±0.3 over seeds" when scaled) holds for seed 229 at every row above (0.80 to 1.24). For a multi-seed property test, use the mean of the scaled SD over seeds 1 to 50 at d_k = 64. It is 1.0014 (assert within 1 ± 0.1). Do not assert ±0.3 on every individual seed: with 8 keys, 14 of those 50 seeds fall outside (range 0.37 to 1.89), and that is honest sampling noise, not a bug.
+Tolerance ±1e-3 on scores, ±1e-4 on weights and SD. Scaled, the SD stays within 1 ± 0.3 for seed 229 at every row above (0.80 to 1.24). For a multi-seed property test, use the mean of the scaled SD over seeds 1 to 50 at d_k = 64. It is 1.0014 (assert within 1 ± 0.1). Do not assert ±0.3 on every individual seed: with 8 keys, 14 of those 50 seeds fall outside (range 0.37 to 1.89), and that is honest sampling noise, not a bug.
 
-### Acceptance criteria for the implementer (Fig 2, in addition to P5)
+### Checks (Fig 2)
 
 1. Prefix property: going from d to d + 1 does not change `q[0..d−1]` (a unit test on the cached normals).
 2. Seed 229 reproduces the fixture table above within tolerance.

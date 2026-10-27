@@ -1,4 +1,4 @@
-// The only model call in explorable (docs/PLAN.md §5.5): one env.AI.run in
+// The only model call in explorable: one env.AI.run in
 // JSON Mode per uncached URL. No retries: a bad plan is PLAN_INVALID, cached.
 import { ApiError } from '../errors';
 import type { Extracted } from '../extract';

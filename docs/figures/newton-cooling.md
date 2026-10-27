@@ -1,6 +1,6 @@
 # Skill example `newton-cooling`: Why coffee cools fast, then slowly
 
-The second worked example of the `/explorable` skill (Phase 11), built from the `expr-curve` worked example in [../design/prompt.md](../design/prompt.md). It shows how to explain an idea that has no registry model: the curve is a whitelisted expression, so every number on screen still comes from a real model. Shared rules (formats, keyboard, encodings, motion) are in [samples.md](samples.md).
+The second worked example of the `/explorable` skill, built from the `expr-curve` worked example in [../design/prompt.md](../design/prompt.md). It shows how to explain an idea that has no registry model: the curve is a whitelisted expression, so every number on screen still comes from a real model. Shared rules (formats, keyboard, encodings, motion) are in [samples.md](samples.md).
 
 - **Core idea:** a hot object cools in proportion to how much hotter it is than the room, so the gap shrinks by the same fraction every minute and halves every ln 2 / k minutes, whatever the start.
 - **Source:** `kind: concept` (Newton's law of cooling); no URL, so the page has no outbound link.

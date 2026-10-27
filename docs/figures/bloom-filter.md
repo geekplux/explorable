@@ -1,6 +1,6 @@
 # Sample `bloom-filter`: How a Bloom filter says “maybe”
 
-Shared rules (formats, keyboard, encodings, motion, invented fields) are in [samples.md](samples.md). This file has the essay, both figure specs, the reference values and the JSON skeleton for `src/samples/bloom-filter.json`.
+Shared rules (formats, keyboard, encodings, motion, optional fields) are in [samples.md](samples.md). This file has the essay, both figure specs, the reference values and the JSON skeleton that became `src/samples/bloom-filter.json`. Visual details (colours, markers, the knob's look, readout punctuation, motion) follow [DESIGN.md](../redesign/DESIGN.md) and the kit where they differ from this file.
 
 - **Title:** How a Bloom filter says “maybe”
 - **Dek:** A Bloom filter stores a set as a handful of bits. It can say “maybe” to a word it never saw, but never “no” to one it did, and the number of hashes sets how often that “maybe” is wrong.
@@ -19,11 +19,11 @@ Shared rules (formats, keyboard, encodings, motion, invented fields) are in [sam
 
 Progressive disclosure: Fig 1 is concrete (12 named words, 32 visible bits, one query at a time). Its readouts introduce the predicted and observed rates that section 4 explains. Fig 2 abstracts the same model into a curve over n, with m and k free.
 
-The full prose is in the JSON skeleton at the end.
+The JSON skeleton at the end holds the first draft of the prose; the shipped text is in `src/samples/bloom-filter.json`.
 
 ---
 
-## Fig 1: `fig-bits` (kind `bits`, model `bloom-filter`, Phase 5)
+## Fig 1: `fig-bits` (kind `bits`, model `bloom-filter`)
 
 **Idea.** Inserting sets bits that never clear, so a member always answers "maybe" and a non-member answers "definitely not" unless other words happen to cover all of its bits.
 
@@ -73,7 +73,7 @@ Outputs:
 
 **Drawing (SVG).**
 1. **Word row:** 12 chips in `INSERT` order. Inserted chips (index < n) have a solid ink outline, ink text and a small "＋" glyph. Chips not yet inserted have a dashed `--ink-3` outline and `--ink-2` text. The row is labelled "inserted:".
-2. **Bit strip:** 32 cells of at least 24 px on desktop, 1 row. At < 640 px, 2 rows of 16 (P5 risk note). There is a small index (0 to 31) above each cell in `--ink-2`.
+2. **Bit strip:** 32 cells of at least 24 px on desktop, 1 row. At < 640 px, 2 rows of 16. There is a small index (0 to 31) above each cell in `--ink-2`.
    - A set bit has an ink fill with a paper "1" glyph.
    - An unset bit has a paper fill, a `--rule` border and an `--ink-2` "0" glyph.
    - The glyph always carries the value, so the meaning does not depend on fill alone.
@@ -82,11 +82,11 @@ Outputs:
 4. **Verdict badge** beside the query chip:
    - `queryState 0`: ✕ icon + "definitely not".
    - `queryState 1`: ✓ icon + "maybe (true positive)", plus the note "the filter can't tell this apart from a false positive; the figure knows because it keeps the list".
-   - `queryState 2`: 45° hatch background + ! icon + **"maybe (false positive)"** (exact text, which P5 AC 2 asserts). The query chip also gets the hatch.
+   - `queryState 2`: 45° hatch background + ! icon + **"maybe (false positive)"** (exact text, which a test asserts). The query chip also gets the hatch.
 
 No colour carries meaning on its own: set and unset have glyphs, probes have arrows and outlines, and the verdict is text plus an icon (and hatch for a false positive).
 
-**Readouts.** `["bitsSet", "fpr", "fpObserved"]` → `bits set 20 / 32 · predicted FPR 14.7% · observed FP 10 / 50`.
+**Readouts.** `["bitsSet", "fpr", "fpObserved"]` → `bits set 20 / 32 predicted FPR 14.7% observed FP 10 / 50`.
 
 **Live description.** `{n} words inserted with k = {k}: {bitsSet} of 32 bits set. “{word}”: {verdict text}. Predicted false-positive rate {fpr}; {fpObserved} of 50 test words came back maybe.`
 
@@ -109,7 +109,7 @@ No colour carries meaning on its own: set and unset have glyphs, probes have arr
 
 ### Fixtures (`bloom-filter`)
 
-**FNV-1a vectors:** `""` → `0x811c9dc5`, `"a"` → `0xe40c292c` (P5 AC 1), `"foobar"` → `0xbf9cf968`.
+**FNV-1a vectors:** `""` → `0x811c9dc5`, `"a"` → `0xe40c292c`, `"foobar"` → `0xbf9cf968`.
 
 **Per-word hashes** (h1, h2 = fmix32(h1), a, b, probes for k = 6; the probes for smaller k are the prefix):
 
@@ -198,11 +198,11 @@ n=12  10 19 24 25 28 29
 | 10 | 0.2684 | 0.2160 | 0.2252 | 0.2592 | 0.3085 | 0.3683 |
 | 12 | 0.3127 | 0.2784 | 0.3080 | 0.3642 | 0.4350 | 0.5126 |
 
-P5 AC 1 fixture: m = 32, k = 3, n = 8 → (1 − e^(−0.75))³ = 0.1469 (±1e-4). The expected number of bits set is 32·(1 − (1 − 1/32)^(kn)) = 17.06 for k = 3, n = 8. This filter has 20.
+Fixture: m = 32, k = 3, n = 8 → (1 − e^(−0.75))³ = 0.1469 (±1e-4). The expected number of bits set is 32·(1 − (1 − 1/32)^(kn)) = 17.06 for k = 3, n = 8. This filter has 20.
 
-**Property test (P5 AC 1):** over 200 seeded random words (mulberry32(7), lengths 3 to 7, letters a to z), inserted one at a time with k = 1 … 6, every inserted word queries TP. This holds by construction; the test guards against off-by-one errors in the probe loop.
+**Property test:** over 200 seeded random words (mulberry32(7), lengths 3 to 7, letters a to z), inserted one at a time with k = 1 … 6, every inserted word queries TP. This holds by construction; the test guards against off-by-one errors in the probe loop.
 
-### Acceptance criteria for the implementer (Fig 1, in addition to P5)
+### Checks (Fig 1)
 
 1. Every fixture table above is reproduced exactly (bits strings, query states, observed counts).
 2. At the defaults, picking "cherry" shows the hatched badge with the exact text "maybe (false positive)".
@@ -213,7 +213,7 @@ P5 AC 1 fixture: m = 32, k = 3, n = 8 → (1 − e^(−0.75))³ = 0.1469 (±1e-4
 
 ---
 
-## Fig 2: `fig-fpr-curve` (kind `curve`, model `expr-curve`, Phase 7)
+## Fig 2: `fig-fpr-curve` (kind `curve`, model `expr-curve`)
 
 **Idea.** For fixed m and k, the false-positive rate rises with n in an S-curve. Each k is the best choice at exactly one load, n = (m/k)·ln 2, where half the bits are set and the rate is (1/2)^k.
 
@@ -224,8 +224,8 @@ P5 AC 1 fixture: m = 32, k = 3, n = 8 → (1 − e^(−0.75))³ = 0.1469 (±1e-4
 - `params`: `k` (label "hashes per word k", 1 to 6, default 3, step 1) and `m` (label "bits m", 16 to 128, default 32, step 8).
 - `options.markerExpr`: `m*ln(2)/k`. `options.markerLabel`: `k = {k} is best at n ≈ {marker}`.
 - `options.refExpr`: `0.5^(m*ln(2)/x)`, the rate with the best real-valued k at each n, which is `(1/2)^((m/n)·ln 2)` ≈ 0.6185^(m/n). `options.refLabel`: `best possible k`.
-- `options.x0`: 8. `options.xStep`: 1 (invented: the knob snaps to whole items). `options.xFormat`: `int`. `options.yFormat`: `percent`.
-- `options.describe` (invented, optional): `At n = {x} items, the false-positive rate is {y}; k = {k} is best at n ≈ {marker}.` (P7 AC 6 wording, plus the marker so it is spoken).
+- `options.x0`: 8. `options.xStep`: 1 (the knob snaps to whole items). `options.xFormat`: `int`. `options.yFormat`: `percent`.
+- `options.describe` (optional): `At n = {x} items, the false-positive rate is {y}; k = {k} is best at n ≈ {marker}.` (with the marker, so it is spoken).
 
 All three expressions use only whitelisted tokens (`exp`, `ln`, `^`, `*`, `/`, `-`, numbers and declared identifiers). They are finite over the full x range and every param range, so they pass the 90 %-finite check.
 
@@ -241,7 +241,7 @@ All three expressions use only whitelisted tokens (`exp`, `ln`, `^`, `*`, `/`, `
 - The y axis shows percent ticks at 0, 25, 50, 75 and 100 %. The x axis has ticks at 1, 8, 16, 32 and 64.
 - A legend appears because there are 2 series. It shows the solid line with ● markers and the dotted line.
 
-**Readouts.** `["x", "y"]` → `items inserted n 8 · false-positive rate 14.7%`.
+**Readouts.** `["x", "y"]` → `items inserted n 8 false-positive rate 14.7%`.
 
 **Show data table.** 11 rows of sampled points around the knob (x − 5 … x + 5, clipped to range). Columns: `n`, `false-positive rate` (percent), `best possible` (percent).
 
@@ -273,13 +273,13 @@ All three expressions use only whitelisted tokens (`exp`, `ln`, `^`, `*`, `/`, `
 | 128 | 6 | 8 | 0.094 % | 0.046 % | 14.787 |
 | 16 | 3 | 8 | 46.886 % | 38.255 % | 3.697 |
 
-At the marker the FPR equals 0.5^k exactly: 0.12500 (k = 3), 0.50000 (k = 1), 0.01563 (k = 6). Tolerance 1e-9 on the expression evaluator against `Math` (P7 AC 2 asks for 1e-12 on random points; these are the readable anchors).
+At the marker the FPR equals 0.5^k exactly: 0.12500 (k = 3), 0.50000 (k = 1), 0.01563 (k = 6). Tolerance 1e-9 on the expression evaluator against `Math` (the expression tests check 1e-12 on random points; these are the readable anchors).
 
-**Implementation note (P7).** Extra options: `xSymbol: "n"` (the slider output reads "n = 8" and the table's first column is "n"), `ticks: ["1", "8", "16", "32", "64"]` and `markEvery: 8`. The table's third column is headed with `refLabel` ("best possible k"). Both direct labels sit at the right end, each placed clear of its own line.
+**Implementation note.** Extra options: `xSymbol: "n"` (the slider output reads "n = 8" and the table's first column is "n"), `ticks: ["1", "8", "16", "32", "64"]` and `markEvery: 8`. The table's third column is headed with `refLabel` ("best possible k"). Both direct labels sit at the right end, each placed clear of its own line.
 
-### Acceptance criteria for the implementer (Fig 2, in addition to P7)
+### Checks (Fig 2)
 
-1. At the defaults the readout reads exactly `items inserted n 8 · false-positive rate 14.7%`, and the live description reads "At n = 8 items, the false-positive rate is 14.7%; k = 3 is best at n ≈ 7.4."
+1. At the defaults the readout reads exactly `items inserted n 8 false-positive rate 14.7%`, and the live description reads "At n = 8 items, the false-positive rate is 14.7%; k = 3 is best at n ≈ 7.4."
 2. The marker label reads "k = 3 is best at n ≈ 7.4". After k = 6 it reads "k = 6 is best at n ≈ 3.7".
 3. The reference curve is dotted ink and directly labelled. The marker point is a filled ●, not a ring.
 4. At m = 128, k = 1 the marker is off the chart and shown as an edge ▶ with its label.
@@ -388,5 +388,3 @@ At the marker the FPR equals 0.5^k exactly: 0.12500 (k = 3), 0.50000 (k = 1), 0.
   "takeaway": "A Bloom filter never says no to a word it holds, because bits only turn on. Its one error is a false “maybe”, at a rate near (1 − e^(−kn/m))^k, which is lowest when k ≈ (m/n)·ln 2 and half the bits are set."
 }
 ```
-
-Note for Phase 1: `params[].step` on `expr-curve` and the `options` keys above are proposals (see samples.md §3). If P3's schema rejects unknown `expr-curve` param keys, either add `step` to the schema or drop it from this JSON until P7.

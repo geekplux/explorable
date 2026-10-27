@@ -1,5 +1,5 @@
 // Shared extraction helpers: one streaming htmlparser2 pass collects readable
-// blocks (paragraphs, headings, list items) and page metadata (D8).
+// blocks (paragraphs, headings, list items) and page metadata.
 import { Parser } from 'htmlparser2';
 import { ApiError } from '../errors';
 

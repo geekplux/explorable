@@ -1,4 +1,4 @@
-// node scripts/gen-sw.mjs [dir]: post-build step (docs/PLAN.md §5.7, O2). Writes
+// node scripts/gen-sw.mjs [dir]: post-build step for offline reloads. Writes
 // <dir>/sw.js (default dist/client) that precaches the app shell, every asset and
 // the fonts under a cache name hashed from the build, so a new deploy gets a new
 // cache. Matching ignores Vary (static files; vite preview adds Vary: Origin).

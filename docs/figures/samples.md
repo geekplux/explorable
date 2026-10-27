@@ -1,16 +1,16 @@
 # Built-in samples: essays and figure specs
 
-Written by `explorable-designer` on 2026-10-19 for Phase 1, with the figure details that Phases 4 to 7 build. Binding inputs: `CLAUDE.md` and `docs/PLAN.md` (§2, §4, §5.2, §5.3, §5.10, Phases 1 and 4 to 7).
+The design notes behind the three built-in samples and their figures: the essay arc, the models, the hand-computed fixtures the model tests check, and the keyboard and encoding rules. Visual details (colours, markers, the knob's look, readout punctuation, motion) have since moved on: [DESIGN.md](../redesign/DESIGN.md) and the kit are the current reference, and the shipped samples in `src/samples/` win where they differ from the skeletons here.
 
-This file covers what all three samples share: the field mapping to ExplorableDoc v1, the field names this spec invents, the readout, keyboard, encoding and motion rules, and the seeded random source. Each sample has its own file with the essay prose, the figure specs, the hand-computed fixtures and a JSON skeleton you can transcribe into `src/samples/<slug>.json`:
+This file covers what all three samples share: the field mapping to ExplorableDoc, the optional figure fields, the readout, keyboard, encoding and motion rules, and the seeded random source. Each sample has its own file with the essay prose, the figure specs, the hand-computed fixtures and a JSON skeleton that was the first draft of `src/samples/<slug>.json`:
 
-| Slug | Title | Source | Spec | Figures (kind, model, phase) |
+| Slug | Title | Source | Spec | Figures (kind, model) |
 |---|---|---|---|---|
-| `attention` | Why attention divides by √d | Vaswani et al. 2017, arXiv:1706.03762 | [attention.md](attention.md) | `bars` / `softmax-temperature` (P4); `bars` / `attention-scaling` (P5) |
-| `bloom-filter` | How a Bloom filter says “maybe” | Bill Mill, *Bloom Filters by Example* | [bloom-filter.md](bloom-filter.md) | `bits` / `bloom-filter` (P5); `curve` / `expr-curve` (P7) |
-| `diffusion` | Noise, one step at a time | Ho, Jain, Abbeel 2020, arXiv:2006.11239 | [diffusion.md](diffusion.md) | `histogram` / `diffusion-forward` (P6); `curve` / `diffusion-forward` (P7) |
+| `attention` | Why attention divides by √d | Vaswani et al. 2017, arXiv:1706.03762 | [attention.md](attention.md) | `bars` / `softmax-temperature`; `bars` / `attention-scaling` |
+| `bloom-filter` | How a Bloom filter says “maybe” | Bill Mill, *Bloom Filters by Example* | [bloom-filter.md](bloom-filter.md) | `bits` / `bloom-filter`; `curve` / `expr-curve` |
+| `diffusion` | Noise, one step at a time | Ho, Jain, Abbeel 2020, arXiv:2006.11239 | [diffusion.md](diffusion.md) | `histogram` / `diffusion-forward`; `curve` / `diffusion-forward` |
 
-The order on the gallery is attention, bloom-filter, diffusion. The plan's keyboard check ("Tab to the second card … `/s/bloom-filter`") depends on it.
+The order on the gallery is attention, bloom-filter, diffusion.
 
 ---
 
@@ -24,22 +24,22 @@ Every essay follows the same arc: (1) the smallest version of the mechanism with
 | bloom-filter | A false "maybe" is possible, a false "no" is not. Load (n) and hash count (k) decide how full the bits get. | The false-positive rate against n, and the best k = (m/n)·ln 2. |
 | diffusion | Shrink-and-add-noise steps turn any data into N(0, 1). The closed form jumps to any t. | The schedule's shape: signal √ᾱ_t and noise √(1−ᾱ_t) cross at t ≈ 260. |
 
-## 2. Mapping to ExplorableDoc v1 (PLAN §5.2)
+## 2. Mapping to ExplorableDoc
 
-The JSON skeletons in each sample file are valid ExplorableDoc v1 as the plan defines it, plus the invented fields listed in §3. Constraints I checked by script against every skeleton: title ≤ 90 characters, dek ≤ 220, 2 to 6 sections, 1 to 4 paragraphs per section, each paragraph ≤ 700, takeaway ≤ 300, alt ≥ 40, 1 to 3 controls, 1 to 3 readouts.
+The JSON skeletons in each sample file are ExplorableDoc schema 1, which still validates; the shipped samples are schema 2 (doc-level notes), and `skills/explorable/references/spec-format.md` documents both. The skeletons use the optional fields listed in §3. Limits checked against every skeleton: title ≤ 90 characters, dek ≤ 220, 2 to 6 sections, 1 to 4 paragraphs per section, each paragraph ≤ 700, takeaway ≤ 300, alt ≥ 40, 1 to 3 controls, 1 to 3 readouts.
 
 - `schema: 1`. `id` is the slug.
-- `source`: `kind`, `url`, `title`, `authors`, `year`. The Bloom post has no year on the page that I can verify, so `year` is left out (it is optional).
+- `source`: `kind`, `url`, `title`, `authors`, `year`. The Bloom post shows no year, so `year` is left out (it is optional).
 - `provenance`: `{ "mode": "curated", "generatedAt": "2026-10-19T00:00:00.000Z" }`. There is no `model` field for curated docs.
-- `sections[].paragraphs` use only the inline formatter from §5.2: `*em*`, `**strong**` and `` `code` ``. Formulas go in `` `code` `` so they render in monospace (D19). Quotes in prose are typographic (“ ” ‘ ’), so the JSON needs no escaped quotes.
-- `figure.model.params` holds the **initial** value of every model parameter the figure uses, including fixed ones such as seeds and scores. Ranges, steps and units live in the registry `ModelDef`, not in the doc, except for `expr-curve`, where the doc declares them (plan §5.2).
+- `sections[].paragraphs` use only the inline formatter: `*em*`, `**strong**` and `` `code` ``. Formulas go in `` `code` `` as Unicode, not LaTeX. Quotes in prose are typographic (“ ” ‘ ’), so the JSON needs no escaped quotes.
+- `figure.model.params` holds the **initial** value of every model parameter the figure uses, including fixed ones such as seeds and scores. Ranges, steps and units live in the registry `ModelDef`, not in the doc, except for `expr-curve`, where the doc declares them.
 - `figure.controls` lists the parameter names the reader can change. `figure.readouts` lists the output ids shown in the readout strip.
 
-## 3. Field names this spec invents (the plan is silent on these)
+## 3. Figure options and other fields
 
-The implementer should add each of these to the schema (P3) or registry (P4 to P7), or push back. All are optional, so the docs stay valid if a field is dropped.
+All of these are optional.
 
-**In the doc (`FigureSpec.options`, which the plan already types as `Record<string, string | number | boolean | string[]>`):**
+**In the doc (`FigureSpec.options`, typed as `Record<string, string | number | boolean | string[]>`):**
 
 | Option | Kind | Meaning |
 |---|---|---|
@@ -47,9 +47,9 @@ The implementer should add each of these to the schema (P3) or registry (P4 to P
 | `labels` | `bars` | Category labels, one per bar. |
 | `query` | `bars` | The asking token, shown as a chip, e.g. "query: sat". |
 | `compare` | `bars` | `true` draws the weights for the *other* toggle state as dashed ink outlines (attention Fig 2). |
-| `scoreStrip` | `bars` | `true` draws the raw scores as dots on a fixed number line above the bars (attention Fig 2). Optional for P5; it may be deferred if the line budget is tight. |
+| `scoreStrip` | `bars` | `true` draws the raw scores as dots on a fixed number line above the bars (attention Fig 2). Designed but not built: the kit ignores it. |
 | `ghost` | `histogram` | `true` draws the t = 0 histogram as a dashed ink-3 outline labelled "data (t = 0)". |
-| `ticks` | `histogram`, `curve` | Labelled tick values on the scrubber or x axis, as a `string[]` of numbers (the plan's `options` type has no `number[]`). |
+| `ticks` | `histogram`, `curve` | Labelled tick values on the scrubber or x axis, as a `string[]` of numbers (the `options` type has no `number[]`). |
 | `refLabel` | `histogram`, `curve` | Direct label of the dotted reference curve. |
 | `series`, `seriesLabels` | `curve` (registry model) | Output ids of `number[]` outputs to draw as series, and their direct labels. |
 | `seriesSpoken` | `curve` | Optional spoken forms of `seriesLabels` for the plot's accessible name (default: the labels), for labels with symbols such as `√ᾱ_t`. |
@@ -58,17 +58,17 @@ The implementer should add each of these to the schema (P3) or registry (P4 to P
 | `markerExpr`, `markerLabel` | `curve` (`expr-curve`) | A marker x position as a whitelisted expression over the declared params, and its label. The label may hold `{name}` placeholders for declared params and `{marker}` for the marker x, each formatted with fixed1 (integers without decimals). |
 | `refExpr` | `curve` (`expr-curve`) | A second, dotted reference curve, written in the same expression language and validated the same way. |
 | `x0` | `curve` (`expr-curve`) | Initial knob position on x. |
-| `xStep` | `curve` (`expr-curve`) | Snap step for the knob on x. The default is the power of ten at or below (max − min)/100 (P7; it keeps round `x0` values exact). |
+| `xStep` | `curve` (`expr-curve`) | Snap step for the knob on x. The default is the power of ten at or below (max − min)/100, which keeps round `x0` values exact. |
 | `describe` | `curve` (`expr-curve`) | Live-description template with `{x}`, `{y}` and `{name}` placeholders, formatted with the readout formats. The default is `At {x.label} = {x}, {y.label} is {y}.` |
 | `xFormat`, `yFormat` | `curve` (`expr-curve`) | Readout formats for the `x` and `y` outputs. |
-| `xSymbol` | `curve` (`expr-curve`) | Short name of x for the slider output and the table's first column ("n"). Default: `x`. *(P7)* |
-| `yLabel`, `yMin`, `yMax` | `curve` | The y-axis title and range. `expr-curve` takes them from `model.y`; otherwise the range comes from the first state's data. *(P7)* |
-| `markEvery` | `curve` | Spacing on x of the ● / ■ / ▲ markers along each series. Default: a round step near range / 5. *(P7)* |
-| `tableStep`, `tableColumns` | `curve` | The data table lists x − 5 … x + 5 steps of `tableStep` (default: the x step), with one column per output id in `tableColumns` (`expr-curve` default: `y` and `ref`). *(P7)* |
-| `refSeries` | `curve` | The series id drawn as the dotted ink reference (`expr-curve`: `refCurve`). *(P7)* |
-| `describe` | all | Also accepted by registry models: a live-description template where `{name}` is an output (its readout format) or a param, and `{name:fmt}` overrides the format. *(P7)* |
+| `xSymbol` | `curve` (`expr-curve`) | Short name of x for the slider output and the table's first column ("n"). Default: `x`. |
+| `yLabel`, `yMin`, `yMax` | `curve` | The y-axis title and range. `expr-curve` takes them from `model.y`; otherwise the range comes from the first state's data. |
+| `markEvery` | `curve` | Spacing on x of the ● / ■ / ▲ markers along each series. Default: a round step near range / 5. |
+| `tableStep`, `tableColumns` | `curve` | The data table lists x − 5 … x + 5 steps of `tableStep` (default: the x step), with one column per output id in `tableColumns` (`expr-curve` default: `y` and `ref`). |
+| `refSeries` | `curve` | The series id drawn as the dotted ink reference (`expr-curve`: `refCurve`). |
+| `describe` | all | Also accepted by registry models: a live-description template where `{name}` is an output (its readout format) or a param, and `{name:fmt}` overrides the format. |
 
-**In the doc schema (`expr-curve` model):** `params[].step` (optional number). Without it the step is the power of ten at or below (max − min)/100 (P7). The Bloom Fig 2 `k` needs `step: 1`.
+**In the doc schema (`expr-curve` model):** `params[].step` (optional number). Without it the step is the power of ten at or below (max − min)/100. The Bloom Fig 2 `k` needs `step: 1`.
 
 **In `figure.controls` for `expr-curve`:** the name `x` means "the knob on the curve". It counts toward the 1 to 3 controls.
 
@@ -77,13 +77,13 @@ The implementer should add each of these to the schema (P3) or registry (P4 to P
 **In the registry (`ModelDef.params[*]`), not the doc:**
 - `control?: 'range' | 'toggle' | 'choice'`. The default is `range`. `toggle` renders a switch (`role="switch"`) for a 0/1 param. `choice` renders a radio group from `choices`.
 - `choices?: string[]`: labels for a `choice` param; the param value is the index.
-- `pageStep?: number`: PageUp/PageDown step. The default is 10 × `step` (diffusion `t` uses 50, as P6 requires).
+- `pageStep?: number`: PageUp/PageDown step. The default is 10 × `step` (diffusion `t` uses 50).
 
 **In `format.ts`:** a new `sig3` format (see §4) and the rule that non-finite values print as `∞` or `−∞`.
 
 ## 4. Readouts and number formats
 
-The readout strip shows each readout as `<label> <value>[ <unit>]`, joined by ` · ` (a middle dot with spaces), in monospace with tabular numerals. Example: `top weight 0.51 · entropy 2.05 bits`.
+The readout strip shows each readout as `<label> <value>[ <unit>]`, separated by space, in monospace with tabular numerals; the spoken form joins them with commas. Example: `top weight 0.51 entropy 2.05 bits`.
 
 | Format | Rule | Examples |
 |---|---|---|
@@ -91,7 +91,7 @@ The readout strip shows each readout as `<label> <value>[ <unit>]`, joined by ` 
 | `fixed1` / `fixed2` / `fixed3` | `toFixed(n)`; negative zero prints as `0.00` | `7.93`, `0.000` |
 | `percent` | × 100. One decimal at ≥ 1 %, two decimals below 1 %, `0%` for exactly 0 | `14.7%`, `0.07%`, `0%` |
 | `sci` | 3 significant digits, `4.04 × 10⁻⁵` (Unicode superscripts) | |
-| `sig3` *(invented)* | 3 significant digits in plain notation when \|v\| ≥ 0.001, else `sci` | `1.00`, `0.897`, `0.0786`, `0.00335`, `4.04 × 10⁻⁵` |
+| `sig3` | 3 significant digits in plain notation when \|v\| ≥ 0.001, else `sci` | `1.00`, `0.897`, `0.0786`, `0.00335`, `4.04 × 10⁻⁵` |
 | any | `Infinity` → `∞`, `-Infinity` → `−∞` | `∞ dB` |
 
 `aria-valuetext` on a control is `<label> <value> <unit>` with words, never symbols that a screen reader mangles: "temperature 0.50", "key width d sub k 64", "step t 260", "hashes per word 3". Exception: the on-chart knob already carries the label in its accessible name ("<label> (drag on chart)"), so its valuetext is `<value> <unit>` only, to avoid reading the label twice.
@@ -102,9 +102,9 @@ The readout strip shows each readout as `<label> <value>[ <unit>]`, joined by ` 
 - **Linear params:** Arrow keys move ± `step`, PageUp/PageDown move ± `pageStep` (default 10 × `step`), Home/End go to min/max.
 - **Log-scale params** (`scale: 'log'`): Arrow keys move 1 % of the log range and PageUp/PageDown 10 %. The result rounds to `step` and always moves by at least one `step`. Dragging is continuous in log space, then rounded.
 - Values always clamp to [min, max] and round to `step`. The displayed value and the model input are the same rounded number.
-- Hit area ≥ 44 × 44 CSS px for every knob, thumb and radio (A7).
+- Hit area ≥ 44 × 44 CSS px for every knob, thumb and radio.
 
-## 6. Visual vocabulary (only the three plan hues; never colour alone)
+## 6. Visual vocabulary (never colour alone)
 
 | Meaning | Encoding |
 |---|---|
@@ -116,7 +116,7 @@ The readout strip shows each readout as `<label> <value>[ <unit>]`, joined by ` 
 | Uncertain / false positive | 45° hatch in `--ink-2` (4 px spacing, 1 px) plus the text label "maybe (false positive)" |
 | Highlighted maximum | a filled ink ▼ triangle above the bar plus the text "top", and the value label in bold |
 
-**Deviation from P4 AC 6 (recommendation):** the plan says the top bar carries a "ring marker". A ring means "you can drag this" (§4.1), so a ring on a bar that cannot be dragged breaks the one rule the identity relies on. Use the filled ▼ plus "top" instead. If the main agent keeps the ring, it must be visibly different from the knob (filled, no grip).
+A ring means "you can drag this", so nothing that cannot be dragged is drawn as a ring.
 
 Hairline grids use `--rule` and carry no meaning. Text on figures uses `--ink` or `--ink-2`, never a series hue, except focus rings (cobalt, 3 px).
 
@@ -129,7 +129,7 @@ Hairline grids use `--rule` and carry no meaning. Text on figures uses `--ink` o
 
 ## 8. Seeded randomness (shared by `attention-scaling` and `diffusion-forward`)
 
-Use the plan's `mulberry32` exactly:
+Use this `mulberry32` exactly:
 
 ```
 mulberry32(a): returns () => { a |= 0; a = a + 0x6D2B79F5 | 0;
@@ -141,9 +141,9 @@ Fixture: `mulberry32(42)` yields `0.6011037519, 0.4482905590, 0.8524657935, 0.66
 
 Standard normals use Box–Muller with **one normal per two uniforms** (the sine branch is discarded, so the stream order is simple and reproducible): `u1 = 1 − rng()` (in (0, 1], so `ln` is finite), `u2 = rng()`, `z = √(−2 ln u1) · cos(2π u2)`. Each model states the exact draw order. The fixtures in the sample files depend on that order, so do not change it without regenerating them.
 
-## 9. Phase 1 (static) rendering
+## 9. Static rendering
 
-Until a figure kind exists, its shell shows the "FIG. n" kicker, the title, the `alt` text as the body of the figure area (in `--ink-2`, not hidden), and the caption. The alt texts are written to stand alone as a description of the default state, so the static essay still reads well. Card thumbnails (P2, P6) show each sample's Fig 1 in its default state.
+Before a figure mounts, or when its kind or model is not available, its shell shows the title, the `alt` text in the figure area and the caption. The alt texts are written to stand alone as a description of the default state, so the static essay still reads well. The home page's thumbnails show each sample's Fig 1 in its default state.
 
 ## 10. Content guards
 

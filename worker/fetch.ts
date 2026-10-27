@@ -1,4 +1,4 @@
-// Guarded fetch for source pages (docs/PLAN.md §5.3 step 3): 10 s timeout for
+// Guarded fetch for source pages: 10 s timeout for
 // the whole exchange, at most 3 redirects (each re-checked by the URL guard),
 // a 3 MB body cap and a content-type allow-list.
 import { ApiError } from './errors';

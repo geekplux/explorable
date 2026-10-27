@@ -1,5 +1,5 @@
 /**
- * "Show data": a toggle button and a real `<table>` of the current values (A3),
+ * "Show data": a toggle button and a real `<table>` of the current values,
  * in a focusable, labelled scroll region so a wide table never scrolls the page.
  */
 import { setMath } from './math.ts';

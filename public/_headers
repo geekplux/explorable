@@ -1,4 +1,4 @@
-# Workers Static Assets headers (docs/PLAN.md §5.7, S3). The Worker adds its own
+# Workers Static Assets headers: a strict CSP and cache rules. The Worker adds its own
 # security headers to /api/* responses (worker/errors.ts). Keep the CSP in sync
 # with scripts/flows/csp.mjs. The Google hosts are gtag.js and its hits (src/analytics.ts),
 # as Google's CSP guide for Google Analytics 4 lists them.

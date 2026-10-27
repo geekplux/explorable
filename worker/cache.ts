@@ -1,4 +1,4 @@
-// KV cache for /api/explain (docs/PLAN.md §5.7). Keys hash the canonical URL
+// KV cache for /api/explain. Keys hash the canonical URL
 // and carry the doc schema version and PROMPT_VERSION, so a prompt change
 // invalidates old entries. Docs live 30 days, failures 10 minutes, and a failed
 // model call (AI_UNAVAILABLE, usually transient) only 1 minute.

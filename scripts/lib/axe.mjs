@@ -16,5 +16,5 @@ export async function axe(page) {
   return page.evaluate(() => window.axe.run(document, { resultTypes: ['violations'] }).then((r) => r.violations));
 }
 
-/** Violations that fail the A4 bar: impact serious or critical. */
+/** Violations that fail a run: impact serious or critical. */
 export const blocking = (violations) => violations.filter((v) => v.impact === 'serious' || v.impact === 'critical');

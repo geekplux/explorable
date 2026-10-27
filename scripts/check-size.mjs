@@ -1,4 +1,4 @@
-// pnpm check:size: P1 budgets on dist/client/ (run `pnpm build` first). Initial JS
+// pnpm check:size: size budgets on dist/client/ (run `pnpm build` first). Initial JS
 // and CSS for "/" in gzip; preloaded fonts as shipped (woff2 is compressed).
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';

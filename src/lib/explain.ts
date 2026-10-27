@@ -1,6 +1,6 @@
 import type { ExplorableDoc } from '@kit/doc/schema.ts';
 
-/** Server codes (docs/PLAN.md §5.6) plus the ones only the browser can see. */
+/** Server codes (worker/errors.ts) plus the ones only the browser can see. */
 export type ErrorCode =
   | 'INVALID_URL' | 'BLOCKED_URL' | 'FETCH_FAILED' | 'UNSUPPORTED_CONTENT' | 'TOO_LITTLE_TEXT'
   | 'AI_UNAVAILABLE' | 'AI_BUDGET' | 'PLAN_INVALID' | 'NO_FIGURE' | 'RATE_LIMITED' | 'INTERNAL'
@@ -29,7 +29,7 @@ export function readExplain(body: unknown): ExplainResult {
 }
 
 /**
- * The steps of a new link (PLAN §4.6), in the order the Worker streams them
+ * The steps of a new link, in the order the Worker streams them
  * (worker/routes/explain.ts). No percentages: only the step it is on.
  */
 export const STAGES = [

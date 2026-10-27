@@ -1,4 +1,4 @@
-// Headless-browser harness shared by smoke and e2e scripts (docs/PLAN.md §5.9).
+// Headless-browser harness shared by smoke and e2e scripts.
 // One preview server, one system Chrome; both are always cleaned up, also on
 // SIGINT/SIGTERM. Chrome runs sandboxed unless EXPLORABLE_CHROME_NO_SANDBOX=1.
 import { execFileSync, spawn } from 'node:child_process';

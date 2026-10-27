@@ -1,4 +1,4 @@
-// The explorable Worker (D2): static assets serve the SPA; only /api/* runs
+// The explorable Worker: static assets serve the SPA; only /api/* runs
 // here (wrangler.jsonc `run_worker_first`). Workers AI is bound only in production.
 import { ApiError, errorResponse, json } from './errors';
 import { extract } from './extract';

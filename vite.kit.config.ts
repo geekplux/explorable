@@ -1,5 +1,5 @@
 // pnpm build:kit: the framework-free kit as one minified ESM file plus its CSS,
-// committed to skills/explorable/kit/dist so the skill works with no install (D5).
+// committed to skills/explorable/kit/dist so the skill works with no install.
 // Output must be byte-for-byte deterministic: CI rebuilds it and runs git diff.
 import { readFileSync } from 'node:fs';
 import { defineConfig, type Plugin } from 'vite';

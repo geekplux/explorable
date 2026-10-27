@@ -1,5 +1,5 @@
 /**
- * `expr-curve`: a model built per figure from the spec (PLAN §5.2), so the AI
+ * `expr-curve`: a model built per figure from the spec, so the AI
  * pipeline can draw y = f(x) for any idea without running generated code.
  * The doc declares x, y and the params; `options` may add a dotted reference
  * curve (`refExpr`) and a vertical marker (`markerExpr`, over the params only).

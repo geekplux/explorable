@@ -1,4 +1,4 @@
-// Deterministic match mode (D10): score registry keywords against the title,
+// Deterministic match mode: score registry keywords against the title,
 // headings and abstract. No model call; also gives the AI call its hints.
 import type { ModelDef } from '../../skills/explorable/kit/src/registry.ts';
 import type { Extracted } from '../extract';

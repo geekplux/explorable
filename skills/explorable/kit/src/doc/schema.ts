@@ -1,6 +1,6 @@
 /**
  * ExplorableDoc v1 and v2: the contract shared by built-in samples, the Worker output
- * and skill specs (docs/PLAN.md §5.2), as a valibot schema. Types are inferred
+ * and skill specs, as a valibot schema. Types are inferred
  * from the schema; `parseDoc` returns path-specific error messages. v2 adds doc-level
  * `notes` (formulas and sources behind a marker, docs/redesign/DESIGN.md §9) that
  * paragraphs and the takeaway reference with `[[id]]`; see `notes.ts`.

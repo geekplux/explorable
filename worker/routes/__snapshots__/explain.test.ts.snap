@@ -35,7 +35,7 @@ exports[`/api/explain with a model > sends one JSON-Mode request with capped sou
 }
 `;
 
-exports[`error codes (docs/PLAN.md §5.6) > AI_UNAVAILABLE has a stable { code, message, hint } 1`] = `
+exports[`error codes > AI_UNAVAILABLE has a stable { code, message, hint } 1`] = `
 {
   "error": {
     "code": "AI_UNAVAILABLE",
@@ -46,7 +46,7 @@ exports[`error codes (docs/PLAN.md §5.6) > AI_UNAVAILABLE has a stable { code, 
 }
 `;
 
-exports[`error codes (docs/PLAN.md §5.6) > BLOCKED_URL has a stable { code, message, hint } 1`] = `
+exports[`error codes > BLOCKED_URL has a stable { code, message, hint } 1`] = `
 {
   "error": {
     "code": "BLOCKED_URL",
@@ -57,7 +57,7 @@ exports[`error codes (docs/PLAN.md §5.6) > BLOCKED_URL has a stable { code, mes
 }
 `;
 
-exports[`error codes (docs/PLAN.md §5.6) > FETCH_FAILED has a stable { code, message, hint } 1`] = `
+exports[`error codes > FETCH_FAILED has a stable { code, message, hint } 1`] = `
 {
   "error": {
     "code": "FETCH_FAILED",
@@ -68,7 +68,7 @@ exports[`error codes (docs/PLAN.md §5.6) > FETCH_FAILED has a stable { code, me
 }
 `;
 
-exports[`error codes (docs/PLAN.md §5.6) > INTERNAL has a stable { code, message, hint } 1`] = `
+exports[`error codes > INTERNAL has a stable { code, message, hint } 1`] = `
 {
   "error": {
     "code": "INTERNAL",
@@ -79,7 +79,7 @@ exports[`error codes (docs/PLAN.md §5.6) > INTERNAL has a stable { code, messag
 }
 `;
 
-exports[`error codes (docs/PLAN.md §5.6) > INVALID_URL has a stable { code, message, hint } 1`] = `
+exports[`error codes > INVALID_URL has a stable { code, message, hint } 1`] = `
 {
   "error": {
     "code": "INVALID_URL",
@@ -90,7 +90,7 @@ exports[`error codes (docs/PLAN.md §5.6) > INVALID_URL has a stable { code, mes
 }
 `;
 
-exports[`error codes (docs/PLAN.md §5.6) > NO_FIGURE has a stable { code, message, hint } 1`] = `
+exports[`error codes > NO_FIGURE has a stable { code, message, hint } 1`] = `
 {
   "error": {
     "code": "NO_FIGURE",
@@ -101,7 +101,7 @@ exports[`error codes (docs/PLAN.md §5.6) > NO_FIGURE has a stable { code, messa
 }
 `;
 
-exports[`error codes (docs/PLAN.md §5.6) > PLAN_INVALID has a stable { code, message, hint } 1`] = `
+exports[`error codes > PLAN_INVALID has a stable { code, message, hint } 1`] = `
 {
   "error": {
     "code": "PLAN_INVALID",
@@ -112,7 +112,7 @@ exports[`error codes (docs/PLAN.md §5.6) > PLAN_INVALID has a stable { code, me
 }
 `;
 
-exports[`error codes (docs/PLAN.md §5.6) > RATE_LIMITED has a stable { code, message, hint } 1`] = `
+exports[`error codes > RATE_LIMITED has a stable { code, message, hint } 1`] = `
 {
   "error": {
     "code": "RATE_LIMITED",
@@ -123,7 +123,7 @@ exports[`error codes (docs/PLAN.md §5.6) > RATE_LIMITED has a stable { code, me
 }
 `;
 
-exports[`error codes (docs/PLAN.md §5.6) > TOO_LITTLE_TEXT has a stable { code, message, hint } 1`] = `
+exports[`error codes > TOO_LITTLE_TEXT has a stable { code, message, hint } 1`] = `
 {
   "error": {
     "code": "TOO_LITTLE_TEXT",
@@ -134,7 +134,7 @@ exports[`error codes (docs/PLAN.md §5.6) > TOO_LITTLE_TEXT has a stable { code,
 }
 `;
 
-exports[`error codes (docs/PLAN.md §5.6) > UNSUPPORTED_CONTENT has a stable { code, message, hint } 1`] = `
+exports[`error codes > UNSUPPORTED_CONTENT has a stable { code, message, hint } 1`] = `
 {
   "error": {
     "code": "UNSUPPORTED_CONTENT",
