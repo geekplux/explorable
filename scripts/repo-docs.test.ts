@@ -154,10 +154,10 @@ describe('GitHub issue forms', () => {
 
 const DOCS = [
   'README.md', 'examples/README.md', 'CONTRIBUTING.md', 'CODE_OF_CONDUCT.md', 'SECURITY.md', 'CHANGELOG.md',
-  'docs/EXTENDING.md', 'docs/GOOD_FIRST_ISSUES.md', 'docs/DEPLOY.md', '.github/pull_request_template.md',
+  'docs/ARCHITECTURE.md', 'docs/EXTENDING.md', 'docs/GOOD_FIRST_ISSUES.md', 'docs/DEPLOY.md', '.github/pull_request_template.md',
 ];
 const clean = (p: string) => p.replace(/#.*$/, '');
-/** Paths a later phase creates; linking ahead is fine until then. Remove an entry once its file exists. */
+/** Paths that are linked before their file exists. Remove an entry once the file is added. */
 const PENDING: string[] = [];
 /** Relative link and image targets (markdown or `src`/`href` attributes, resolved from the doc's folder) and repository paths in inline code (from the root). */
 function namedPaths(doc: string): string[] {
