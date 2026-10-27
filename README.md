@@ -70,7 +70,7 @@ Everything else is deterministic code: URL handling, extraction, search, the mat
 
 ## Built-in essays
 
-All three ship with the app as data, open instantly and work offline. Each is also built as a standalone page in [examples/](examples/README.md). Until the live demo is up, download or clone the repository to open `examples/*.html`: GitHub shows their source, not the page.
+All three ship with the app as data, open instantly and work offline. Each is also built as a standalone page in [examples/](examples/README.md). GitHub shows their source, not the page: open them in [the live demo](https://explorable.geekplux.com), or clone the repository and open `examples/*.html`.
 
 | Essay | The idea | Source | Figures |
 |---|---|---|---|
