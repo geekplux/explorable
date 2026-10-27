@@ -4,6 +4,10 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+### Changed: docs for maintainers
+
+- The build-process documents (plans, status, decision log, launch drafts, phase screenshots, agent definitions) are removed. `docs/ARCHITECTURE.md` explains the parts, the request flow and the design decisions, and `CLAUDE.md` is a short maintainer guide.
+
 ### Added: page-view counts on the live site
 
 - explorable.geekplux.com counts page views with Google Analytics: the route only (`/`, `/s/<essay>`, `/x`), never a pasted link or the title of what it explains. Self-hosted copies load no analytics.
