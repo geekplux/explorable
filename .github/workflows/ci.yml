@@ -1,5 +1,4 @@
-# CI definition. Lives in ci/ because the repo token lacks `workflow` scope;
-# move to .github/workflows/ci.yml once that scope is granted.
+# CI: lint, typecheck, tests, build and the checks below, on every push to main and every pull request.
 name: ci
 on:
   push:

@@ -1,5 +1,5 @@
-// Repository hygiene: the GitHub issue forms parse and are well formed, nothing
-// lives under .github/workflows (the token lacks workflow scope), and every
+// Repository hygiene: the GitHub issue forms parse and are well formed, CI lives in
+// .github/workflows/ci.yml, and every
 // relative link and repository path named in the contributor docs resolves.
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
@@ -146,8 +146,9 @@ describe('GitHub issue forms', () => {
     expect(links.some((l) => String(l.url).endsWith('/security/advisories/new'))).toBe(true);
   });
 
-  it('nothing lives under .github/workflows (CI stays in ci/ until the token has workflow scope)', () => {
-    expect(existsSync('.github/workflows')).toBe(false);
+  it('CI lives in .github/workflows/ci.yml, and the old ci/ copy is gone', () => {
+    expect(existsSync('.github/workflows/ci.yml')).toBe(true);
+    expect(existsSync('ci')).toBe(false);
   });
 });
 
