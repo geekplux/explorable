@@ -2,6 +2,7 @@ import { fileURLToPath } from 'node:url';
 import { cloudflare } from '@cloudflare/vite-plugin';
 import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vitest/config';
+import { routePagesPlugin } from './scripts/route-pages.mjs';
 import { themeCss } from './scripts/theme-css.mjs';
 
 // Vitest reuses this config; it must never start workerd (Worker tests use plain Vitest with fakes).
@@ -11,7 +12,8 @@ export default defineConfig({
   // The Cloudflare plugin runs worker/index.ts in workerd for `vite dev` and
   // `vite preview`, and builds dist/client + dist/explorable.
   // themeCss writes the explicit-dark copy of each system-dark CSS block (light/dark toggle, DESIGN §4).
-  plugins: [themeCss(), react(), ...(testing ? [] : [cloudflare()])],
+  // routePagesPlugin writes one HTML file per route and the 404 page (scripts/route-pages.mjs).
+  plugins: [themeCss(), react(), routePagesPlugin(), ...(testing ? [] : [cloudflare()])],
   // Keep SVG thumbnails as files (<img src="/assets/…svg">), never data: URIs.
   build: { assetsInlineLimit: (file) => (file.endsWith('.svg') ? false : undefined) },
   resolve: {

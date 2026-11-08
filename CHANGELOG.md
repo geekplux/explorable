@@ -4,6 +4,10 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+### Fixed: a real 404 and canonical URLs
+
+- An unknown path, or an essay slug that does not exist, answers 404 with the "Not found" page (noindex) instead of the home page with 200. The home page and each built-in essay (`/s/<slug>`) name their canonical URL and their own title before any script runs.
+
 ### Changed: docs for maintainers
 
 - The build-process documents (plans, status, decision log, launch drafts, phase screenshots, agent definitions) are removed. `docs/ARCHITECTURE.md` explains the parts, the request flow and the design decisions, and `CLAUDE.md` is a short maintainer guide.

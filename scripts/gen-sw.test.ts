@@ -31,10 +31,14 @@ const BUILD = {
   'fonts/OFL.txt': 'licence',
   'favicon.svg': '<svg/>',
   'pdf/attention.pdf': '%PDF',
+  '404.html': '<!doctype html>',
+  's/attention.html': '<!doctype html>',
+  's/attention/index.html': '<!doctype html>',
+  'x.html': '<!doctype html>',
 };
 
 describe('gen-sw', () => {
-  it('precaches the shell as / plus every asset and font, not platform files or the sample PDFs', () => {
+  it('precaches the shell as / plus every asset and font, not platform files, the sample PDFs or the other route pages', () => {
     expect(precacheUrls(Object.keys(BUILD).toSorted())).toEqual(['/', '/assets/index-abc.css', '/assets/index-abc.js', '/favicon.svg', '/fonts/serif-latin.woff2']);
   });
 
